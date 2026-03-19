@@ -1,16 +1,23 @@
-# LocalSearch-R1: 改进版论文方案
+# LocalSearch-R1: 改进版论文完整方案
 
 > 从 DSL-R1 到 LocalSearch-R1：从"查询生成"到"检索编排"的范式升级
+>
+> 目标会议：EMNLP 2026 (ARR May cycle, 截止 2026-05-25)
 
 ## 改版核心策略
 
 **原版问题本质**：Novelty 定位为 "统一 DSL"，但 reviewers 认为 structured+unstructured 融合是工业常见做法。
 
 **改版核心转变**：
-- 原版 framing: "我们设计了一个统一 DSL" → 方法层面的贡献
-- 新版 framing: "我们将 LLM 从查询生成者升级为检索编排者" → 范式层面的贡献
-- 原版标题: DSL-R1 → 新版标题: **LocalSearch-R1**
-- 从 short paper → **long paper**（支撑更完整的论证和实验）
+
+| 维度 | 原版 (DSL-R1) | 新版 (LocalSearch-R1) |
+|------|-------------|---------------------|
+| Framing | "我们设计了一个统一 DSL" | "我们将 LLM 从查询生成者升级为检索编排者" |
+| 贡献层面 | 方法层面 | 范式层面 |
+| 标题 | DSL-R1 | **LocalSearch-R1** |
+| 论文类型 | Short paper | **Long paper** |
+| 核心 claim | DSL 统一了两种检索 | DSL 赋予 LLM 完整的检索编排能力 |
+| 对标工作 | 无（Related Work 缺失） | Search-R1, DeepRetrieval, RRF, Self-querying RAG |
 
 ---
 
@@ -29,6 +36,8 @@
 在**表达能力**层面，传统的稀疏检索（如BM25）和稠密检索（如基于CLIP或DPR的方案）各自仅能处理一种数据类型，无法在单次查询中兼顾结构化过滤与语义匹配。工业界广泛使用的混合检索管线（如Reciprocal Rank Fusion）虽然融合了多路检索的结果，但其本质操作仅是"合并并重排"——它只能表达多路结果的并集加权，无法表达交集（同时满足结构化条件和语义条件）、否定（排除满足某条件的结果）或嵌套逻辑。Self-querying RAG框架（如LangChain的实现）支持将查询分解为metadata filter加语义检索，但其过滤能力局限于简单的键值匹配，不支持OR、NOT等灵活的逻辑组合。换言之，现有方法的检索编排逻辑是**固定且受限的**，无法根据查询意图动态选择和组合不同的检索操作。
 
 在**编排能力**层面，近期强化学习驱动的检索查询生成取得了显著进展。Search-R1 (Jin et al., 2025) 训练LLM在推理过程中自主调用搜索引擎，DeepRetrieval (Jiang et al., 2025) 通过RL优化查询改写使3B模型在文献检索上超越GPT-4o。这些工作有力地证明了RL在提升检索质量方面的潜力。然而，它们共享一个关键的设计前提：**存在一个功能完备的检索后端来执行搜索**。在这些框架中，LLM扮演的是"查询生成者"（query generator）——它优化的是"问什么"，而"怎么找"完全由外部搜索引擎负责。因此，它们的动作空间是文本查询字符串，不具备在结构化与非结构化检索路径之间进行逻辑编排的能力。
+
+> **注意**：DeepRetrieval 实际上已经输出结构化的 boolean/SQL-like 查询，而非简单文本查询。在论文中需要准确描述，指出其局限在于：(1) 单一检索后端，不编排多异构后端；(2) boolean 表达能力不完整，不支持向量检索与结构化过滤的逻辑组合。避免让 reviewer 认为作者没有认真读相关文献。
 
 当面对需要在多条异构检索路径之间执行复杂逻辑组合的混合检索任务时——尤其是在缺乏统一搜索引擎的本地环境中——LLM的角色需要从"查询生成者"升级为**"检索编排者"（retrieval orchestrator）**。它不仅需要理解"问什么"，更需要规划"怎么找"：哪些条件应通过SQL执行精确过滤，哪些语义意图应通过向量检索进行模糊匹配，这些路径之间应取交集、并集还是差集，以及是否需要嵌套组合。这在强化学习的形式化层面构成了一个本质不同的问题——模型的动作空间从一个文本查询字符串扩展为一个**支持任意逻辑组合的可执行程序**。
 
@@ -71,16 +80,20 @@
   - → 局限：只能做并集加权重排，不支持交集/否定/嵌套
 - Self-querying RAG：LangChain、LlamaIndex 的 metadata filtering
   - → 局限：键值匹配，不支持 OR/NOT/嵌套
-- 引入表达能力对比表
+- 引入表达能力对比表（见 Part 3 中的表格）
 - 指出核心 gap：现有方法的编排逻辑是**固定且表达受限的**
 
 ### 2.2 RL for Retrieval Query Generation（最关键新增）
 
 覆盖内容：
-- **Search-R1**：RL 训练 LLM 与搜索引擎交互，multi-turn reasoning + search
-- **DeepRetrieval**：RL 优化查询改写，3B 模型 beat GPT-4o，COLM'25
-- **ReSearch**：类似 Search-R1 的 reasoning + search 框架
-- **s3**：只训练 searcher 不训练 generator
+- **Search-R1** (Jin et al., COLM 2025)：RL 训练 LLM 在推理链中插入文本搜索调用；retrieved token masking 稳定训练
+- **DeepRetrieval** (Jiang et al., COLM 2025)：RL 训练 LLM 生成**结构化查询**（boolean/SQL-like），3B 模型 11/13 数据集超越 GPT-4o
+  - ⚠️ **必须准确描述**：DeepRetrieval 输出的是结构化 boolean/SQL 查询，不是简单文本。需指出其局限在于单引擎、不支持向量检索组合、boolean 表达能力不完整
+- **ReSearch** (Chen et al., arXiv 2503)：RL 训练"在推理中搜索"，无需 SFT warmup
+- **s3** (Jiang et al., EMNLP 2025)：解耦 searcher/generator；"Gain Beyond RAG" 奖励
+- **R1-Searcher** (Song et al., EMNLP 2025 Findings)：两阶段 RL
+- **R3-RAG** (Du et al., EMNLP 2025 Findings)：cold-start + RL
+- **MCTS-RAG** (Yale NLP, EMNLP 2025 Findings)：MCTS 做检索规划
 
 明确指出共同假设：都依赖现成检索后端，LLM 只做 query generation
 
@@ -93,6 +106,8 @@
 - 程序合成、数据分析中的 DSL 应用
 - 与 RL 结合的 DSL 优化
 - Text-to-SQL：强调我们的 DSL 不是纯 SQL，而是扩展了 vector search 原语
+- **SUQL** (Stanford, NAACL 2024): SQL 中嵌入语义原语 `answer()` 和 `contains()`，先驱设计
+- **Text2VectorSQL** (Wang et al.): 最接近的 DSL 设计，但监督学习（非 RL）+ post-filtering 问题
 
 ### 2.4 On-device and Privacy-preserving Retrieval（新增）
 
@@ -134,27 +149,31 @@
 
 **与现有方法的表达能力对比表：**
 
-| 编排能力 | RRF | Self-querying RAG | Text Query (Search-R1) | DSL (Ours) |
-|---------|-----|------------------|----------------------|------------|
-| 结构化过滤 | ✗ | ✓ (键值匹配) | ✗ | ✓ (完整SQL) |
-| 语义检索 | ✓ | ✓ | ✓ | ✓ |
-| 交集 (AND) | ✗ | ✓ (隐式) | ✗ | ✓ |
-| 并集 (OR) | 仅结果合并 | ✗ | ✗ | ✓ |
-| 否定 (NOT) | ✗ | ✗ | ✗ | ✓ |
-| 嵌套逻辑 | ✗ | ✗ | ✗ | ✓ |
-| 多路向量检索组合 | ✗ | ✗ | ✗ | ✓ |
-| 动态路径选择 | ✗ | ✗ | ✗ | ✓ (RL学习) |
-| 可学习的编排策略 | ✗ | ✗ | ✗ | ✓ (RL优化) |
+| 编排能力 | RRF | Self-querying RAG | Text Query (Search-R1) | Boolean (DeepRetrieval) | DSL (Ours) |
+|---------|-----|------------------|----------------------|----------------------|------------|
+| 结构化过滤 | ✗ | ✓ (键值匹配) | ✗ | ✓ (有限) | ✓ (完整SQL) |
+| 语义检索 | ✓ | ✓ | ✓ | ✗ | ✓ |
+| 交集 (AND) | ✗ | ✓ (隐式) | ✗ | ✓ | ✓ |
+| 并集 (OR) | 仅结果合并 | ✗ | ✗ | ✓ | ✓ |
+| 否定 (NOT) | ✗ | ✗ | ✗ | 有限 | ✓ |
+| 嵌套逻辑 | ✗ | ✗ | ✗ | ✗ | ✓ |
+| 结构化+语义逻辑组合 | ✗ | ✗ | ✗ | ✗ | ✓ |
+| 多路向量检索组合 | ✗ | ✗ | ✗ | ✗ | ✓ |
+| 动态路径选择 | ✗ | ✗ | ✗ | ✗ | ✓ (RL学习) |
 
 #### 3.2.2 执行机制（必须添加，回应 Reviewer 13wi）
 
 **伪代码：**
 ```python
-function execute_dsl(dsl_program):
+def execute_dsl(dsl_program):
     # Step 1: 执行所有向量检索
-    for each vector_query in dsl_program.vector_query_list:
+    for i, vector_query in enumerate(dsl_program.vector_query_list):
         candidate_ids = vector_index.search(vector_query, top_k=K)
-        replace <vector_i> placeholder in SQL with candidate_ids
+        # 将候选ID注入SQL占位符
+        dsl_program.sql = dsl_program.sql.replace(
+            f"<vector_{i}>",
+            format_id_list(candidate_ids)
+        )
 
     # Step 2: 执行SQL（此时SQL中已注入向量检索结果）
     results = sql_engine.execute(dsl_program.sql)
@@ -164,14 +183,16 @@ function execute_dsl(dsl_program):
     return results
 ```
 
+**与 RRF 等后处理融合方式的关键区别**：我们不需要设计 fusion 策略（如分数插值、rank 合并），因为 SQL 本身就是 fusion 逻辑。向量检索的结果作为子查询注入 SQL 后，AND/OR/NOT 等逻辑组合由 SQL 引擎原生执行。这比 RRF 等后处理融合方式更优雅、更灵活。
+
 #### 3.2.3 Action Space 对比（新增，支撑核心论点）
 
 ```
 Search-R1 输出:  "quantum computing applications in 2024"
                  → 一个文本字符串，交给外部搜索引擎
 
-DeepRetrieval 输出:  "quantum computing" OR "quantum applications" ...
-                     → 一个改写/增强后的文本查询
+DeepRetrieval 输出: "(quantum computing) AND (applications OR innovations) AND 2024"
+                     → 一个结构化 boolean 查询，发送给单一检索引擎
 
 LocalSearch-R1 输出:
 {
@@ -184,21 +205,22 @@ LocalSearch-R1 输出:
     {"email_content": "budget"}
   ]
 }
-→ 一个可执行程序，包含结构化过滤+语义检索+逻辑组合
+→ 一个可执行程序，编排结构化过滤+语义检索+逻辑组合
 ```
 
 #### 3.2.4 Prompt Template（新增，回应所有 reviewer 的可复现性要求）
 
 主体放 appendix，method 里给精简版，包括：
-- 任务描述
-- Schema 定义
-- 输出格式要求
-- DSL 语法说明
-- 示例
+- Role: AI retrieval engineer
+- Goal: Generate SQL with vector placeholders + corresponding vector_query_list
+- Schema 定义（email 表和 person 表）
+- Rules: 结构化字段用 SQL filters，非结构化字段用 `<vector_x>` 占位符
+- Output format: JSON with "sql" and "vector_query_list"
+- Example
 
 ### 3.3 Data Preparation（重写）
 
-- 用标准 IR notation 重写（q 表示 query，y 表示 DSL program）
+- 用标准 IR notation 重写（q 表示 query，y 表示 DSL program，d̂ 表示 gold document）
 - 添加数据集构造流程图
 - **新增：按逻辑复杂度分层统计**
 
@@ -207,6 +229,8 @@ LocalSearch-R1 输出:
 | 简单 (1个条件) | ... | ... | 纯结构化或纯语义 |
 | 中等 (2-3个AND) | ... | ... | 结构化∩语义 |
 | 复杂 (含OR/NOT/嵌套) | ... | ... | 多路逻辑组合 |
+
+这个分层为后续按复杂度报 performance 提供基础。
 
 ### 3.4 Reinforcement Learning（精简 + 细节增补）
 
@@ -226,6 +250,7 @@ Equal weight 合理性：层次化结构天然形成隐式优先级——S_f=0 �
 **与 Search-R1/DeepRetrieval 的 reward 对比：**
 - 它们：单一的 exact match 或 recall 作为 reward
 - 我们：四维复合 reward，因为可执行程序需要额外的格式和执行约束
+- 消融实验证明每个分量都有贡献
 
 ---
 
@@ -233,23 +258,23 @@ Equal weight 合理性：层次化结构天然形成隐式优先级——S_f=0 �
 
 ### 必须新增的实验（高优先级）
 
-| 实验 | 目的 | 工作量 |
-|------|------|--------|
-| RRF baseline (BM25 + ColQwen) | 堵住"没有 hybrid baseline"的口 | 1-2天 |
-| GPT-4o few-shot DSL generation | 证明 RL 必要性 | 1-2天 |
-| Self-querying RAG baseline (LangChain) | 对比工业实践 | 2-3天 |
-| **Action space ablation** | **支撑核心论点的最关键实验** | 2-3天 |
-| Model size scaling (1.5B → 4B → 8B → 14B) | 小模型能力边界 | 3-5天 |
+| 实验 | 目的 | 工作量 | 优先级 |
+|------|------|--------|--------|
+| RRF baseline (BM25 + ColQwen) | 堵住"没有 hybrid baseline"的口 | 1-2天 | P0 |
+| GPT-4o few-shot DSL generation | 证明 RL 必要性 | 1-2天 | P0 |
+| Self-querying RAG baseline (LangChain) | 对比工业实践 | 2-3天 | P0 |
+| **Action space ablation** | **支撑核心论点的最关键实验** | 2-3天 | **P0** |
+| Model size scaling (1.5B → 4B → 8B → 14B) | 小模型能力边界 | 3-5天 | P1 |
 
-### 建议新增的实验（中优先级）
+### 建议新增的实验（中优先级，强烈推荐前两个）
 
-| 实验 | 目的 | 工作量 |
-|------|------|--------|
-| 按逻辑复杂度分组的 Performance breakdown | 证明 DSL 在复杂 query 上优势更大 | 1-2天 |
-| Orchestration 行为分析 | 展示 RL 训练后的差异化编排策略 | 1-2天 |
-| Latency breakdown | DSL 生成 vs SQL 执行 vs vector search | 半天 |
-| Error analysis | syntax error / execution error / wrong result 分布 | 1天 |
-| DSL 逻辑操作符使用统计 | 统计 AND/OR/NOT 的分布 | 半天 |
+| 实验 | 目的 | 工作量 | 优先级 |
+|------|------|--------|--------|
+| 按逻辑复杂度分组的 Performance breakdown | 证明 DSL 在复杂 query 上优势更大 | 1-2天 | P1 |
+| Orchestration 行为分析 | 展示 RL 训练后的差异化编排策略 | 1-2天 | P1 |
+| Latency breakdown | DSL 生成 vs SQL 执行 vs vector search | 半天 | P2 |
+| Error analysis | syntax error / execution error / wrong result 分布 | 1天 | P2 |
+| DSL 逻辑操作符使用统计 | 统计 AND/OR/NOT 的分布 | 半天 | P2 |
 
 ### Table 1 (Main Results) 重新组织
 
@@ -273,15 +298,17 @@ LocalSearch-R1 (Ours)   | Qwen3-4B + GRPO          | 69.5  | 88.9  | 78.6 | 55
                         | Qwen3-8B + DAPO          | 77.9  | 94.2  | 86.1 | 78
 ```
 
-### 新增 Table: Action Space Ablation（最关键）
+### 新增 Table: Action Space Ablation（最关键新实验）
 
 ```
 Action Space                        | Hit@1 | Hit@3 | MRR  | 说明
+====================================|=======|=======|======|==================
 text query (→ vector retrieval)     | ...   | ...   | ...  | 类Search-R1
 SQL only (→ structured DB)          | ...   | ...   | ...  | 类Text-to-SQL
 vector query only (→ vector index)  | ...   | ...   | ...  | 类DeepRetrieval
 DSL: SQL + vector (Ours)            | 77.9  | 94.2  | 86.1 | 完整编排能力
 ```
+
 所有行使用同一 base model (Qwen3-8B) + 同一 RL 算法 (DAPO)，只改变 action space。
 **直接证明：hybrid DSL 的编排能力 > 任何单一路径。**
 
@@ -289,16 +316,20 @@ DSL: SQL + vector (Ours)            | 77.9  | 94.2  | 86.1 | 完整编排能力
 
 ```
 Query Complexity    | RRF   | Self-query RAG | GPT-4o | LocalSearch-R1 | Δ vs RRF
+====================|=======|================|========|================|=========
 简单 (1条件)        | ...   | ...            | ...    | ...            | ...
 中等 (2-3 AND)      | ...   | ...            | ...    | ...            | ...
 复杂 (OR/NOT/嵌套)  | ...   | ...            | ...    | ...            | ...
 ```
+
 **预期结果**：简单 query 差距不大，复杂 query 上 DSL 优势显著拉开。
+**这张表直接证明**：SQL 的逻辑表达能力在复杂场景下有不可替代的价值。
 
 ### 新增 Table: Model Size Scaling
 
 ```
 Model Size | Hit@1 (pretrained) | Hit@1 (+ DAPO) | Δ      | 超过GPT-4o?
+===========|====================|================|========|===========
 1.5B       | ...                | ...            | ...    | ✗
 4B         | 58.3               | 71.7           | +13.4  | ✓
 8B         | 62.1               | 77.9           | +15.8  | ✓
@@ -306,7 +337,7 @@ Model Size | Hit@1 (pretrained) | Hit@1 (+ DAPO) | Δ      | 超过GPT-4o?
 GPT-4o     | 68.9               | N/A            | N/A    | —
 ```
 
-### 新增 Figure: Orchestration Behavior Analysis
+### 新增 Figure: Orchestration Behavior Analysis（强烈建议）
 
 分组柱状图或热力图：
 - X轴：query 类型（structure-dominated / content-dominated / balanced / complex-logic）
@@ -320,6 +351,7 @@ GPT-4o     | 68.9               | N/A            | N/A    | —
 - 训练后模型学会了对 structure-dominated query 减少不必要的向量检索
 - 对 content-dominated query 增加向量检索的权重
 - 对 complex-logic query 学会使用 OR/NOT 等高级操作
+- **这个分析直接支撑"模型学会了动态编排"的 claim**
 
 ### 新增 Figure: DSL 逻辑操作符使用统计
 
@@ -353,8 +385,8 @@ Future work：
 
 ### Limitations
 
-诚实讨论：
-1. DSL schema 需要预定义，面对全新数据格式需要人工设计 DSL 模板
+诚实讨论（回应 Reviewer 6rE4 的 generalizability 质疑）：
+1. DSL schema 需要预定义，面对全新数据格式需要人工设计 DSL 模板（但 email/document management/digital libraries 等场景均有 well-defined schema）
 2. 当前实验在 GPU 服务器上运行，未做真正的 edge device 部署验证
 3. 单轮检索，不支持多轮对话式 refinement
 4. 只测了两个 domain（email + arxiv），更多 domain 的泛化性待验证
@@ -362,7 +394,7 @@ Future work：
 
 ### Appendix 必须添加
 
-- 完整的 prompt template
+- 完整的 prompt template（已在作者回复中公开，直接放入）
 - Reward function 详细公式和代码片段
 - 更多 DSL case samples（至少 6-8 个），覆盖：
   - 简单 AND 查询
@@ -375,6 +407,7 @@ Future work：
 - GRPO/DAPO 的详细公式推导
 - 训练曲线图（reward vs training step）
 - 数据集完整 schema 定义
+- Cost-effectiveness analysis（回应 AC 建议）
 
 ---
 
@@ -383,100 +416,34 @@ Future work：
 ```
 问题：混合检索需要在结构化和非结构化路径间进行复杂逻辑组合
                     ↓
-现有方法不足：RRF只能做并集重排，Search-R1/DeepRetrieval只生成text query
+现有方法不足：
+  - RRF 只能做并集重排
+  - Self-querying RAG 只支持简单键值过滤
+  - Search-R1/DeepRetrieval 只生成查询，不编排异构后端
                     ↓
 我们的解法：DSL = SQL逻辑骨架 + 向量检索原语 → 任意逻辑组合
+  - SQL 提供完备的集合运算语义
+  - 向量检索作为 SQL 子查询参与逻辑组合
+  - 不需要额外的 fusion 策略
                     ↓
 训练方法：RL + 四维复合reward（因为可执行程序需要层次化约束）
+  - S_f → S_e → S_r → S_l 隐式优先级
                     ↓
-实验验证（三层）：
+实验验证（三层递进）：
   Layer 1: 整体结果 — 8B模型 beat GPT-4o（Table 1）
-  Layer 2: 为什么好 — hybrid action space > 单一action space（Action Space Ablation）
-  Layer 3: 好在哪里 — 复杂逻辑query上优势更大（Complexity Breakdown）
+  Layer 2: 为什么好 — hybrid action space > 单一 action space（Action Space Ablation）
+  Layer 3: 好在哪里 — 复杂逻辑 query 上优势更大（Complexity Breakdown）
                     ↓
 深度分析：模型确实学会了动态编排（Orchestration Behavior Analysis）
 ```
 
-每一层实验都在回答上一层自然引出的问题。
+**每一层实验都在回答上一层自然引出的问题。这个论证结构如果做完整，reviewer 很难找到大的逻辑漏洞。**
 
 ---
 
-## Part 7: 实施时间表（建议）
+## Part 7: 文献调研与竞品分析
 
-| 阶段 | 内容 | 时间 |
-|------|------|------|
-| Week 1 | RRF baseline + Self-querying RAG baseline 实验 | 5天 |
-| Week 2 | Action space ablation + GPT-4o few-shot 实验 | 5天 |
-| Week 2-3 | Model size scaling 实验 | 5天 |
-| Week 3 | Complexity breakdown + Orchestration analysis | 3天 |
-| Week 3-4 | Error analysis + DSL 操作符统计 | 2天 |
-| Week 4-5 | Introduction + Related Work 重写 | 5天 |
-| Week 5-6 | Method Section 改写 + Appendix 补充 | 5天 |
-| Week 6 | Experiments Section 重写 + 全文打磨 | 5天 |
-| **Total** | | **~5-6 weeks** |
-
----
-
-## Part 8: 文献调研与 EMNLP 2026 可行性评估
-
-> 调研时间：2026-03-19
-
-### 8.1 EMNLP 2026 关键时间线
-
-| 节点 | 日期 |
-|------|------|
-| ARR 提交截止（May cycle，最后一轮） | **2026年5月25日** |
-| 审稿完成 | 2026年7月6日 |
-| Author response | 2026年7月7-13日 |
-| EMNLP commitment deadline | **2026年8月2日** |
-| 录取通知 | **2026年8月20日** |
-| 会议 | 2026年10月24-29日，布达佩斯 |
-
-**注意事项：**
-- 所有作者必须注册为潜在 reviewer/AC，未完成注册自动 desk reject
-- 从 2026年3月起只接受 LaTeX，Word 模板 desk reject
-- 从今天（3月19日）到5月25日截止，约 **9 周半**
-
----
-
-### 8.2 完整文献调研结果
-
-#### RL 驱动的检索查询生成（最密切竞品）
-
-| 论文 | 发表 | 核心方法 | 与本文的关键差异 |
-|------|------|---------|----------------|
-| **Search-R1** (Jin et al.) | COLM 2025 | RL 训练 LLM 在推理链中插入文本搜索调用；retrieved token masking 稳定训练 | 单一检索后端，action space 为文本查询字符串 |
-| **DeepRetrieval** (Jiang et al.) | COLM 2025 | RL 训练 LLM 生成 **结构化查询**（boolean/SQL），3B 模型 11/13 数据集超越 GPT-4o | 单引擎查询优化（不编排多后端）；boolean 表达能力有限，不支持完整嵌套逻辑 |
-| **ReSearch** (Chen et al.) | arXiv 2503 | RL 训练"在推理中搜索"，无需 SFT warmup；ReCall 扩展到任意工具调用 | 文本查询，依赖外部搜索引擎 |
-| **R1-Searcher** (Song et al.) | EMNLP 2025 Findings | 两阶段 RL：先学搜索，再优化搜索质量 | 文本查询，OpenWeb 搜索场景 |
-| **s3** (Jiang et al.) | EMNLP 2025 | 解耦 searcher/generator；"Gain Beyond RAG" 奖励；仅 2.4k 训练样本 | 文本查询；searcher 独立训练但不生成结构化 DSL |
-| **R3-RAG** (Du et al.) | EMNLP 2025 Findings | 两阶段：cold-start 学 interleaved 模式 + RL 优化 | 文本查询，open-domain QA |
-| **Search-o1** (Li et al.) | EMNLP 2025 | Prompting-based，非 RL；Reason-in-Documents 模块去噪 | 不训练，依赖 prompting |
-| **MCTS-RAG** (Yale NLP) | EMNLP 2025 Findings | MCTS 做检索规划；7B 匹配 GPT-4o | Prompting-based + MCTS，不生成 DSL |
-
-#### 混合检索 / 统一查询语言（DSL 相关）
-
-| 论文 | 发表 | 核心方法 | 与本文的关键差异 |
-|------|------|---------|----------------|
-| **Text2VectorSQL** (Wang et al.) | arXiv 2506 | 将 NL 翻译为 VectorSQL（vector 操作 + SQL 统一），47% 优于 text-to-SQL | 监督学习（非 RL）；post-filtering 问题（向量搜索→SQL 过滤会丢弃>30% 正确结果，LocalSearch-R1 的 SQL-primary 设计更优） |
-| **SUQL** (Stanford) | NAACL 2024 | SQL 中嵌入语义原语 `answer()` 和 `contains()`，扩展 SQL 表达能力 | 监督学习，面向对话系统而非检索任务 |
-| **A-RAG** (arXiv 2602) | arXiv 2026.2 | 暴露 keyword+semantic+chunk 三种检索工具给 agent 自主选择；94.5% HotpotQA | Prompting-based agent，不用 RL 训练；工具粒度为整体查询策略，非细粒度逻辑组合 |
-| **RRF / Hybrid Pipeline** | 工业实践 | BM25 + 向量检索，Reciprocal Rank Fusion 合并结果 | 固定融合策略，只能做并集加权，不支持交集/否定/嵌套逻辑 |
-| **Self-querying RAG** | LangChain | NL → metadata filter + 语义检索 | 键值匹配，不支持 OR/NOT，不可学习 |
-
-#### 其他相关工作
-
-| 论文 | 发表 | 核心方法 |
-|------|------|---------|
-| **UR2** | arXiv 2508 | difficulty-aware curriculum training，仅困难问题触发检索 |
-| **ZeroSearch** | arXiv 2025 | 在隐空间模拟检索，消除 API 开销 |
-| **StepSearch** | arXiv 2025 | 步骤级奖励，惩罚冗余查询 |
-| **IRCoT** | ACL 2023 | Chain-of-thought + 检索交替，奠基性工作 |
-| **DeepSeek-R1** | arXiv 2501 | 纯 RL 激发推理能力，Search-R1 等工作的基础 |
-
----
-
-### 8.3 核心 Gap 分析
+### 核心 Gap 分析
 
 **现有工作能力对比矩阵：**
 
@@ -490,60 +457,63 @@ Future work：
 
 **结论：没有现有论文同时具备这五项能力。LocalSearch-R1 的 novelty 定位成立。**
 
----
+### 必须正面对比的三篇论文
 
-### 8.4 Related Work 必须覆盖的关键论文（更新）
+1. **DeepRetrieval** — 与本文最接近的 RL + 结构化查询生成
+   - 必须明确指出：单引擎、不支持向量检索组合、boolean 表达能力不完整
+   - 在 Action Space Ablation 中对标
 
-在 Part 2（Related Work）已有基础上，需新增或重点讨论：
+2. **Text2VectorSQL** — 最接近的 DSL 设计
+   - 必须指出：监督学习（非 RL）+ post-filtering 问题（向量搜索→SQL 过滤会丢弃>30% 正确结果）
+   - 考虑作为强 baseline 加入主实验
 
-**必须正面对比（不能回避）：**
-1. **DeepRetrieval** — 与本文最接近的 RL + 结构化查询生成，必须明确指出其局限：单引擎、不支持向量检索组合、boolean 表达能力不完整
-2. **Text2VectorSQL** — 最接近的 DSL 设计，必须指出：监督学习（非 RL）+ post-filtering 问题（丢失 >30% 正确结果）
-3. **A-RAG** — 最接近的多工具检索 agent，必须指出：Prompting-based，不用 RL 训练，粒度为整体策略选择而非细粒度逻辑组合
+3. **A-RAG** — 最接近的多工具检索 agent
+   - 必须指出：Prompting-based，不用 RL 训练，粒度为整体策略选择而非细粒度逻辑组合
 
-**需要引用的重要工作：**
-- s3（"Gain Beyond RAG" 奖励思路）
-- MCTS-RAG（同类 EMNLP 2025 工作，证明检索规划方向的活跃度）
-- SUQL（SQL + 语义原语的先驱设计）
-
----
-
-### 8.5 可借鉴的技术细节
+### 可借鉴的技术细节
 
 | 技术 | 来源 | 如何借鉴 |
 |------|------|---------|
-| **Retrieved token masking** | Search-R1 | 确保 RL 梯度只更新模型生成的 DSL token，不更新检索结果 token |
-| **"Gain Beyond RAG" 奖励** | s3 | 可在 S_r 的基础上引入相对提升奖励，对比 naive RAG baseline |
-| **Difficulty-aware curriculum** | UR2, ZeroSearch | 从简单 query（纯结构化/纯语义）渐进到复杂逻辑组合（AND/OR/NOT/嵌套） |
-| **VectorSQL DSL 设计参考** | Text2VectorSQL | 对比验证 LocalSearch-R1 "SQL-primary" 设计优于 "vector-primary + SQL post-filter" |
-| **解耦 searcher/generator** | s3 | DSL 生成 agent 可独立训练，与 downstream LLM 解耦 |
+| **Retrieved token masking** | Search-R1 | 确保 RL 梯度只更新模型生成的 DSL token |
+| **"Gain Beyond RAG" 奖励** | s3 | 可在 S_r 基础上引入相对提升奖励 |
+| **Difficulty-aware curriculum** | UR2, ZeroSearch | 从简单→复杂逻辑组合渐进训练 |
+| **VectorSQL 设计参考** | Text2VectorSQL | 对比 "SQL-primary" vs "vector-primary + SQL post-filter" |
 
 ---
 
-### 8.6 EMNLP 2026 可行性评估
+## Part 8: 实施时间表
+
+> 从 2026-03-19 到 ARR May cycle 截止 2026-05-25，约 9 周半
+
+| 阶段 | 内容 | 时间 | 截止日 |
+|------|------|------|--------|
+| Week 1-2 | RRF + Self-querying RAG + GPT-4o few-shot baseline 实验 | 7天 | 4月2日 |
+| Week 2-3 | **Action space ablation**（最关键） | 5天 | 4月9日 |
+| Week 3-4 | Model size scaling (1.5B/14B) | 5天 | 4月16日 |
+| Week 4-5 | Complexity breakdown + Orchestration analysis + Error analysis | 5天 | 4月23日 |
+| Week 5-7 | Introduction + Related Work + Method 重写 | 10天 | 5月7日 |
+| Week 7-8 | Experiments Section 重写 + Appendix | 7天 | 5月14日 |
+| Week 8-9 | 全文打磨 + 图表优化 + 共同作者审阅 | 7天 | 5月21日 |
+| Buffer | 最终检查 + 提交 | 4天 | **5月25日** |
+
+### EMNLP 2026 可行性评估
 
 **总体评估：录取概率 40-50%（Long Paper）**
 
-#### 优势因素
+**优势因素**:
+1. Gap 真实存在：RL + 完整混合检索编排的交叉点确实没有人做
+2. 场景定位清晰：本地隐私场景有真实需求
+3. 实验结果强：8B 模型 beat GPT-4o
+4. EMNLP 2025 有先例：Search-R1、MCTS-RAG、R3-RAG、s3 都在同方向被录取
 
-1. **Gap 真实存在**：RL + 完整混合检索编排的交叉点确实没有人做，Novelty 可以成立
-2. **场景定位清晰**：本地隐私场景有真实需求，与 open-domain QA 有差异化
-3. **实验结果强**：8B 模型 beat GPT-4o，数字有吸引力
-4. **EMNLP 2025 有先例**：Search-R1、MCTS-RAG、R3-RAG、s3 都在同方向被录取，说明 EMNLP 接受此类工作
-5. **时间可行**：从今天到5月25日约9周半，实验计划约5-6周，紧凑但可行
+**风险因素**:
+1. 领域非常拥挤：RL + 检索方向 2025 年论文爆发
+2. DeepRetrieval 是强劲竞品：同是 RL + 结构化查询
+3. 实验基准是自建的：需要充分的数据集统计和难度分层
+4. 规模偏小：只有 email + arxiv 两个域
 
-#### 风险因素
-
-1. **领域非常拥挤**：RL + 检索方向 2025 年论文爆发（Search-R1, DeepRetrieval, R3-RAG, R1-Searcher 等），EMNLP 2026 reviewer 对 novelty 要求会更高
-2. **DeepRetrieval 是强劲竞品**：同是 RL + 结构化查询，必须在 Related Work 和实验中清晰区分
-3. **本地场景的必要性需论证**：为什么不能用云端搜索引擎？为什么必须本地？需要更清晰的 motivation
-4. **实验基准是自建的**：自建 benchmark 会被质疑 cherry-picking，需要充分的数据集统计和难度分层说明
-5. **规模偏小**：目前只有 email + arxiv 两个域，泛化性存疑
-
-#### 提高录取率的关键动作
-
-1. **Action space ablation 是最关键实验**：必须证明 DSL > 纯文本查询（对标 Search-R1）且 DSL > 纯 SQL（对标 DeepRetrieval）且 DSL > Text2VectorSQL 的设计
-2. **在 Introduction 中明确 DeepRetrieval 的局限**：直接写"DeepRetrieval 生成 boolean/SQL-like 查询，但不支持向量检索组合，且受限于单一检索后端"
-3. **新增 Text2VectorSQL 作为强 baseline**：把它加入主实验对比表，而不只是在 Related Work 中讨论
-4. **Complexity breakdown 实验**：证明 DSL 在逻辑复杂查询上的优势比简单查询更显著，这是 "为什么需要完整逻辑编排" 最直接的证明
-5. **修正 DeepRetrieval 描述**（当前方案中有误）：方案中写"DeepRetrieval 输出改写/增强后的文本查询"——实际上 DeepRetrieval 已经输出结构化 boolean/SQL 查询，需要修正以避免 reviewer 认为作者没有认真读相关文献
+**提高录取率的关键动作**:
+1. Action space ablation 必须做且结果必须有说服力
+2. 准确描述 DeepRetrieval（它输出 boolean/SQL 查询，不是纯文本）
+3. Complexity breakdown 证明 DSL 在复杂 query 上的不可替代性
+4. 考虑新增 Text2VectorSQL 作为强 baseline
