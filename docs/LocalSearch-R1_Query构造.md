@@ -79,21 +79,20 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 
 **电商字段池：**
 
-| 字段 | 模态 | 权重 |
-|------|------|------|
-| brand | 结构化 | 2 |
-| category | 结构化 | 2 |
-| price | 结构化 | 2 |
-| rating | 结构化 | 2 |
-| num_reviews | 结构化 | 1 |
-| in_stock | 结构化 | 1 |
-| release_date | 结构化 | 1 |
-| title | 文本 | 1 |
-| description | 文本 | 2 |
-| review_summary | 文本 | 2 |
-| product_image | 图像 | 2 |
+| 字段 | 模态 | 类型 | 权重 |
+|------|------|------|------|
+| brand | 结构化 | 类别型 | 2 |
+| color | 结构化 | 类别型 | 2 |
+| category | 结构化 | 类别型 | 2 |
+| price | 结构化 | 数值型 | 2 |
+| average_rating | 结构化 | 数值型 | 2 |
+| rating_number | 结构化 | 数值型 | 1 |
+| text | 文本 | — | 3 |
+| image_url | 图像 | — | 2 |
 
-结构化总权重 11，非结构化总权重 7。结构化字段自然占多数。
+> `text` 字段由商品标题（title）+ 卖点列表（bullet_point）拼接而成。
+
+结构化总权重 11，文本权重 3，图像权重 2。结构化字段自然占多数。
 
 **组间字段规则：**
 
@@ -126,12 +125,10 @@ Level 1 以肯定为主，Level 3 肯定与否定各半，否定条件在高复�
 
 | 类型 | 方式 |
 |------|------|
-| 结构化-类别型 | 等值：`brand = 'Sony'` |
+| 结构化-类别型 | 等值：`brand = 'Sony'`，`color = 'Black'`，`category = 'Electronics'` |
 | 结构化-数值型 | 随机比较符 + 阈值（gold 满足）|
-| 结构化-布尔型 | 直接用 gold 值 |
-| 结构化-日期型 | 范围条件（gold 在范围内）|
-| 文本 | LLM 从 gold 文本提取 2-5 个语义词 |
-| 图像 | VLM 从 gold 产品图生成视觉描述 |
+| 文本 | LLM 从 gold 的 text（title+bullet_point）中提取 2-5 个语义关键词/短语 |
+| 图像 | VLM 从 gold 的 image_url 图片生成视觉描述 |
 
 数值型阈值：`>`/`>=` 取 gold_value × 0.5~0.95，`<`/`<=` 取 gold_value × 1.05~1.5，`=` 概率 10%。
 
@@ -139,9 +136,10 @@ Level 1 以肯定为主，Level 3 肯定与否定各半，否定条件在高复�
 
 | 类型 | 方式 |
 |------|------|
-| 结构化 | 取 gold 不具备的值 |
-| 文本 | LLM 生成 gold 文本中不存在的特征描述 |
-| 图像 | LLM 生成与 gold 外观不同的视觉描述 |
+| 结构化-类别型 | 取 gold 不具备的值（如 gold brand='Sony'，则取其他品牌）|
+| 结构化-数值型 | 取 gold 不满足的范围（如 gold price=280，则取 price > 500）|
+| 文本 | LLM 生成 gold 的 text 中不存在的特征描述 |
+| 图像 | VLM 生成与 gold 图像外观不同的视觉描述 |
 
 ---
 
@@ -240,7 +238,7 @@ LLM 将 DSL → 口语化查询。OR→"或者"，NOT→"但不要"，AND→逗�
   "num_not_leaves": 1,
   "modalities_used": ["structured", "text", "image"],
   "logic_pattern": "text AND (struct OR struct OR NOT image)",
-  "fields_used": ["review_summary", "brand", "price", "product_image"],
+  "fields_used": ["text", "brand", "price", "image_url"],
   "gt_discovery_method": "structural_superset",
   "gt_size": 4
 }
@@ -264,12 +262,12 @@ LLM 将 DSL → 口语化查询。OR→"或者"，NOT→"但不要"，AND→逗�
 ```
 骨架: `L1 AND (L2 OR L3 OR L4)`
 
-**Step 3:** 组间 AND → 1 个 gold = P001 (Sony, price=280, rating=4.8, review="excellent ANC, comfortable", 黑色头戴式)
+**Step 3:** 组间 AND → 1 个 gold = P001 (Sony, price=280, average_rating=4.8, review="excellent ANC, comfortable", 黑色头戴式)
 
 **Step 4:**
 ```
-组1: L1 → review_summary (文本)
-组2: L2 → brand (结构化), L3 → price (结构化), L4 → product_image (图像)
+组1: L1 → text (文本)
+组2: L2 → brand (结构化), L3 → price (结构化), L4 → image_url (图像)
 ```
 
 **Step 5:**
@@ -292,8 +290,8 @@ L4(否定): query = "white in-ear earbud with charging case"
           WHERE product_id IN <text_0>
           AND (brand = 'Sony' OR price < 350 OR product_id NOT IN <image_0>)",
   "retrieval_list": [
-    {"type": "text", "field": "review_summary", "query": "excellent noise cancellation comfortable"},
-    {"type": "image", "field": "product_image", "query": "white in-ear earbud with charging case"}
+    {"type": "text", "field": "text", "query": "excellent noise cancellation comfortable"},
+    {"type": "image", "field": "image_url", "query": "white in-ear earbud with charging case"}
   ]
 }
 ```
@@ -326,14 +324,14 @@ L4(否定): query = "white in-ear earbud with charging case"
 ```
 gold_1 = P001 (Sony, review="excellent ANC")
 gold_2 = P002 (Bose, price=320, 银色头戴式)
-gold_3 = P005 (Sennheiser, rating=4.9)
+gold_3 = P005 (Sennheiser, average_rating=4.9)
 ```
 
 **Step 4:**
 ```
-组1: L1 → brand (结构化), L2 → review_summary (文本)
-组2: L3 → price (结构化), L4 → product_image (图像)
-组3: L5 → rating (结构化)
+组1: L1 → brand (结构化), L2 → text (文本)
+组2: L3 → price (结构化), L4 → image_url (图像)
+组3: L5 → average_rating (结构化)
 ```
 
 **Step 5:** L4 否定，其余肯定
@@ -344,7 +342,7 @@ L1: brand = 'Sony'
 L2: query = "excellent noise cancellation"
 L3: price < 400
 L4(否定): query = "white in-ear earbud with stem"
-L5: rating >= 4.5
+L5: average_rating >= 4.5
 ```
 
 **Step 7:**
@@ -353,10 +351,10 @@ L5: rating >= 4.5
   "sql": "SELECT DISTINCT product_id FROM product
           WHERE (brand = 'Sony' AND product_id IN <text_0>)
           OR (price < 400 AND product_id NOT IN <image_0>)
-          OR rating >= 4.5",
+          OR average_rating >= 4.5",
   "retrieval_list": [
-    {"type": "text", "field": "review_summary", "query": "excellent noise cancellation"},
-    {"type": "image", "field": "product_image", "query": "white in-ear earbud with stem"}
+    {"type": "text", "field": "text", "query": "excellent noise cancellation"},
+    {"type": "image", "field": "image_url", "query": "white in-ear earbud with stem"}
   ]
 }
 ```
@@ -366,8 +364,8 @@ L5: rating >= 4.5
 组间 OR, 组内 AND
 组1: brand='Sony' (删向量)
 组2: price<400 (删向量)
-组3: rating>=4.5 (纯结构化)
-超集: WHERE brand='Sony' OR price<400 OR rating>=4.5
+组3: average_rating>=4.5 (纯结构化)
+超集: WHERE brand='Sony' OR price<400 OR average_rating>=4.5
 执行 → 候选 ~800
 完整 DSL → GT = {P001, P002, P005, P008, P019}
 三个 gold 全在 ✓
@@ -392,7 +390,7 @@ L5: rating >= 4.5
 **Step 4:**
 ```
 组1: L1 → brand (结构化), L2 → category (结构化)
-组2: L3 → review_summary (文本), L4 → product_image (图像)
+组2: L3 → text (文本), L4 → image_url (图像)
 ```
 
 **Step 5:** 全肯定
@@ -412,8 +410,8 @@ L4: query = "black over-ear headphone cushion pads"
           WHERE (brand = 'Sony' OR category = 'headphone')
           AND (product_id IN <text_0> OR product_id IN <image_0>)",
   "retrieval_list": [
-    {"type": "text", "field": "review_summary", "query": "excellent noise cancellation comfortable"},
-    {"type": "image", "field": "product_image", "query": "black over-ear headphone cushion pads"}
+    {"type": "text", "field": "text", "query": "excellent noise cancellation comfortable"},
+    {"type": "image", "field": "image_url", "query": "black over-ear headphone cushion pads"}
   ]
 }
 ```
@@ -435,17 +433,17 @@ L4: query = "black over-ear headphone cushion pads"
 ### 示例 4：Level 1，单叶子
 
 **Step 1:** N=1
-**Step 3:** gold = P001 (rating=4.8)
-**Step 4:** L1 → rating (结构化)
+**Step 3:** gold = P001 (average_rating=4.8)
+**Step 4:** L1 → average_rating (结构化)
 **Step 5:** 肯定
-**Step 6:** rating >= 4.5
+**Step 6:** average_rating >= 4.5
 
 **Step 7:**
 ```json
-{"sql": "SELECT DISTINCT product_id FROM product WHERE rating >= 4.5", "retrieval_list": []}
+{"sql": "SELECT DISTINCT product_id FROM product WHERE average_rating >= 4.5", "retrieval_list": []}
 ```
 
-**Step 8:** 纯结构化直接执行 → GT = 所有 rating>=4.5 的产品
+**Step 8:** 纯结构化直接执行 → GT = 所有 average_rating>=4.5 的产品
 
 **Step 9:** "Find highly rated products, at least 4.5 stars"
 
@@ -457,7 +455,7 @@ L4: query = "black over-ear headphone cushion pads"
 **Step 2:** K=1, 组内 OR
 
 **Step 3:** 1 gold = P001 (Sony)
-**Step 4:** L1 → brand (结构化), L2 → review_summary (文本)
+**Step 4:** L1 → brand (结构化), L2 → text (文本)
 **Step 5:** 全肯定
 **Step 6:** L1: brand='Sony', L2: query="excellent noise cancellation"
 
@@ -467,7 +465,7 @@ L4: query = "black over-ear headphone cushion pads"
   "sql": "SELECT DISTINCT product_id FROM product
           WHERE brand = 'Sony' OR product_id IN <text_0>",
   "retrieval_list": [
-    {"type": "text", "field": "review_summary", "query": "excellent noise cancellation"}
+    {"type": "text", "field": "text", "query": "excellent noise cancellation"}
   ]
 }
 ```
@@ -483,7 +481,7 @@ L4: query = "black over-ear headphone cushion pads"
 **Step 1:** N=3
 **Step 2:** K=1, 组内 AND
 **Step 3:** 1 gold = P002 (Bose, price=320, 银色头戴式, review="best comfort")
-**Step 4:** L1→price(结构化), L2→review_summary(文本), L3→product_image(图像)
+**Step 4:** L1→price(结构化), L2→text(文本), L3→image_url(图像)
 **Step 5:** L3 否定
 
 **Step 6:**
@@ -499,8 +497,8 @@ L3(否定): query = "black in-ear earbud compact"
   "sql": "SELECT DISTINCT product_id FROM product
           WHERE price < 400 AND product_id IN <text_0> AND product_id NOT IN <image_0>",
   "retrieval_list": [
-    {"type": "text", "field": "review_summary", "query": "comfortable best in class"},
-    {"type": "image", "field": "product_image", "query": "black in-ear earbud compact"}
+    {"type": "text", "field": "text", "query": "comfortable best in class"},
+    {"type": "image", "field": "image_url", "query": "black in-ear earbud compact"}
   ]
 }
 ```
