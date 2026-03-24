@@ -542,12 +542,32 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 
 ---
 
+## 已确定超参数（电商数据集）
+
+| 超参数 | 值 | 说明 |
+|--------|-----|------|
+| `corpus_size` | 13,334 | 全量商品均作为检索库 |
+| `total_queries` | 10,000 | 训练+评估总量 |
+| `train / eval split` | TBD | 待定 |
+| `n_probs` | {1:30%, 2:20%, 3:20%, 4:15%, 5:15%} | N 采样概率 |
+| `cut_prob_level2` | 30% | N=2,3 时切割概率 |
+| `cut_prob_level3` | 40% | N=4,5 时切割概率 |
+| `coin_prob` | 50% | 硬币正面概率（AND内/OR间）|
+| `pos_prob` | Level1=70%, Level2=60%, Level3=50% | 肯定叶子概率 |
+| `field_weights` | brand=2, color=2, category=2, price=2, average_rating=2, rating_number=1, text=3, image_url=2 | 字段采样权重 |
+| `inter_or_repeat` | True | 组间 OR 时字段可重复 |
+| `inter_and_repeat` | False | 组间 AND 时字段不可重复 |
+| `gold_pool` | 全量 13,334 | gold 从全量商品中采样 |
+| `multi_gold_strategy` | 首个 gold 全量随机，后续 gold 从同 category 中采样 | 组间 OR 多 gold 策略 |
+
+---
+
 ## 数据集统计表
 
 | 指标 | 电商 | 邮件 |
 |------|------|------|
-| 语料库 | ~5,000 | ~2,500 |
-| Train / Eval | 4,000 / 1,000 | 2,000 / 500 |
+| 语料库 | 13,334 | ~2,500 |
+| Train / Eval | TBD | 2,000 / 500 |
 | Level 1 / 2 / 3 | 30% / 40% / 30% | 30% / 40% / 30% |
 | 外OR内AND | TBD | TBD |
 | 外AND内OR | TBD | TBD |
