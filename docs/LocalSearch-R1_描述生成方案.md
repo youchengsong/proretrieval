@@ -10,8 +10,8 @@ Query 构造 Step 6 中，文本和图像叶子的具体值需要调用大模型
 
 | 叶子类型 | 肯定值 | 否定值 |
 |---------|--------|--------|
-| text（肯定）| 从 gold 的 text 字段提取 2-5 个语义关键词/短语 | — |
-| text（否定）| — | 描述 gold 没有的特征 |
+| text（肯定）| 从 gold 的 text 字段提取 3-5 个语义关键词/短语 | — |
+| text（否定）| — | 同 category 内语义差异足够大的其他商品描述 |
 | image_url（肯定）| 描述 gold 商品图像的外观 | — |
 | image_url（否定）| — | 描述与 gold 图像外观不同的商品 |
 
@@ -23,7 +23,7 @@ Query 构造 Step 6 中，文本和图像叶子的具体值需要调用大模型
 
 ### 1. `text_pos`（文本肯定）
 
-**模型**：DeepSeek-V3
+**模型**：`deepseek-v3-2-251201`
 
 **输入**：商品 `text` 字段（title + bullet_point 拼接）
 
@@ -42,37 +42,39 @@ Output only the query, no explanation.
 
 ### 2. `text_neg`（文本否定）
 
-**方法**：跨商品采样 + 相似度过滤（零 API 调用）
+**方法**：跨商品采样 + 相似度过滤，fallback 调 API
 
 **流程**：
-1. 从同 category 中随机抽取另一个商品的 `text_pos` 作为候选 `text_neg`
-2. 用 sentence-transformers 计算候选与 gold `text_pos` 的余弦相似度
-3. 相似度 < 0.4 → 接受；0.4~0.6 → 标记质量低；> 0.6 → 拒绝重采样
-4. 同 category 内找不到合适候选 → fallback 到 LLM 生成
+1. 从同 category 中随机抽取另一个商品的 `text_pos` 作为候选
+2. 用 Qwen3-Embedding-8B 计算候选与 gold `text_pos` 的余弦相似度
+3. 相似度 **< 0.4** → 接受，否则继续采样（最多 30 个候选）
+4. 30 个候选均不满足 → fallback 到 API 生成
 
-**Fallback Prompt（DeepSeek-V3）**：
+**Fallback Prompt（`deepseek-v3-2-251201`）**：
 ```
 Product category: {category}
-Product description: {text}
+Product features: {text_pos}
 
-Generate a short description (5-8 words) of a DIFFERENT product in the same category
-that has clearly different features or use case.
-Output only the description.
+Describe a DIFFERENT product in the same category (5-8 words) with clearly different features, materials, or use case.
+Output ONLY the description, no explanation.
 ```
 
 ---
 
 ### 3. `image_pos`（图像肯定）
 
-**模型**：Gemini 1.5 Flash（支持视觉）
+**模型**：`gemini-2.5-flash`（支持视觉）
 
-**流程**：下载 `image_url` 图片 → 传给 Gemini → 生成视觉描述
+**流程**：
+1. 图片已预先下载到本地：`/data/youchengsong/DSL-R1/image/{product_id}.jpg`
+2. base64 编码后传给 Gemini API
+3. 生成简短的视觉描述
 
 **Prompt**：
 ```
-Describe this product's appearance in 6-10 words, focusing on:
-color, shape, material, and key visual characteristics.
-Output only the description, no explanation.
+Describe this product image in 5–10 words as a concise e-commerce search query.
+Focus on the product type, key visual features, color, and material.
+Output ONLY the query, no explanation.
 ```
 
 **示例输出**：`"pink handheld metal punch tool with grip handle"`
@@ -81,21 +83,22 @@ Output only the description, no explanation.
 
 ### 4. `image_neg`（图像否定）
 
-**方法**：跨商品采样 + 相似度过滤（零 API 调用）
+**方法**：跨商品采样 + 相似度过滤，fallback 调 API
 
 **流程**：
-1. 从同 category 中随机抽取另一个商品的 `image_pos` 作为候选 `image_neg`
-2. 计算候选与 gold `image_pos` 字符串的余弦相似度（sentence-transformers）
-3. 相似度 < 0.4 → 接受；> 0.6 → 拒绝重采样
-4. Fallback → DeepSeek-V3 基于 `image_pos` + `category` 生成对立描述
+1. 从同 category 中随机抽取另一个商品的 `image_pos` 作为候选
+2. 用 Qwen3-Embedding-8B 计算候选与 gold `image_pos` 的余弦相似度
+3. 相似度 **< 0.4** → 接受，否则继续采样（最多 30 个候选）
+4. 30 个候选均不满足 → fallback 到 API 生成
 
-**Fallback Prompt（DeepSeek-V3）**：
+**Fallback Prompt（`gemini-2.5-flash`）**：
 ```
-A product in category "{category}" looks like: "{image_pos}"
+Category: {category}
+Reference product: {image_pos}
 
-Describe what a DIFFERENT product in the same category looks like (6-10 words),
-with clearly different color, shape, or form factor.
-Output only the description.
+Describe a DIFFERENT product in the same category (5–8 words)
+with clearly different appearance, color, or style.
+Output ONLY the description, no explanation.
 ```
 
 ---
@@ -103,20 +106,29 @@ Output only the description.
 ## 执行顺序
 
 ```
-Phase 0（一次性离线预生成）
+Phase A: 生成 text_pos（API）
+  → deepseek-v3-2-251201，13,334 次调用
+  → 输出：text_pos.jsonl
 
-Step A: 生成所有 text_pos
-  → DeepSeek-V3，13,334 次调用
+Phase B: 生成 text_neg（本地 + fallback）
+  → Qwen3-Embedding-8B（GPU:2）嵌入所有 text_pos
+  → 同 category 采样 + 余弦相似度过滤（阈值 0.4）
+  → fallback：deepseek-v3-2-251201（预计 ~20%）
+  → 输出：text_descriptions.jsonl
 
-Step B: 生成所有 image_pos
-  → 下载图片 + Gemini 1.5 Flash，13,334 次调用
+Phase C: 下载图片（一次性）
+  → 下载到 /data/youchengsong/DSL-R1/image/{product_id}.jpg
+  → 脚本：download_images.py
 
-Step C: 批量匹配 text_neg 和 image_neg
-  → sentence-transformers 本地计算相似度，0 次 API
-  → fallback 部分调用 DeepSeek-V3（预计 ~10-20%）
+Phase D: 生成 image_pos（API + 视觉）
+  → gemini-2.5-flash，读本地图片 base64 编码后调用
+  → 输出：image_pos.jsonl
 
-输出：product_descriptions.jsonl
-  每行：{"product_id": "...", "text_pos": "...", "text_neg": "...", "image_pos": "...", "image_neg": "..."}
+Phase E: 生成 image_neg（本地 + fallback）
+  → Qwen3-Embedding-8B（GPU:2）嵌入所有 image_pos
+  → 同 category 采样 + 余弦相似度过滤（阈值 0.4）
+  → fallback：gemini-2.5-flash（预计 ~20%）
+  → 输出：image_descriptions.jsonl
 ```
 
 ---
@@ -125,44 +137,46 @@ Step C: 批量匹配 text_neg 和 image_neg
 
 | 设计点 | 方案 |
 |--------|------|
-| **断点续传** | 实时 append 写 JSONL，已生成的 product_id 跳过 |
-| **并发** | asyncio 并发 20 个请求，控制速率避免限流 |
-| **图片处理** | 下载到内存（不落盘），base64 编码后传给 Gemini |
-| **失败处理** | 3 次重试，超时 30s，最终失败记录到 failed_ids.txt |
-| **相似度计算** | 使用 `sentence-transformers/all-MiniLM-L6-v2`，本地运行 |
+| **断点续传** | 实时 append 写 JSONL，已生成的 product_id 自动跳过 |
+| **并发** | asyncio，文本 concurrency=20，图像 concurrency=10 |
+| **图片存储** | 预先下载到本地磁盘，生成描述时从磁盘读取 |
+| **失败处理** | 3 次重试，最终失败记录到日志 |
+| **相似度计算** | Qwen3-Embedding-8B，GPU 固定为 2 号卡 |
 
 ---
 
 ## 成本估算（13,334 个商品）
 
-### Token 估算
-
-| 步骤 | 输入 tokens/次 | 输出 tokens/次 |
-|------|--------------|--------------|
-| text_pos | ~210（product text + prompt）| ~15 |
-| image_pos | ~566（图片 ~516 + prompt ~50）| ~20 |
-| text_neg fallback（~20%）| ~200 | ~15 |
-| image_neg fallback（~20%）| ~100 | ~15 |
-
-### 费用明细
-
-| 步骤 | 模型 | 调用次数 | 输入费用 | 输出费用 | 小计 |
-|------|------|---------|---------|---------|------|
-| text_pos | DeepSeek-V3 | 13,334 | $0.27/1M × 2.8M = **$0.76** | $1.10/1M × 0.2M = **$0.22** | **$0.98** |
-| text_neg sampling | — | 0 | $0 | $0 | **$0** |
-| text_neg fallback | DeepSeek-V3 | ~2,667 | **$0.15** | **$0.04** | **$0.19** |
-| image_pos | Gemini 1.5 Flash | 13,334 | $0.075/1M × 7.5M = **$0.57** | $0.30/1M × 0.27M = **$0.08** | **$0.65** |
-| image_neg sampling | — | 0 | $0 | $0 | **$0** |
-| image_neg fallback | DeepSeek-V3 | ~2,667 | **$0.07** | **$0.04** | **$0.11** |
-| **合计** | | **~32,000次** | | | **≈ $1.93** |
-
-> 仅 corpus 5,000 商品的成本约 $0.70；全量 13,334 约 $1.93。
+| 步骤 | 模型 | 调用次数 | 小计 |
+|------|------|---------|------|
+| text_pos | deepseek-v3-2-251201 | 13,334 | ~$0.98 |
+| text_neg fallback | deepseek-v3-2-251201 | ~2,667 | ~$0.19 |
+| image_pos | gemini-2.5-flash | 13,334 | ~$0.65 |
+| image_neg fallback | gemini-2.5-flash | ~2,667 | ~$0.11 |
+| text_neg / image_neg sampling | Qwen3-Embedding-8B（本地）| — | $0 |
+| **合计** | | **~32,000 次** | **≈ $1.93** |
 
 ---
 
-## 输出格式
+## 输出文件
 
+```
+/data/youchengsong/DSL-R1/data/
+├── text_pos.jsonl            # 中间文件：{"product_id", "text_pos"}
+├── text_pos_emb.npy          # 中间文件：text_pos 向量矩阵
+├── text_pos_emb_ids.json     # 中间文件：向量行顺序对应的 product_id 列表
+├── text_descriptions.jsonl   # 最终输出：{"product_id", "text_pos", "text_neg"}
+├── image_pos.jsonl           # 中间文件：{"product_id", "image_pos"}
+├── image_pos_emb.npy         # 中间文件：image_pos 向量矩阵
+├── image_pos_emb_ids.json    # 中间文件：向量行顺序对应的 product_id 列表
+└── image_descriptions.jsonl  # 最终输出：{"product_id", "image_pos", "image_neg"}
+```
+
+**最终格式示例**：
 ```jsonl
-{"product_id": "B07PLF39YR", "text_pos": "handheld metal hole punch single circle pink grip", "text_neg": "heavy duty stapler with magazine loading", "image_pos": "pink handheld metal punch tool with grip handle", "image_neg": "black electric desktop stapler with tray"}
-{"product_id": "B00118YOYI", "text_pos": "ammonia free hair lightener vegan balayage highlights", "text_neg": "black permanent hair dye dark coverage cream", "image_pos": "white box hair dye kit with developer bottle", "image_neg": "dark brown tube hair color cream packaging"}
+// text_descriptions.jsonl
+{"product_id": "B07PLF39YR", "text_pos": "handheld metal hole punch single circle pink grip", "text_neg": "heavy duty stapler with magazine loading"}
+
+// image_descriptions.jsonl
+{"product_id": "B07PLF39YR", "image_pos": "pink handheld metal punch tool with grip handle", "image_neg": "black electric desktop stapler with tray"}
 ```
