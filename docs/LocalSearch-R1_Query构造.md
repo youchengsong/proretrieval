@@ -172,8 +172,8 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 | 叶子 | 肯定 | 否定 |
 |------|------|------|
 | 结构化 | `字段 op 值` | `NOT (字段 op 值)` |
-| 文本 | `id IN <text_N>` | `id NOT IN <text_N>` |
-| 图像 | `id IN <image_N>` | `id NOT IN <image_N>` |
+| 文本 | `product_id IN <text_N>` | `product_id NOT IN <text_N>` |
+| 图像 | `product_id IN <image_N>` | `product_id NOT IN <image_N>` |
 
 #### 组装
 
