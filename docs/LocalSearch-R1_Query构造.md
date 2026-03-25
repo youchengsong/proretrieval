@@ -131,8 +131,8 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 | 图像 | 查 image_descriptions.jsonl，取 `image_pos` | `"red athletic sneakers with white sole"` |
 
 **数值型 pos 生成**：
-- 20% 概率：`= gold_value`（精确等于）
-- 80% 概率：闭区间 `[lo, hi]`，gold 在范围内
+- `average_rating`：`= gold_value`（精确等于）
+- 其他数值字段：20% 概率精确等于，80% 概率闭区间 `[lo, hi]`，gold 在范围内
   - lo = gold_value × 0.95
   - hi = gold_value × 1.05
 
@@ -145,13 +145,11 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 | 文本 | 查 text_descriptions.jsonl，取 `text_neg` | `"heavy duty stapler with magazine loading"` |
 | 图像 | 查 image_descriptions.jsonl，取 `image_neg` | `"black electric desktop stapler with tray"` |
 
-**数值型 neg 生成**（闭区间，gold 在范围外）：
-- 50% 区间在 gold **之上**（lo > gold）：
-  - lo = gold_value × 1.01
-  - hi = gold_value × 1.05
-- 50% 区间在 gold **之下**（hi < gold）：
-  - lo = gold_value × 0.95
-  - hi = gold_value × 0.99
+**数值型 neg 生成**：
+- `average_rating`：`= gold_value - 0.1` 或 `= gold_value + 0.1`（各 50%，gold 不在其中）
+- 其他数值字段（闭区间，gold 在范围外）：
+  - 50% 区间在 gold **之上**（lo > gold）：lo = gold_value × 1.01，hi = gold_value × 1.05
+  - 50% 区间在 gold **之下**（hi < gold）：lo = gold_value × 0.95，hi = gold_value × 0.99
 
 #### value 存储格式
 
@@ -188,7 +186,9 @@ N 从 0 开始，text 和 image 各自独立计数。例：第 1 个文本叶子
 
 **重要**：文本/图像叶子无论 pos 还是 neg，`retrieval_list` 中的 query 统一使用 **text_pos / image_pos**（gold 的正向描述）。否定语义完全由 SQL 中的 `NOT IN` 承担，不需要 text_neg / image_neg。
 
-**Email 数据集 Date 字段**：Date 字段在执行时使用预计算的整数年份列 `year`，SQL 中写作 `year op threshold`（如 `year >= 2001`）。pos 条件 threshold 为 gold 年份 ±1~3 年，neg 条件 threshold 紧贴 gold 年份（使 gold 刚好在范围外）。
+**Email 数据集 Date 字段**：Date 字段在执行时使用预计算的整数年份列 `year`，生成规则如下：
+- pos：`year = gold_year`（精确等于）
+- neg：`year = gold_year - 1` 或 `year = gold_year + 1`（各 50%，gold 不在其中）
 
 #### 组装
 
