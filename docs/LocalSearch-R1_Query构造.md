@@ -123,23 +123,45 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 
 #### 肯定叶子
 
-| 类型 | 方式 |
-|------|------|
-| 结构化-类别型 | 等值：`brand = 'Sony'`，`color = 'Black'`，`category = 'Electronics'` |
-| 结构化-数值型 | 随机比较符 + 阈值（gold 满足）|
-| 文本 | LLM 从 gold 的 text（title+bullet_point）中提取 2-5 个语义关键词/短语 |
-| 图像 | VLM 从 gold 的 image_url 图片生成视觉描述 |
+| 类型 | 方式 | 示例 |
+|------|------|------|
+| 结构化-类别型 | `=` gold 的实际值 | `brand = 'Sony'` |
+| 结构化-数值型 | 随机比较符 + 阈值（gold 满足条件）| `price >= 25.0` |
+| 文本 | 查 text_descriptions.jsonl，取 `text_pos` | `"lightweight running shoes breathable mesh"` |
+| 图像 | 查 image_descriptions.jsonl，取 `image_pos` | `"red athletic sneakers with white sole"` |
 
-数值型阈值：`>`/`>=` 取 gold_value × 0.5~0.95，`<`/`<=` 取 gold_value × 1.05~1.5，`=` 概率 10%。
+**数值型 pos 阈值生成**：
+- `>` / `>=`：threshold = gold_value × random(0.5, 0.95)，gold 大于阈值 ✓
+- `<` / `<=`：threshold = gold_value × random(1.05, 1.5)，gold 小于阈值 ✓
+- `=`：threshold = gold_value，10% 概率触发
 
 #### 否定叶子
 
-| 类型 | 方式 |
-|------|------|
-| 结构化-类别型 | 取 gold 不具备的值（如 gold brand='Sony'，则取其他品牌）|
-| 结构化-数值型 | 取 gold 不满足的范围（如 gold price=280，则取 price > 500）|
-| 文本 | LLM 生成 gold 的 text 中不存在的特征描述 |
-| 图像 | VLM 生成与 gold 图像外观不同的视觉描述 |
+| 类型 | 方式 | 示例 |
+|------|------|------|
+| 结构化-类别型 | `!=` gold 的实际值 | `brand != 'Sony'` |
+| 结构化-数值型 | 取 gold 不满足的范围 | gold price=280 → `price > 500` 或 `price < 50` |
+| 文本 | 查 text_descriptions.jsonl，取 `text_neg` | `"heavy duty stapler with magazine loading"` |
+| 图像 | 查 image_descriptions.jsonl，取 `image_neg` | `"black electric desktop stapler with tray"` |
+
+**数值型 neg 阈值生成**：
+- `>` / `>=`：threshold = gold_value × random(1.05, 2.0)，gold 小于阈值，不满足 ✓
+- `<` / `<=`：threshold = gold_value × random(0.1, 0.95)，gold 大于阈值，不满足 ✓
+
+#### value 存储格式
+
+```json
+// 类别型
+{"op": "=",  "val": "Sony"}
+{"op": "!=", "val": "Sony"}
+
+// 数值型
+{"op": ">=", "val": 25.0}
+{"op": "<",  "val": 500.0}
+
+// 文本 / 图像
+{"val": "lightweight running shoes breathable mesh"}
+```
 
 ---
 
