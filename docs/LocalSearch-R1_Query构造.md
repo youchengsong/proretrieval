@@ -591,7 +591,7 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 | `cut_prob_level3` | 40% | N=4,5 时切割概率 |
 | `coin_prob` | 50% | 硬币正面概率（AND内/OR间）|
 | `pos_prob` | Level1=100%, Level2=90%, Level3=80% | 肯定叶子概率（加权整体 neg ≈ 10%）|
-| `field_weights` | brand=2, color=2, category=2, price=2, average_rating=2, rating_number=1, text=3, image_url=2 | 字段采样权重 |
+| `field_weights` | brand=2, category=2, price=2, average_rating=2, rating_number=1, text=3, image_url=2 | 字段采样权重（color 字段已移除）|
 | `inter_or_repeat` | True | 组间 OR 时字段可重复 |
 | `inter_and_repeat` | False | 组间 AND 时字段不可重复 |
 | `gold_pool` | 全量 13,334 | gold 从全量商品中采样 |
@@ -605,20 +605,25 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 |------|------|------|
 | 语料库 | 13,334 | 10,000 |
 | Query 总数 | 20,000 | 20,000 |
+| 有效 Query（GT 非空） | 18,496（92.5%）| 16,830（84.2%）|
 | Train / Eval | TBD | TBD |
-| Level 1 / 2 / 3 | 40% / 40% / 20% | 40% / 40% / 20% |
-| 单叶（n=1） | 29.6% | TBD |
-| 外OR内AND | 20.8% | TBD |
-| 外AND内OR | 20.6% | TBD |
-| 全AND（K=1 AND）| 14.3% | TBD |
-| 全OR（K=1 OR）| 14.6% | TBD |
-| 含 NOT | 56.3% | TBD |
-| 含文本语义 | 49.0% | TBD |
-| 含图像语义 | 36.7% | — |
-| 单 gold（k=1） | 58.6% | TBD |
-| 多 gold（k>1） | 41.4% | TBD |
-| 平均 GT 大小 | TBD | TBD |
-| 超集有效比例 | TBD | TBD |
-| 全量执行比例 | TBD | TBD |
+| Level 1 / 2 / 3 | 40% / 40% / 20% | 40% / 41% / 20% |
+| 单叶（N=1） | 39.6% | 39.7% |
+| 外OR内AND | 16.7% | 16.3% |
+| 外AND内OR | 16.3% | 16.1% |
+| 全AND（K=1 AND）| 13.5% | 14.1% |
+| 全OR（K=1 OR）| 13.9% | 13.8% |
+| 含 NOT | 21.6% | 21.3% |
+| 含文本语义 | 42.7% | 74.0% |
+| 含图像语义 | 31.3% | — |
+| 含结构化字段 | 84.5% | 76.2% |
+| 单 gold（k=1） | 83.3% | 83.7% |
+| 多 gold（k>1） | 16.7% | 16.3% |
+| GT 中位数 | 21 | 20 |
+| GT 均值 | 473 | 202 |
+| 超集有效比例 | 65.6% | 53.4% |
+| 全量执行比例 | 0% | 0% |
 
-> 字段分布（叶子数）：text=5221, brand=3908, average_rating=3870, category=3850, image_url=3834, price=3812, rating_number=2076（color 字段已移除）
+**电商字段分布（叶子数）：** text=8,955，brand=6,685，average\_rating=6,548，image\_url=6,517，price=6,479，category=6,471，rating\_number=3,600
+
+**邮件字段分布（叶子数）：** Message=11,973，From=9,252，To=9,223，Subject=9,117，Date=5,393
