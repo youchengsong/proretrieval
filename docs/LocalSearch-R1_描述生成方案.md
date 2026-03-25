@@ -180,3 +180,113 @@ Phase E: 生成 image_neg（本地 + fallback）
 // image_descriptions.jsonl
 {"product_id": "B07PLF39YR", "image_pos": "pink handheld metal punch tool with grip handle", "image_neg": "black electric desktop stapler with tray"}
 ```
+
+---
+
+# 邮件数据集描述生成方案（Enron Email）
+
+> 为 Enron 邮件数据集（enron_final.parquet，10,000 条）预生成 lookup table
+
+## 四条描述的生成方法
+
+邮件有两个文本字段：`Subject`（主题）和 `Message`（正文），各自生成肯定和否定描述。
+
+| 描述 | 输入 | 说明 |
+|------|------|------|
+| `subject_pos` | Subject 原文 | 能检索到该邮件主题的搜索 query（3-8 词） |
+| `subject_neg` | subject_pos | 完全不同主题的搜索 query（3-8 词） |
+| `message_pos` | Message 正文（截断到 1000 字符） | 能检索到该邮件内容的搜索 query（8-15 词） |
+| `message_neg` | message_pos | 完全不同内容的搜索 query（8-15 词） |
+
+**模型**：`deepseek-v3-2-251201`（全部四条均使用文本 API）
+
+### Prompts
+
+**subject_pos**：
+```
+Email subject: "{subject}"
+
+Write a short search query (3-8 words) that a user might type to find an email about this topic.
+Output ONLY the query, no explanation, no punctuation.
+```
+
+**message_pos**（Message 截断到前 1000 字符）：
+```
+Email content:
+{message}
+
+Write a short search query (8-15 words) that captures the main topic and key information of this email.
+Output ONLY the query, no explanation, no punctuation.
+```
+
+**subject_neg**：
+```
+Subject search query: "{subject_pos}"
+
+Write a search query (3-8 words) for an email about a COMPLETELY DIFFERENT topic.
+
+Examples:
+- pos: "quarterly budget review finance" → neg: "employee onboarding training schedule"
+- pos: "power plant maintenance outage" → neg: "client dinner reservation confirmation"
+- pos: "contract negotiation legal terms" → neg: "vacation leave request approval"
+
+Output ONLY the query, no explanation, no punctuation.
+```
+
+**message_neg**：
+```
+Message search query: "{message_pos}"
+
+Write a search query (8-15 words) for an email with COMPLETELY DIFFERENT content and topic.
+
+Examples:
+- pos: "natural gas pipeline capacity trading deal western region" → neg: "employee performance review feedback mid-year evaluation form"
+- pos: "meeting agenda board directors quarterly earnings report" → neg: "software system upgrade deployment schedule IT infrastructure"
+- pos: "client invoice payment overdue reminder accounting department" → neg: "team building event outdoor activity planning logistics"
+
+Output ONLY the query, no explanation, no punctuation.
+```
+
+## 执行流程
+
+```
+Phase 1: 并发生成 subject_pos + message_pos
+  → deepseek-v3-2-251201，20,000 次调用（10,000 × 2）
+  → 输出：subject_pos.jsonl + message_pos.jsonl
+
+Phase 2: 并发生成 subject_neg + message_neg
+  → deepseek-v3-2-251201，20,000 次调用（10,000 × 2）
+  → 输出：email_descriptions.jsonl
+```
+
+## 工程设计
+
+| 设计点 | 方案 |
+|--------|------|
+| **断点续传** | Phase 1 实时 append 写中间 JSONL，Phase 2 整体重写输出文件 |
+| **并发** | asyncio，concurrency=20 |
+| **Message 截断** | 只取前 1000 字符，避免超长邮件浪费 token |
+| **失败处理** | 3 次重试，指数退避，最终失败记为 null |
+| **无嵌入过滤** | neg 直接由 API 生成，不使用 embedding 相似度过滤 |
+
+## 输出文件
+
+```
+/data/youchengsong/DSL-R1/data/
+├── subject_pos.jsonl          # 中间文件：{"message_id", "subject_pos"}
+├── message_pos.jsonl          # 中间文件：{"message_id", "message_pos"}
+└── email_descriptions.jsonl   # 最终输出：{"message_id", "subject_pos", "subject_neg", "message_pos", "message_neg"}
+```
+
+**最终格式示例**：
+```jsonl
+{
+  "message_id": "<abc123@enron.com>",
+  "subject_pos": "natural gas trading contract western pipeline",
+  "subject_neg": "employee vacation request approval HR",
+  "message_pos": "Enron energy trading deal natural gas pipeline capacity west coast",
+  "message_neg": "employee performance review mid-year feedback form submission"
+}
+```
+
+**脚本**：`/data/youchengsong/DSL-R1/src/email/gen_email_descriptions.py`
