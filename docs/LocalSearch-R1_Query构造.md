@@ -177,6 +177,8 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 
 N 从 0 开始，text 和 image 各自独立计数。例：第 1 个文本叶子用 `<text_0>`，第 2 个用 `<text_1>`；第 1 个图像叶子用 `<image_0>`，第 2 个用 `<image_1>`。
 
+**重要**：文本/图像叶子无论 pos 还是 neg，`retrieval_list` 中的 query 统一使用 **text_pos / image_pos**（gold 的正向描述）。否定语义完全由 SQL 中的 `NOT IN` 承担，不需要 text_neg / image_neg。
+
 #### 组装
 
 ```
