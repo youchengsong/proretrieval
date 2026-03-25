@@ -566,18 +566,19 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 
 | 指标 | 电商 | 邮件 |
 |------|------|------|
-| 语料库 | 13,334 | ~2,500 |
-| Train / Eval | TBD | 2,000 / 500 |
-| Level 1 / 2 / 3 | 30% / 40% / 30% | 30% / 40% / 30% |
-| 外OR内AND | TBD | TBD |
-| 外AND内OR | TBD | TBD |
-| 全AND | TBD | TBD |
-| 全OR | TBD | TBD |
-| 含 NOT | TBD | TBD |
-| 含文本语义 | TBD | TBD |
-| 含图像语义 | TBD | — |
-| 单 gold | TBD | TBD |
-| 多 gold | TBD | TBD |
+| 语料库 | 13,334 | 10,000 |
+| Query 总数 | 10,000 | TBD |
+| Train / Eval | TBD | TBD |
+| Level 1 / 2 / 3 | 29.6% / 40.3% / 30.0% | 30% / 40% / 30% |
+| 外OR内AND | 20.8% | TBD |
+| 外AND内OR | 20.6% | TBD |
+| 全AND（K=1 AND）| 43.9% | TBD |
+| 全OR（K=1 OR）| 14.6% | TBD |
+| 含 NOT | 56.3% | TBD |
+| 含文本语义 | 43.9% | TBD |
+| 含图像语义 | 32.2% | — |
+| 单 gold | 79.2% | TBD |
+| 多 gold | 20.8% | TBD |
 | 平均 GT 大小 | TBD | TBD |
 | 超集有效比例 | TBD | TBD |
 | 全量执行比例 | TBD | TBD |
