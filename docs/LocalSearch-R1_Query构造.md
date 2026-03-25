@@ -175,6 +175,8 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 | 文本 | `product_id IN <text_N>` | `product_id NOT IN <text_N>` |
 | 图像 | `product_id IN <image_N>` | `product_id NOT IN <image_N>` |
 
+N 从 0 开始，text 和 image 各自独立计数。例：第 1 个文本叶子用 `<text_0>`，第 2 个用 `<text_1>`；第 1 个图像叶子用 `<image_0>`，第 2 个用 `<image_1>`。
+
 #### 组装
 
 ```
