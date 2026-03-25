@@ -596,15 +596,18 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 | Query 总数 | 10,000 | TBD |
 | Train / Eval | TBD | TBD |
 | Level 1 / 2 / 3 | 29.6% / 40.3% / 30.0% | 30% / 40% / 30% |
+| 单叶（n=1） | 29.6% | TBD |
 | 外OR内AND | 20.8% | TBD |
 | 外AND内OR | 20.6% | TBD |
-| 全AND（K=1 AND）| 43.9% | TBD |
+| 全AND（K=1 AND）| 14.3% | TBD |
 | 全OR（K=1 OR）| 14.6% | TBD |
 | 含 NOT | 56.3% | TBD |
-| 含文本语义 | 43.9% | TBD |
-| 含图像语义 | 32.2% | — |
-| 单 gold | 79.2% | TBD |
-| 多 gold | 20.8% | TBD |
+| 含文本语义 | 49.0% | TBD |
+| 含图像语义 | 36.7% | — |
+| 单 gold（k=1） | 58.6% | TBD |
+| 多 gold（k>1） | 41.4% | TBD |
 | 平均 GT 大小 | TBD | TBD |
 | 超集有效比例 | TBD | TBD |
 | 全量执行比例 | TBD | TBD |
+
+> 字段分布（叶子数）：text=5221, brand=3908, average_rating=3870, category=3850, image_url=3834, price=3812, rating_number=2076（color 字段已移除）
