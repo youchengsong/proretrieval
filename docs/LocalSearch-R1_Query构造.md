@@ -109,11 +109,11 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 
 | Level | 肯定概率 | 否定概率 |
 |-------|---------|---------|
-| Level 1 | 80% | 20% |
-| Level 2 | 70% | 30% |
-| Level 3 | 60% | 40% |
+| Level 1 | 90% | 10% |
+| Level 2 | 80% | 20% |
+| Level 3 | 70% | 30% |
 
-三档保持梯度（复杂度越高否定越多），加权整体 neg ≈ 34%，pos ≈ 66%。无强制约束，极少数情况下某个组内全部否定是允许的，增加数据多样性。
+三档保持梯度（复杂度越高否定越多），加权整体 neg ≈ 20%，pos ≈ 80%。无强制约束，极少数情况下某个组内全部否定是允许的，增加数据多样性。
 
 ---
 
@@ -588,7 +588,7 @@ GT 文档 + 结构化重叠 negatives + 文本近邻 negatives + 图像近邻 ne
 | `cut_prob_level2` | 30% | N=2,3 时切割概率 |
 | `cut_prob_level3` | 40% | N=4,5 时切割概率 |
 | `coin_prob` | 50% | 硬币正面概率（AND内/OR间）|
-| `pos_prob` | Level1=80%, Level2=70%, Level3=60% | 肯定叶子概率（加权整体 neg ≈ 34%）|
+| `pos_prob` | Level1=90%, Level2=80%, Level3=70% | 肯定叶子概率（加权整体 neg ≈ 20%）|
 | `field_weights` | brand=2, color=2, category=2, price=2, average_rating=2, rating_number=1, text=3, image_url=2 | 字段采样权重 |
 | `inter_or_repeat` | True | 组间 OR 时字段可重复 |
 | `inter_and_repeat` | False | 组间 AND 时字段不可重复 |
