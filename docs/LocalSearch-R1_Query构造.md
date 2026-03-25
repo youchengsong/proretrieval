@@ -126,38 +126,47 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 | 类型 | 方式 | 示例 |
 |------|------|------|
 | 结构化-类别型 | `=` gold 的实际值 | `brand = 'Sony'` |
-| 结构化-数值型 | 随机比较符 + 阈值（gold 满足条件）| `price >= 25.0` |
+| 结构化-数值型 | 精确等于（20%）或闭区间，gold 在范围内（80%）| `price = 280` 或 `price >= 252 AND price <= 308` |
 | 文本 | 查 text_descriptions.jsonl，取 `text_pos` | `"lightweight running shoes breathable mesh"` |
 | 图像 | 查 image_descriptions.jsonl，取 `image_pos` | `"red athletic sneakers with white sole"` |
 
-**数值型 pos 阈值生成**：
-- `>` / `>=`：threshold = gold_value × random(0.5, 0.95)，gold 大于阈值 ✓
-- `<` / `<=`：threshold = gold_value × random(1.05, 1.5)，gold 小于阈值 ✓
-- `=`：threshold = gold_value，10% 概率触发
+**数值型 pos 生成**：
+- 20% 概率：`= gold_value`（精确等于）
+- 80% 概率：闭区间 `[lo, hi]`，gold 在范围内
+  - lo = gold_value × random(0.90, 0.95)
+  - hi = gold_value × random(1.05, 1.10)
 
 #### 否定叶子
 
 | 类型 | 方式 | 示例 |
 |------|------|------|
-| 结构化-类别型 | `!=` gold 的实际值 | `brand != 'Sony'` |
-| 结构化-数值型 | 取 gold 不满足的范围 | gold price=280 → `price > 500` 或 `price < 50` |
+| 结构化-类别型 | 从语料库随机采样一个 ≠ gold 的值，`=` 该值 | `brand = 'Bose'`（gold 是 Sony）|
+| 结构化-数值型 | 闭区间，gold 在范围外（区间在 gold 之上或之下，各 50%）| `price >= 308 AND price <= 340` |
 | 文本 | 查 text_descriptions.jsonl，取 `text_neg` | `"heavy duty stapler with magazine loading"` |
 | 图像 | 查 image_descriptions.jsonl，取 `image_neg` | `"black electric desktop stapler with tray"` |
 
-**数值型 neg 阈值生成**：
-- `>` / `>=`：threshold = gold_value × random(1.05, 2.0)，gold 小于阈值，不满足 ✓
-- `<` / `<=`：threshold = gold_value × random(0.1, 0.95)，gold 大于阈值，不满足 ✓
+**数值型 neg 生成**（闭区间，gold 在范围外）：
+- 50% 区间在 gold **之上**（lo > gold）：
+  - lo = gold_value × random(1.05, 1.10)
+  - hi = lo × random(1.05, 1.10)
+- 50% 区间在 gold **之下**（hi < gold）：
+  - hi = gold_value × random(0.90, 0.95)
+  - lo = hi × random(0.90, 0.95)
 
 #### value 存储格式
 
 ```json
-// 类别型
-{"op": "=",  "val": "Sony"}
-{"op": "!=", "val": "Sony"}
+// 类别型 pos
+{"op": "=", "val": "Sony"}
 
-// 数值型
-{"op": ">=", "val": 25.0}
-{"op": "<",  "val": 500.0}
+// 类别型 neg（采样其他值，仍用 =）
+{"op": "=", "val": "Bose"}
+
+// 数值型精确
+{"op": "=", "val": 280.0}
+
+// 数值型闭区间（pos: gold 在内，neg: gold 在外）
+{"lo": 252.0, "hi": 308.0}
 
 // 文本 / 图像
 {"val": "lightweight running shoes breathable mesh"}
