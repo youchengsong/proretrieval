@@ -119,39 +119,39 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 
 ### Step 6：填充具体值
 
-每个叶子的值来自其所在组的 gold document。
+每个叶子的值来自其所在组的 gold document。每个叶子在数据中均记录 `is_pos` 字段（`true`/`false`），便于事后统计 pos/neg 分布。
 
 #### 肯定叶子
 
 | 类型 | 方式 | 示例 |
 |------|------|------|
 | 结构化-类别型 | `=` gold 的实际值 | `brand = 'Sony'` |
-| 结构化-数值型 | 精确等于（20%）或闭区间，gold 在范围内（80%）| `price = 280` 或 `price >= 252 AND price <= 308` |
+| 结构化-数值型 | 精确等于（20%）或闭区间，gold 在范围内（80%）| `price = 280` 或 `price >= 266 AND price <= 294` |
 | 文本 | 查 text_descriptions.jsonl，取 `text_pos` | `"lightweight running shoes breathable mesh"` |
 | 图像 | 查 image_descriptions.jsonl，取 `image_pos` | `"red athletic sneakers with white sole"` |
 
 **数值型 pos 生成**：
 - 20% 概率：`= gold_value`（精确等于）
 - 80% 概率：闭区间 `[lo, hi]`，gold 在范围内
-  - lo = gold_value × random(0.90, 0.95)
-  - hi = gold_value × random(1.05, 1.10)
+  - lo = gold_value × 0.95
+  - hi = gold_value × 1.05
 
 #### 否定叶子
 
 | 类型 | 方式 | 示例 |
 |------|------|------|
 | 结构化-类别型 | 从语料库随机采样一个 ≠ gold 的值，`=` 该值 | `brand = 'Bose'`（gold 是 Sony）|
-| 结构化-数值型 | 闭区间，gold 在范围外（区间在 gold 之上或之下，各 50%）| `price >= 308 AND price <= 340` |
+| 结构化-数值型 | 闭区间，gold 在范围外（区间在 gold 之上或之下，各 50%）| `price >= 283 AND price <= 294`（上方）或 `price >= 266 AND price <= 277`（下方）|
 | 文本 | 查 text_descriptions.jsonl，取 `text_neg` | `"heavy duty stapler with magazine loading"` |
 | 图像 | 查 image_descriptions.jsonl，取 `image_neg` | `"black electric desktop stapler with tray"` |
 
 **数值型 neg 生成**（闭区间，gold 在范围外）：
 - 50% 区间在 gold **之上**（lo > gold）：
-  - lo = gold_value × random(1.05, 1.10)
-  - hi = lo × random(1.05, 1.10)
+  - lo = gold_value × 1.01
+  - hi = gold_value × 1.05
 - 50% 区间在 gold **之下**（hi < gold）：
-  - hi = gold_value × random(0.90, 0.95)
-  - lo = hi × random(0.90, 0.95)
+  - lo = gold_value × 0.95
+  - hi = gold_value × 0.99
 
 #### value 存储格式
 
@@ -166,7 +166,7 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 {"op": "=", "val": 280.0}
 
 // 数值型闭区间（pos: gold 在内，neg: gold 在外）
-{"lo": 252.0, "hi": 308.0}
+{"lo": 266.0, "hi": 294.0}
 
 // 文本 / 图像
 {"val": "lightweight running shoes breathable mesh"}
@@ -187,6 +187,8 @@ N-1 个间隙，每个独立地以概率 p 成为切割点，分成 K 组。
 N 从 0 开始，text 和 image 各自独立计数。例：第 1 个文本叶子用 `<text_0>`，第 2 个用 `<text_1>`；第 1 个图像叶子用 `<image_0>`，第 2 个用 `<image_1>`。
 
 **重要**：文本/图像叶子无论 pos 还是 neg，`retrieval_list` 中的 query 统一使用 **text_pos / image_pos**（gold 的正向描述）。否定语义完全由 SQL 中的 `NOT IN` 承担，不需要 text_neg / image_neg。
+
+**Email 数据集 Date 字段**：Date 字段在执行时使用预计算的整数年份列 `year`，SQL 中写作 `year op threshold`（如 `year >= 2001`）。pos 条件 threshold 为 gold 年份 ±1~3 年，neg 条件 threshold 紧贴 gold 年份（使 gold 刚好在范围外）。
 
 #### 组装
 
