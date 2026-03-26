@@ -39,7 +39,7 @@ OUTPUT_FILE  = DATA_DIR / "image_descriptions.jsonl"
 API_BASE = "https://token.claude-code-manager.com/v1"
 MODEL    = "gemini-2.5-flash"
 
-CONCURRENCY    = 80
+CONCURRENCY    = 10
 IMAGE_MAX_SIZE = 768  # 1 Gemini tile = 768×768
 MIN_WORDS      = 5    # retry if output has fewer words
 
@@ -56,10 +56,13 @@ IMAGE_NEG_PROMPT = (
     "Category: {category}\n"
     "This product looks like: \"{image_pos}\"\n\n"
     "Write a search query (6-10 words) for a DIFFERENT product in the same category "
-    "with clearly different appearance, color, material, or style.\n"
-    "- Must NOT describe the same product\n"
-    "- Examples of contrast: different color, different material, different form factor\n"
-    "- Output ONLY the query, no punctuation, no explanation."
+    "with clearly different appearance, color, material, or style.\n\n"
+    "Examples:\n"
+    "- pos: 'black wireless over-ear noise canceling headphones' → neg: 'white wired in-ear earbuds with microphone'\n"
+    "- pos: 'red stainless steel insulated water bottle with lid' → neg: 'clear glass hydration bottle with bamboo straw lid'\n"
+    "- pos: 'wooden round cutting board with handle' → neg: 'white plastic flexible cutting mat kitchen set'\n"
+    "- pos: 'chrome lever espresso machine with pressure gauge' → neg: 'white pod capsule coffee maker with drip tray'\n\n"
+    "Output ONLY the query (6-10 words), no explanation, no punctuation."
 )
 
 
@@ -95,7 +98,7 @@ async def gen_image_pos_one(client, sem, product_id: str, image_path: Path):
                             {"type": "text", "text": IMAGE_POS_PROMPT},
                         ],
                     }],
-                    max_tokens=512,
+                    max_tokens=256,
                     temperature=0.3,
                 )
                 msg = resp.choices[0].message if resp.choices else None
@@ -155,7 +158,7 @@ async def gen_image_neg_one(client, sem, product_id, category, image_pos):
                     model=MODEL,
                     messages=[{"role": "user", "content":
                         IMAGE_NEG_PROMPT.format(category=category, image_pos=image_pos)}],
-                    max_tokens=80,
+                    max_tokens=256,
                     temperature=0.7,
                 )
                 msg = resp.choices[0].message if resp.choices else None
