@@ -314,8 +314,8 @@ SQL 即 fusion，不需额外融合策略。
 |----|-----|
 | RL 框架 | verl (HybridFlow) |
 | Base model | Qwen3-4B, Qwen3-8B |
-| 文本 embedding | ColQwen2.5 |
-| 图像 embedding | CLIP ViT-L/14 |
+| 文本 embedding | Qwen3 embedding 8b |
+| 图像 embedding | Qwen3VL embedding 8b |
 | RL 算法 | GRPO, DAPO |
 | 硬件 | 4 × H100 |
 | Epochs | 10, lr=1e-6 |
