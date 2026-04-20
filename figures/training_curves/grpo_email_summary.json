@@ -1,0 +1,173 @@
+{
+  "experiment": "grpo_qwen3-4b_email",
+  "total_steps": 843,
+  "epochs": 3,
+  "best_ckpt_by_val_acc": {
+    "global_step": 843,
+    "val_acc": 0.6956595150494783,
+    "val_reward": 0.6956595146622567,
+    "val_time_s": 575.8680738080293
+  },
+  "val_acc_trajectory": [
+    {
+      "global_step": 350,
+      "val_acc": 0.6829713438223485,
+      "val_reward": 0.6829713435046433,
+      "val_time_s": 670.4457070734352
+    },
+    {
+      "global_step": 400,
+      "val_acc": 0.6819166734589412,
+      "val_reward": 0.6819166731167643,
+      "val_time_s": 655.6551797594875
+    },
+    {
+      "global_step": 450,
+      "val_acc": 0.6835453940664536,
+      "val_reward": 0.6835453937336861,
+      "val_time_s": 623.9752363078296
+    },
+    {
+      "global_step": 500,
+      "val_acc": 0.6831082155661654,
+      "val_reward": 0.6831082152765302,
+      "val_time_s": 619.2271373365074
+    },
+    {
+      "global_step": 550,
+      "val_acc": 0.6826844449333375,
+      "val_reward": 0.6826844445861934,
+      "val_time_s": 604.6832028310746
+    },
+    {
+      "global_step": 600,
+      "val_acc": 0.6865556743268415,
+      "val_reward": 0.686555674016854,
+      "val_time_s": 593.2381258215755
+    },
+    {
+      "global_step": 650,
+      "val_acc": 0.6899037241574457,
+      "val_reward": 0.6899037238214223,
+      "val_time_s": 596.025902274996
+    },
+    {
+      "global_step": 700,
+      "val_acc": 0.6938812540878639,
+      "val_reward": 0.6938812537793129,
+      "val_time_s": 563.5615326147527
+    },
+    {
+      "global_step": 750,
+      "val_acc": 0.6952204725280579,
+      "val_reward": 0.6952204720865993,
+      "val_time_s": 565.1761740483344
+    },
+    {
+      "global_step": 800,
+      "val_acc": 0.6955871537113456,
+      "val_reward": 0.6955871533059544,
+      "val_time_s": 588.4040729403496
+    },
+    {
+      "global_step": 843,
+      "val_acc": 0.6956595150494783,
+      "val_reward": 0.6956595146622567,
+      "val_time_s": 575.8680738080293
+    }
+  ],
+  "test_set_metrics": {
+    "Base": {
+      "step8": {
+        "count": 3000,
+        "exec_success_rate": 0.248,
+        "hit_at_1": 0.218,
+        "hit_at_3": 0.21866666666666668,
+        "mrr": 0.21857505689054613,
+        "recall": 0.23437445534586102,
+        "precision": 0.2064957968407266,
+        "avg_result_size": 120.905,
+        "total": 3000,
+        "format_success": 744,
+        "exec_success": 744
+      },
+      "step9": {
+        "count": 3000,
+        "exec_success_rate": 0.248,
+        "hit_at_1": 0.24333333333333335,
+        "hit_at_3": 0.24366666666666667,
+        "mrr": 0.24364603174603175,
+        "recall": 0.2315201469019965,
+        "precision": 0.23419041911126942,
+        "avg_result_size": 120.905,
+        "total": 3000,
+        "format_success": 744,
+        "exec_success": 744
+      }
+    },
+    "SFT": {
+      "step8": {
+        "count": 3000,
+        "exec_success_rate": 0.9593333333333334,
+        "hit_at_1": 0.851,
+        "hit_at_3": 0.857,
+        "mrr": 0.8545525201120029,
+        "recall": 0.8792242210384718,
+        "precision": 0.8049001022328324,
+        "avg_result_size": 374.9843333333333,
+        "total": 3000,
+        "format_success": 2899,
+        "exec_success": 2878
+      },
+      "step9": {
+        "count": 3000,
+        "exec_success_rate": 0.9593333333333334,
+        "hit_at_1": 0.8913333333333333,
+        "hit_at_3": 0.893,
+        "mrr": 0.8921875,
+        "recall": 0.8106265942085853,
+        "precision": 0.8814152160758558,
+        "avg_result_size": 374.9843333333333,
+        "total": 3000,
+        "format_success": 2899,
+        "exec_success": 2878
+      }
+    },
+    "GRPO@843": {
+      "step8": {
+        "count": 3000,
+        "exec_success_rate": 0.993,
+        "hit_at_1": 0.8643333333333333,
+        "hit_at_3": 0.871,
+        "mrr": 0.8683230582879173,
+        "recall": 0.8956056587222839,
+        "precision": 0.8150152903572517,
+        "avg_result_size": 410.11333333333334,
+        "total": 3000,
+        "format_success": 2999,
+        "exec_success": 2979
+      },
+      "step9": {
+        "count": 3000,
+        "exec_success_rate": 0.993,
+        "hit_at_1": 0.906,
+        "hit_at_3": 0.908,
+        "mrr": 0.9071235408581357,
+        "recall": 0.8268644791985525,
+        "precision": 0.8932174042959921,
+        "avg_result_size": 410.11333333333334,
+        "total": 3000,
+        "format_success": 2999,
+        "exec_success": 2979
+      }
+    }
+  },
+  "train_reward_trend": {
+    "step_first": 301,
+    "reward_first": 0.6898504495620728,
+    "step_last": 843,
+    "reward_last": 0.6909666061401367
+  },
+  "gold_dsl_reward_ceiling_approx": 0.668,
+  "note": "Reward has ceiling ~0.668 (gold DSL self-eval). RL reached 0.702 (slightly above). Hit@1 gain limited (+1.47pp step9) because reward is not Hit@1 directly and SFT starting point already high."
+}
