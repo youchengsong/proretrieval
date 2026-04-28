@@ -23,6 +23,16 @@
 
 主轴 = 范式 P0-P5；副轴 = 训练方式（zero-shot / few-shot ICL / SFT / RL）。
 
+### Scope 排除声明
+
+本文范式仅覆盖 **single-pass retrieval generation**（一次 NL→检索动作生成）。以下范式不在 baseline 体系内，论文 §1 Related Work / §2 Scope 须显式声明：
+
+| 排除范式 | 代表方法 | 排除理由 |
+|---------|---------|---------|
+| Multi-step / iterative agent retrieval | Self-RAG, IRCoT, ReAct-Retrieval | 多轮检索-反思循环，与本文 single-pass setting 正交；可作为正交工作在 §Future Work 提及 |
+| LLM-based reranking | RankGPT, RankVicuna, MonoT5 | 第二阶段重排，本文 focus on first-stage retrieval；BGE-reranker 已代表 cross-encoder 类 production 重排 |
+| KG / Graph augmented retrieval | GraphRAG, KG-RAG | 依赖外部知识图谱构建，与本文"结构化字段+向量混合"范式不同 |
+
 ---
 
 ## 二、6 个范式下保留的 Baseline
@@ -35,7 +45,8 @@
 | ColQwen | 计划 | P0 |
 | CLIP（仅电商）| 计划 | P0 |
 | BM25 + Dense RRF（k=60）| 计划 | P0 |
-| + BGE-reranker（叠加在 RRF 之上）| 加 | P0（production 标杆，HF 直接 inference）|
+| + BGE-reranker（叠加在 RRF 之上）| 加 | P0（production 标杆，HF 直接 inference；first-stage 后 cross-encoder 重排，LLM reranking 见 scope 排除）|
+| **现代多模态 embedder：BGE-M3 / SigLIP（电商）** | 加 | P0（CLIP 已偏旧，reviewer 必问 newer multi-modal embedder；HF 直接 inference）|
 
 ### P1 Query Rewriting
 
@@ -179,7 +190,7 @@ P5 内训练价值（RL 必要性）：
 
 - **E1 Main Results**：用本文 §二 的 6 范式分组替换计划 §六 的 5 个 Group。
 - **E2 Action Space Ablation**：固定 P5 的 base + RL，改 action space——内部覆盖 P1/P2/P4 三个范式作控制对照。**不能替代 DeepRetrieval 真复现**（自家训练 ≠ 原论文 SOTA）。
-- **E3 Complexity Breakdown**：所有 baseline 按 Level 1/2/3 分层；预期 Level 3 时 P5 相对 P3/P4 优势最大（OR/NOT/嵌套）。
+- **E3 Complexity Breakdown**：所有 baseline 按 Level 1/2/3 分层；预期 Level 3 时 P5 相对 P3/P4 优势最大（OR/NOT/嵌套）。**公平性约定**：Level 1（单一字段/单一语义）是各范式的公平比较层，性能应接近；Level 2/3（多字段组合 / OR/NOT/嵌套）是 P5 的优势展示层，P0-P4 在此层崩盘是预期结果而非 unfair setup —— §写作时需明示该约定，否则 reviewer 会质疑"为什么不在 Level 1 也报数"。
 - **E4-E11**：与本文档独立（reward / modality / orchestration / scaling / error / latency / cost）。
 
 ---
@@ -189,6 +200,7 @@ P5 内训练价值（RL 必要性）：
 | 风险 | 应对 |
 |------|------|
 | Text2VectorSQL / DeepRetrieval 复现工作量 | 用公开 ckpt，2-3 天/篇 |
+| **DeepRetrieval 多模态适配**（原方法纯文本布尔，需扩展到图像 + 结构化字段）| **提前 2 周开跑留 buffer**；兜底：跑不动则改用 §E2 内部 "boolean only" ablation 替代，并在 §Limitations 显式说明 "DeepRetrieval 原设计为 text-only，多模态扩展非平凡" |
 | 跑 SOTA 数据集 ≠ 跑我们数据集 | 用我们 train set 重训他们的方法（fair comparison）|
 | 8B 训练成本高，时间不够 | 兜底：报 4B 全套 + 8B zero-shot/ICL，把 8B+RL 移 P1 |
 | 跨范式被指模型规模不公平 | P0-P5 各范式尽量保持模型规模在 4B-8B 区间；规模消融见 §E8 |
