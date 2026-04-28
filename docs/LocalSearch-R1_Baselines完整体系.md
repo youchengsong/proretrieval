@@ -195,4 +195,33 @@ P5 内训练价值（RL 必要性）：
 
 ---
 
+## 附录 A：已删除的 Baseline 候选与原因
+
+下表列出原 Q1-Q5 reviewer 质疑体系中曾纳入、本次重组按"**不在 `LocalSearch-R1_最终工作计划.md` §六 里 + 对实验 solidness 非必需**"标准砍掉的候选 baseline。如时间充裕或新增 reviewer 关注点，可重新纳入。
+
+| 删除项 | 原所属类 | 删除原因 |
+|--------|---------|---------|
+| BGE / E5 | A2 稠密单向量 | ColQwen 已代表稠密单向量 baseline，重复 |
+| ColBERT v2 | A3 稠密多向量 | late-interaction 替代品，可作时间充裕的加分项 |
+| Query2doc | A8 query 改写 | HyDE 已代表 LLM-aug query rewriting，二选一 |
+| GPT-4o / Gemini / Claude zero-shot SQL | B1 NL2SQL prompt | P4 范式由 SQL-R1 + §E2 内部 "SQL only" 行覆盖 |
+| GPT-4o few-shot SQL | B2 NL2SQL ICL | 同上 |
+| DIN-SQL / DAIL-SQL / MAC-SQL | B3 NL2SQL 学术 baseline | 同上 |
+| C3 / CHESS / RESDSQL | B4 NL2SQL SOTA | 同上 |
+| CodeS / SQLNet | B6 NL2SQL SFT | 同上 |
+| LlamaIndex Auto-Retriever | C2 Self-querying | 与 LangChain SelfQueryRetriever 重复 |
+| GraphRAG / KG-RAG | C3 KG-augmented | 不同方向（KG），与本文"结构化+向量混合"范式不一致 |
+| Search-R1（真复现）| D1 RL Query Rewriting | 由 §E2 Action Space Ablation 的 "text query" 行内部覆盖，外部真复现非必需 |
+| s3 | D3 RL searcher/generator 解耦 | 与 Search-R1 同 P1 范式（RL Query Rewriting），二选一 |
+| R1-Searcher | D4 RL 两阶段 | 同 P1 范式，与 s3 重复 |
+| R3-RAG | D5 RL 多轮 | 同 P1 范式，重复 |
+| MCTS-RAG | D6 MCTS+RAG | 非 RL 范式（MCTS 规划），与方向不一致 |
+| SUQL | E2 同 DSL prompt-based | Text2VectorSQL 已代表"同 DSL 不同训练"对照，重复 |
+| GPT-5.4 thinking / o1 | F3 reasoning 模型 | 不在最终工作计划 §六，reasoning 模型上限非必需 |
+| Claude zero / few-shot DSL | F1/F2 commercial LLM | 计划 §六 Group 3 仅列 GPT-4o + Gemini，不含 Claude |
+
+> **注**：原 Q1-Q5 reviewer 质疑映射在主体已降级为可选标注；本附录仅记录候选 baseline 的删除决策，便于审稿/Rebuttal 阶段快速回溯"为什么没跑 X"。
+
+---
+
 **文档维护**：本文与 `LocalSearch-R1_最终工作计划.md` 配套使用。baseline 跑完时同步更新 §二 状态列；§一 范式表更新（如补 NL2SQL）时同步本文 §一。
