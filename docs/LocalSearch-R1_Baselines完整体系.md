@@ -56,6 +56,7 @@
 | 多轮交互 | Self-RAG | SFT | 加 | P1（多轮 SFT 代表，公开 ckpt 可直接跑）|
 | 多轮交互 | **Search-R1** | RL multi-turn | 加 | **P0**（多轮 RL + query rewriting 代表；与 B5 的核心区别是多轮 vs 单轮，E2 内部 ablation 只控制 action space 不控制轮数，无法替代真复现）|
 | 多轮交互 | R1-Searcher | RL multi-turn | 加 | P2（多轮 RL 代表，与 B5 RL 在"轮数轴"上对比）|
+| 多轮交互 | HiPRAG | RL + process reward | 加 | P2（层次化 process reward 训练 agentic RAG，与 B5 复合奖励设计思路类似，时间充裕可跑）|
 | LLM 重排 | **RankGPT-4o on top of RRF** | prompt-based | 加 | **P0**（LLM rerank 最便宜代表，与 B1 BGE-reranker 形成对照）|
 | LLM 重排 | RankVicuna | SFT | 加 | P1（开源 LLM rerank SFT 代表）|
 
@@ -172,6 +173,7 @@ B5 Ours：
 
 - R1-Searcher（B2 多轮 RL）
 - RankVicuna（B2 LLM rerank SFT）
+- HiPRAG（B2 多轮 RL + 层次化 process reward）
 
 ---
 
@@ -205,6 +207,7 @@ B2 LLM-augmented：
 | **Search-R1** | https://github.com/PeterGriffinJin/Search-R1 |
 | Self-RAG | https://github.com/AkariAsai/self-rag （公开 7B/13B SFT ckpt）|
 | R1-Searcher | https://github.com/RUCAIBox/R1-Searcher （公开 RL ckpt）|
+| HiPRAG | https://github.com/qualidea1217/HiPRAG |
 | **RankGPT** | https://github.com/sunnweiwei/RankGPT （prompt-based，GPT-4o backbone）|
 | RankVicuna | https://github.com/castorini/rank_llm （公开 7B SFT ckpt）|
 
