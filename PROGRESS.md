@@ -1,6 +1,6 @@
 # LocalSearch-R1 实验进展
 
-> 最后更新：2026-05-12
+> 最后更新：2026-05-13
 > 目标：EMNLP 2026 Long Paper（ARR May cycle，截止 2026-05-25）
 
 ## 项目简介
@@ -53,6 +53,23 @@
 
 > N=2737 因 263 条 query 无 gt_document_ids
 
+#### B2 LLM-Enhanced 检索 Baselines (N=300)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| RankGPT (BM25 + GPT-5.4 rerank) | **0.742** | **0.772** | **0.759** | 最佳 B2 baseline |
+| SQR (LangChain Self-Query) | 0.590 | 0.690 | 0.650 | GPT-5.4 结构化过滤 + text retrieval |
+| IRCoT (2-round retrieval) | 0.563 | 0.675 | 0.631 | GPT-5.4 refine + Qwen3-Embedding |
+| HyDE | 0.511 | 0.646 | 0.588 | GPT-5.4 hypothetical doc + Qwen3-Embedding |
+
+> N=300 为节省 API 成本，使用 API 的 baseline 仅跑 300 条
+
+#### B5 Few-shot DSL (N=300)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| Opus 4.7 few-shot | — | — | — | 运行中 |
+
 ### 邮件场景 (Email, N=3000, Qwen3-4B)
 
 | 方法 | Hit@1 | Hit@3 | MRR | Exec Rate |
@@ -73,6 +90,8 @@
 5. **DAPO 更稳定**：邮件场景 DAPO 略优于 GRPO
 6. **商业模型排序**：GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 7. **纯检索排序**：BGE-Reranker > RRF ≈ BM25 ≈ BGE-M3 > ColQwen
+8. **LLM-Enhanced 检索**：RankGPT(0.742) > SQR(0.590) > IRCoT(0.563) > HyDE(0.511)，RankGPT 远超其他但仍低于 RL(0.809)
+9. **RankGPT 分析**：仅做 reranking 无法生成新候选，但利用 GPT 理解力大幅提升排序质量
 
 ---
 
@@ -88,6 +107,14 @@
 | DAPO 训练+推理 | 电商+邮件 | Qwen3-4B | ✅ |
 | 商业模型 (电商) | 电商 | GPT-5.4/5.5, Opus 4.6/4.7, Gemini | ✅ |
 | B1 纯检索 Baselines | 电商 | BM25, ColQwen, RRF, BGE-M3, Reranker, Dense Image | ✅ (2026-05-12) |
+| B2 LLM-Enhanced Baselines | 电商 | HyDE, IRCoT, RankGPT, SQR (N=300) | ✅ (2026-05-13) |
+
+### 进行中 🔄
+
+| 实验 | 场景 | 状态 | 备注 |
+|------|------|------|------|
+| E2 Action Space Ablation | 电商 | 🔄 102 服务器 GPU2-5 训练中 | sql_only → sql_text → text_only → sql_image 顺序训练 |
+| B5 Few-shot (Opus 4.7) | 电商 | 🔄 ai4sci 运行中 | N=300 |
 
 ### 未完成 ❌
 
@@ -97,9 +124,8 @@
 | **Few-shot ICL** | 电商+邮件 | 低 | Qwen3-4B 推理 | 高 — 论文需要 |
 | **E3 Complexity Breakdown** | 电商+邮件 | 低 | 已有结果按Level分层 | 高 — 已有数据 |
 | **E5 Modality Ablation** | 电商 | 低 | 已有结果按Modality分层 | 高 — 已有数据 |
-| **E2 Action Space Ablation** | 电商 | 中 | 需训练/推理变体模型 | 中 |
+| **B5 Few-shot (GPT-5.5)** | 电商 | 低 | API调用 | 中 |
 | **Qwen3-8B 全系列** | 电商+邮件 | 高 | 需多GPU训练 | 中 — 规模实验 |
-| **B2 (HyDE, IRCoT, RankGPT, Self-RAG)** | 电商 | 中 | API调用+代码 | 中 |
 | **B3 (DeepRetrieval, SQL-R1)** | 电商 | 高 | 训练/复现 | 低 |
 | **B4 (GraphRAG)** | 电商 | 高 | 搭建复杂 | 低 |
 
@@ -139,4 +165,6 @@
 | ~4月下旬 | 商业模型 (电商) GPT-5.4, Opus 4.6, Gemini 完成 |
 | 2026-05-12 | Opus 4.7, GPT-5.5 电商 3000 条完成 |
 | 2026-05-12 | B1 纯检索 baselines 电商全部完成 |
+| 2026-05-13 | B2 LLM-Enhanced baselines 完成 (HyDE, IRCoT, RankGPT, SQR) |
+| 2026-05-13 | E2 Action Space Ablation 开始训练 (102 服务器 GPU2-5) |
 | **2026-05-25** | **ARR May 截止** |
