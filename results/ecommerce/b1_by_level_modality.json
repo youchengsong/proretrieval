@@ -1,0 +1,290 @@
+{
+  "BM25": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.5484,
+      "hit_at_3": 0.6851,
+      "mrr": 0.6303
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.4351,
+        "hit_at_3": 0.6071,
+        "mrr": 0.5377
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.6228,
+        "hit_at_3": 0.7285,
+        "mrr": 0.6874
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.6525,
+        "hit_at_3": 0.7737,
+        "mrr": 0.7234
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.5157,
+        "hit_at_3": 0.6495,
+        "mrr": 0.5977
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.7611,
+        "hit_at_3": 0.8574,
+        "mrr": 0.8162
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.7239,
+        "hit_at_3": 0.8511,
+        "mrr": 0.7943
+      }
+    }
+  },
+  "ColQwen": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.4973,
+      "hit_at_3": 0.6039,
+      "mrr": 0.569
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.3603,
+        "hit_at_3": 0.4445,
+        "mrr": 0.432
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.5876,
+        "hit_at_3": 0.7016,
+        "mrr": 0.6546
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.6222,
+        "hit_at_3": 0.7657,
+        "mrr": 0.7042
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.4538,
+        "hit_at_3": 0.5562,
+        "mrr": 0.5249
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.733,
+        "hit_at_3": 0.8365,
+        "mrr": 0.7937
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.7035,
+        "hit_at_3": 0.8415,
+        "mrr": 0.7807
+      }
+    }
+  },
+  "RRF": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.5554,
+      "hit_at_3": 0.688,
+      "mrr": 0.633
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.442,
+        "hit_at_3": 0.6002,
+        "mrr": 0.5339
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.6274,
+        "hit_at_3": 0.7396,
+        "mrr": 0.693
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.6646,
+        "hit_at_3": 0.7818,
+        "mrr": 0.7351
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.5179,
+        "hit_at_3": 0.6508,
+        "mrr": 0.5956
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.7584,
+        "hit_at_3": 0.852,
+        "mrr": 0.815
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.7527,
+        "hit_at_3": 0.8691,
+        "mrr": 0.8195
+      }
+    }
+  },
+  "BGE-M3": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.548,
+      "hit_at_3": 0.6781,
+      "mrr": 0.6275
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.4239,
+        "hit_at_3": 0.5813,
+        "mrr": 0.5186
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.6358,
+        "hit_at_3": 0.7368,
+        "mrr": 0.6994
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.6485,
+        "hit_at_3": 0.7778,
+        "mrr": 0.7265
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.5105,
+        "hit_at_3": 0.6417,
+        "mrr": 0.5912
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.7593,
+        "hit_at_3": 0.8492,
+        "mrr": 0.8132
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.7203,
+        "hit_at_3": 0.8535,
+        "mrr": 0.7956
+      }
+    }
+  },
+  "BGE-Reranker": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.5926,
+      "hit_at_3": 0.719,
+      "mrr": 0.664
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.4549,
+        "hit_at_3": 0.6242,
+        "mrr": 0.5492
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.6905,
+        "hit_at_3": 0.7757,
+        "mrr": 0.7407
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.703,
+        "hit_at_3": 0.8182,
+        "mrr": 0.7667
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.5584,
+        "hit_at_3": 0.687,
+        "mrr": 0.6308
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.7793,
+        "hit_at_3": 0.8638,
+        "mrr": 0.8282
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.7887,
+        "hit_at_3": 0.8968,
+        "mrr": 0.8476
+      }
+    }
+  },
+  "Dense Image": {
+    "overall": {
+      "count": 2737,
+      "hit_at_1": 0.0632,
+      "hit_at_3": 0.1279,
+      "mrr": 0.1127
+    },
+    "by_level": {
+      "L1": {
+        "count": 1163,
+        "hit_at_1": 0.0284,
+        "hit_at_3": 0.1118,
+        "mrr": 0.086
+      },
+      "L2": {
+        "count": 1079,
+        "hit_at_1": 0.0778,
+        "hit_at_3": 0.1288,
+        "mrr": 0.1224
+      },
+      "L3": {
+        "count": 495,
+        "hit_at_1": 0.1131,
+        "hit_at_3": 0.1636,
+        "mrr": 0.1544
+      }
+    },
+    "by_modality": {
+      "structured": {
+        "count": 2294,
+        "hit_at_1": 0.0724,
+        "hit_at_3": 0.1495,
+        "mrr": 0.1309
+      },
+      "text": {
+        "count": 1101,
+        "hit_at_1": 0.0808,
+        "hit_at_3": 0.1099,
+        "mrr": 0.1084
+      },
+      "image": {
+        "count": 833,
+        "hit_at_1": 0.072,
+        "hit_at_3": 0.0996,
+        "mrr": 0.0997
+      }
+    }
+  }
+}
