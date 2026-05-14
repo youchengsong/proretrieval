@@ -50,6 +50,35 @@ def make_client(config):
         ), config["model"]
 
 
+def fix_schema_fields(text):
+    """Fix wrong field names in prompt text to match actual database schema.
+    DB fields: product_id, brand, color, category, price, average_rating, rating_number
+    """
+    import re
+    text = text.replace("num_reviews", "rating_number")
+    text = re.sub(r'- in_stock\s+INTEGER\s+--[^\n]*\n', '', text)
+    text = re.sub(r'- release_date\s+TEXT\s+--[^\n]*\n', '', text)
+    text = re.sub(r'"in_stock":\s*\d+,?\s*', '', text)
+    text = re.sub(r'"release_date":\s*"[^"]*",?\s*', '', text)
+    text = text.replace("in_stock = 1 AND ", "")
+    text = re.sub(r"\brating\b(?!_)", "average_rating", text)
+    text = text.replace("average_rating_number", "rating_number")
+    return text
+
+
+def fix_messages(messages):
+    """Apply schema fix to all messages in the few-shot prompt."""
+    fixed = []
+    for m in messages:
+        if isinstance(m, str):
+            m = json.loads(m)
+        m = dict(m)
+        if "content" in m and isinstance(m["content"], str):
+            m["content"] = fix_schema_fields(m["content"])
+        fixed.append(m)
+    return fixed
+
+
 def parse_dsl(text):
     if "<answer>" in text:
         try:
@@ -87,6 +116,7 @@ def main():
     for _, row in df.iterrows():
         extra = json.loads(row["extra_info"])
         msgs = json.loads(row["prompt"]) if isinstance(row["prompt"], str) else row["prompt"].tolist()
+        msgs = fix_messages(msgs)
         samples.append({"query_id": extra["query_id"], "messages": msgs})
 
     if args.limit:
