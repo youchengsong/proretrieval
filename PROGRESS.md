@@ -1,6 +1,6 @@
 # LocalSearch-R1 实验进展
 
-> 最后更新：2026-05-13
+> 最后更新：2026-05-19
 > 目标：EMNLP 2026 Long Paper（ARR May cycle，截止 2026-05-25）
 
 ## 项目简介
@@ -114,6 +114,18 @@
 
 > RL 在 structured 上优势最大(0.843 vs Reranker 0.558)，因为 SQL 条件精准过滤结构化字段；B1 在 text/image 上更强(Reranker text 0.779 > SFT 0.634)但仍低于 RL(0.690)
 
+#### B3 RL-Based Retrieval Baselines
+
+| 方法 | Hit@1 | Hit@3 | MRR | Format | N | 备注 |
+|------|-------|-------|-----|--------|---|------|
+| DeepRetrieval ep2 step_96 | **0.638** | **0.729** | **0.697** | 100.0% | 2737 | Qwen3-4B GRPO, 2 epochs, BM25 Boolean queries |
+| DeepRetrieval ep1 step_96 | 0.635 | 0.725 | 0.696 | 100.0% | 2737 | 1 epoch |
+| DeepRetrieval ep1 step_50 | 0.617 | 0.704 | 0.678 | 99.7% | 2737 | |
+| SQL-R1 (subset) | 0.617 | 0.637 | 0.628 | 69.3% | 300 | exec=208/300 |
+| DeepRetrieval (subset) | 0.557 | 0.653 | 0.613 | — | 300 | top-20 per query |
+
+> DeepRetrieval full eval (N=2737): Epoch 2 仅比 epoch 1 提升 +0.3pp Hit@1 (0.638 vs 0.635)，模型已基本饱和。优于 B1 最佳(BGE-Reranker=0.593)，接近商业模型(GPT-5.5=0.667)，但远低于我们的 RL(0.809)，说明 BM25 Boolean queries 的 action space 不如多模态 DSL。
+
 ### 邮件场景 (Email, N=3000, Qwen3-4B)
 
 | 方法 | Hit@1 | Hit@3 | MRR | Exec Rate |
@@ -121,13 +133,18 @@
 | DAPO step843 | **0.909** | **0.910** | **0.910** | 99.3% |
 | GRPO step843 | 0.906 | 0.908 | 0.907 | 99.3% |
 | SFT | 0.891 | 0.893 | 0.892 | 95.9% |
+| GPT-5.4 (Azure) | 0.854 | 0.864 | 0.859 | 99.9% | L1=0.923, L2=0.839, L3=0.746 |
+| Opus 4.7 (proxy) | 0.830 | 0.837 | 0.834 | 96.7% | L1=0.925, L2=0.815, L3=0.669 |
+| GPT-5.5 (Azure) | 0.855 | 0.864 | 0.861 | 99.9% | L1=0.923, L2=0.838, L3=0.753 |
 | Base (zero-shot) | 0.243 | 0.244 | 0.244 | 24.8% |
+
+> 邮件场景 RL 同样优于商业模型：DAPO=0.909 > SFT=0.891 > GPT-5.5=0.855 ≈ GPT-5.4=0.854 > Opus 4.7=0.830。GPT-5.5 和 5.4 在邮件上几乎无差异。
 
 ---
 
 ## 关键结论
 
-1. **RL >> 商业大模型**：GRPO 电商 Hit@1=0.809 vs GPT-5.5=0.667 (+14.2pp) vs Opus 4.7=0.642 (+16.7pp)
+1. **RL >> 商业大模型（双场景）**：电商 GRPO=0.809 vs GPT-5.5=0.667 (+14.2pp)；邮件 DAPO=0.909 vs GPT-5.4=0.854 (+5.5pp)
 2. **RL >> 纯检索**：GRPO Hit@1=0.809 vs BGE-Reranker=0.593 (+21.6pp) vs BM25=0.548 (+26.1pp)
 3. **RL > SFT**：电商 +12.8pp，邮件 +1.8pp
 4. **GRPO 过拟合**：电商 step300 后开始下降，step1200 完全崩溃
@@ -135,7 +152,8 @@
 6. **商业模型排序**：GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 7. **纯检索排序**：BGE-Reranker > RRF ≈ BM25 ≈ BGE-M3 > ColQwen
 8. **LLM-Enhanced 检索**：RankGPT(0.742) > SQR(0.590) > IRCoT(0.563) > HyDE(0.511)，RankGPT 远超其他但仍低于 RL(0.809)
-9. **RankGPT 分析**：仅做 reranking 无法生成新候选，但利用 GPT 理解力大幅提升排序质量
+9. **RL-Based 检索**：DeepRetrieval ep2(0.638) ≈ ep1(0.635) > SQL-R1(0.617) > BM25(0.548)，2 epoch 几乎无提升(+0.3pp)说明已饱和，远低于我们的 RL(0.809)，action space 差异是关键
+10. **邮件商业模型**：GPT-5.5(0.855) ≈ GPT-5.4(0.854) > Opus 4.7(0.830)；GPT-5.5 在邮件上无提升（电商提升明显0.667→0.581）；Opus 4.7 格式失败率高(99 null_dsl)
 
 ---
 
@@ -152,6 +170,10 @@
 | 商业模型 (电商) | 电商 | GPT-5.4/5.5, Opus 4.6/4.7, Gemini | ✅ |
 | B1 纯检索 Baselines | 电商 | BM25, ColQwen, RRF, BGE-M3, Reranker, Dense Image | ✅ (2026-05-12) |
 | B2 LLM-Enhanced Baselines | 电商 | HyDE, IRCoT, RankGPT, SQR (N=300) | ✅ (2026-05-13) |
+| B3 DeepRetrieval (N=300) | 电商 | N=300 子集评估 | ✅ (2026-05-16) |
+| B3 DeepRetrieval (full, N=2737) | 电商 | 修复pipeline+重训+全量评估 | ✅ (2026-05-18) |
+| 商业模型 (邮件) GPT-5.4 | 邮件 | N=2999, eval 完成 | ✅ (2026-05-16) |
+| 商业模型 (邮件) Opus 4.7 | 邮件 | N=3000, eval 完成 | ✅ (2026-05-16) |
 | E3 Complexity Breakdown | 电商 | 13 methods, by Level (L1/L2/L3) | ✅ (2026-05-13) |
 | E5 Modality Ablation | 电商 | 13 methods, by Modality (struct/text/image) | ✅ (2026-05-13) |
 | B5 Few-shot DSL | 电商 | — | ❌ 旧结果因 prompt schema 错误已删除，待修复重跑 |
@@ -160,8 +182,9 @@
 
 | 实验 | 场景 | 状态 | 备注 |
 |------|------|------|------|
-| B3 DeepRetrieval | 电商 | 🔄 102 服务器训练中 | GRPO v6, step ~90/384, 6×A6000, ~25h 总计 |
-| 商业模型 (邮件) | 邮件 | 🔄 ai4sci 运行中 | GPT-5.5, GPT-5.4, Opus 4.7 三个并行，N=3000 |
+| 商业模型 (邮件) GPT-5.5 | 邮件 | ✅ 完成 | Hit@1=0.855, 和 GPT-5.4 几乎一样 |
+| Search-R1 (P0 baseline) | 电商 | ⚠️ 102 宕机 | 训练刚启动，102 不可达 |
+| B3 DeepRetrieval eval | 电商 | ✅ 完成 | step_50/96 全量评估完成 (2026-05-18) |
 
 ### 已暂停 ⏸️
 
@@ -175,7 +198,7 @@
 | 实验 | 场景 | 难度 | 依赖 | 优先级 |
 |------|------|------|------|--------|
 | **B5 Few-shot DSL 重跑** | 电商 | 低 | 修复 prompt schema | **🔴 高** — 旧结果因 bug 已删除 |
-| **B3 SQL-R1** | 电商 | 高 | RL训练复现 | **🔴 高** — P1 baseline |
+| **B3 SQL-R1 RL 复现** | 电商 | 高 | RL训练复现 | **🟡 中** — 已有 zero-shot 结果(0.617)，RL 复现可留 camera-ready |
 | **B4 GraphRAG** | 电商 | 高 | 构图+API调用 | **🟡 中** — P1 baseline |
 | **Qwen3-8B 全系列** | 电商+邮件 | 高 | 需多GPU训练 | 中 — 规模实验 |
 | **Qwen3-4B/8B few-shot ICL** | 电商+邮件 | 低 | 本地推理 | 中 |
@@ -220,4 +243,8 @@
 | 2026-05-12 | B1 纯检索 baselines 电商全部完成 |
 | 2026-05-13 | B2 LLM-Enhanced baselines 完成 (HyDE, IRCoT, RankGPT, SQR) |
 | 2026-05-13 | E2 Action Space Ablation 开始训练 (102 服务器 GPU2-5) |
+| 2026-05-18 | B3 DeepRetrieval 修复+重训+全量评估完成 (Hit@1=0.635) |
+| 2026-05-18 | GPT-5.5 邮件推理+评估完成 (Hit@1=0.855) |
+| 2026-05-19 | B3 DeepRetrieval epoch 2 训练+评估完成 (Hit@1=0.638, +0.3pp, 已饱和) |
+| 2026-05-19 | SQL-R1 详细复现调研完成（见 Downloads/SQL-R1_复现调研报告.md）|
 | **2026-05-25** | **ARR May 截止** |
