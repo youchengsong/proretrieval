@@ -12,7 +12,7 @@ import re
 import numpy as np
 from pyserini.search.lucene import LuceneSearcher
 
-INDEX_DIR = "/home/sunzhen/DeepRetrieval_ecommerce/indexes/lucene-index-products"
+INDEX_DIR = "/home/sunzhen/DeepRetrieval_ecommerce/indexes/lucene-index-products-train"
 
 _searcher = None
 
@@ -109,7 +109,7 @@ def compute_score(solution_str, ground_truth, data_source, extra_info=None, form
     format_score = format_reward if format_correct else -2
 
     answer_score = 0
-    top_k = 10
+    top_k = 1000
 
     if format_correct and answer_text:
         try:
