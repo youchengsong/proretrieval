@@ -107,6 +107,9 @@ ssh sunzhen@10.60.200.102
 | SFT | 0.891 | 0.893 | 0.892 | 95.9% |
 | GRPO step843 | 0.906 | 0.908 | 0.907 | 99.3% |
 | DAPO step843 | 0.909 | 0.910 | 0.910 | 99.3% |
+| DeepRetrieval step100 | 0.745 | 0.851 | 0.805 | 99.9% |
+
+注：DeepRetrieval 的 N=2569（431 条 query 无 gt_document_ids）。DeepRetrieval 使用 Boolean query + BM25，远低于我们的 DSL 方法（Hit@1=0.745 vs 0.909），差距比电商场景更大。
 
 ### 关键结论
 
@@ -134,7 +137,7 @@ ssh sunzhen@10.60.200.102
 
 **需要训练/复杂搭建：**
 - Qwen3-8B 全系列（base / GRPO / DAPO）
-- B3 baseline（DeepRetrieval 真复现, LangChain SQR, SQL-R1）
+- B3 baseline（DeepRetrieval 电商已完成, 邮件已完成 2026-05-20, LangChain SQR, SQL-R1）
 - B4 baseline（GraphRAG）
 - Text2VectorSQL (SFT baseline)
 

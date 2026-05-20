@@ -136,9 +136,10 @@
 | GPT-5.4 (Azure) | 0.854 | 0.864 | 0.859 | 99.9% | L1=0.923, L2=0.839, L3=0.746 |
 | Opus 4.7 (proxy) | 0.830 | 0.837 | 0.834 | 96.7% | L1=0.925, L2=0.815, L3=0.669 |
 | GPT-5.5 (Azure) | 0.855 | 0.864 | 0.861 | 99.9% | L1=0.923, L2=0.838, L3=0.753 |
+| DeepRetrieval step100 | 0.745 | 0.851 | 0.805 | 99.9% | N=2569, Qwen3-4B GRPO, Boolean+BM25 |
 | Base (zero-shot) | 0.243 | 0.244 | 0.244 | 24.8% |
 
-> 邮件场景 RL 同样优于商业模型：DAPO=0.909 > SFT=0.891 > GPT-5.5=0.855 ≈ GPT-5.4=0.854 > Opus 4.7=0.830。GPT-5.5 和 5.4 在邮件上几乎无差异。
+> 邮件场景 RL 同样优于商业模型：DAPO=0.909 > SFT=0.891 > GPT-5.5=0.855 ≈ GPT-5.4=0.854 > Opus 4.7=0.830。DeepRetrieval(0.745) 低于我们的 RL(0.909) 16.4pp，差距比电商场景(17.1pp)略小。
 
 ---
 
@@ -152,8 +153,9 @@
 6. **商业模型排序**：GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 7. **纯检索排序**：BGE-Reranker > RRF ≈ BM25 ≈ BGE-M3 > ColQwen
 8. **LLM-Enhanced 检索**：RankGPT(0.742) > SQR(0.590) > IRCoT(0.563) > HyDE(0.511)，RankGPT 远超其他但仍低于 RL(0.809)
-9. **RL-Based 检索**：DeepRetrieval ep2(0.638) ≈ ep1(0.635) > SQL-R1(0.617) > BM25(0.548)，2 epoch 几乎无提升(+0.3pp)说明已饱和，远低于我们的 RL(0.809)，action space 差异是关键
-10. **邮件商业模型**：GPT-5.5(0.855) ≈ GPT-5.4(0.854) > Opus 4.7(0.830)；GPT-5.5 在邮件上无提升（电商提升明显0.667→0.581）；Opus 4.7 格式失败率高(99 null_dsl)
+9. **RL-Based 检索（电商）**：DeepRetrieval ep2(0.638) ≈ ep1(0.635) > SQL-R1(0.617) > BM25(0.548)，2 epoch 几乎无提升(+0.3pp)说明已饱和，远低于我们的 RL(0.809)，action space 差异是关键
+10. **RL-Based 检索（邮件）**：DeepRetrieval(0.745) 远低于我们的 RL(0.909)，差距 16.4pp，与电商场景(17.1pp)相当，双场景均验证 DSL > Boolean query
+11. **邮件商业模型**：GPT-5.5(0.855) ≈ GPT-5.4(0.854) > Opus 4.7(0.830)；GPT-5.5 在邮件上无提升（电商提升明显0.667→0.581）；Opus 4.7 格式失败率高(99 null_dsl)
 
 ---
 
@@ -172,6 +174,7 @@
 | B2 LLM-Enhanced Baselines | 电商 | HyDE, IRCoT, RankGPT, SQR (N=300) | ✅ (2026-05-13) |
 | B3 DeepRetrieval (N=300) | 电商 | N=300 子集评估 | ✅ (2026-05-16) |
 | B3 DeepRetrieval (full, N=2737) | 电商 | 修复pipeline+重训+全量评估 | ✅ (2026-05-18) |
+| B3 DeepRetrieval (邮件, N=2569) | 邮件 | Qwen3-4B GRPO, Boolean+BM25 | ✅ (2026-05-20) |
 | 商业模型 (邮件) GPT-5.4 | 邮件 | N=2999, eval 完成 | ✅ (2026-05-16) |
 | 商业模型 (邮件) Opus 4.7 | 邮件 | N=3000, eval 完成 | ✅ (2026-05-16) |
 | E3 Complexity Breakdown | 电商 | 13 methods, by Level (L1/L2/L3) | ✅ (2026-05-13) |
@@ -184,7 +187,7 @@
 |------|------|------|------|
 | 商业模型 (邮件) GPT-5.5 | 邮件 | ✅ 完成 | Hit@1=0.855, 和 GPT-5.4 几乎一样 |
 | Search-R1 (P0 baseline) | 电商 | ⚠️ 102 宕机 | 训练刚启动，102 不可达 |
-| B3 DeepRetrieval eval | 电商 | ✅ 完成 | step_50/96 全量评估完成 (2026-05-18) |
+| B3 DeepRetrieval eval | 电商+邮件 | ✅ 完成 | 电商 step_50/96 (2026-05-18)，邮件 step100 (2026-05-20) |
 
 ### 已暂停 ⏸️
 
