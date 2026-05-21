@@ -87,6 +87,12 @@ ssh sunzhen@10.60.200.102
 | Gemini 3.1 Pro | 0.587 | 0.597 | 0.593 | 100% | |
 | GPT-5.5 (Azure) | 0.667 | 0.704 | 0.689 | 100% | N=2998；L1=0.666, L2=0.680, L3=0.642; image=0.481 |
 
+### B3 SQL-R1 Baseline (电商, N=2737)
+
+| 方法 | Hit@1 | Hit@3 | MRR | Format OK | Exec OK | 备注 |
+|------|-------|-------|-----|-----------|---------|------|
+| SQL-R1 RL step115 (4B) | 0.780 | 0.797 | 0.790 | 99.9% | 82.5% | 102服务器，结果文件 b2_sql_r1_rl.json |
+
 ### B1 纯检索 Baselines (电商, N=2737)
 
 | 方法 | Hit@1 | Hit@3 | MRR | Recall | 备注 |
@@ -111,6 +117,15 @@ ssh sunzhen@10.60.200.102
 | DeepRetrieval step100 | 0.745 | 0.851 | 0.805 | 99.9% |
 
 注：DeepRetrieval 的 N=2569（431 条 query 无 gt_document_ids）。DeepRetrieval 使用 Boolean query + BM25，远低于我们的 DSL 方法（Hit@1=0.745 vs 0.909），差距比电商场景更大。
+
+### B3 SQL-R1 Baseline (邮件, N=2872)
+
+| 方法 | Hit@1 | Hit@3 | MRR | Format OK | Exec OK | 备注 |
+|------|-------|-------|-----|-----------|---------|------|
+| SQL-R1 SFT (4B) | 0.546 | 0.584 | 0.565 | 94.8% | 63.4% | 102服务器 |
+| SQL-R1 RL step100 (4B) | 0.541 | 0.578 | 0.561 | — | 61.9% | RL未提升，OOM于step121 |
+
+注：邮件 SQL-R1 远低于 DSL 方法（0.54 vs 0.91），根因是 SQL LIKE 无法做语义匹配，邮件以自由文本为主（Subject/Message），31% 查询因过多 LIKE+AND 条件返回空结果。电商 SQL-R1（0.78）表现更好，因结构化字段（brand/color/price）适合精确匹配。
 
 ### 关键结论
 
@@ -139,7 +154,8 @@ ssh sunzhen@10.60.200.102
 **需要训练/复杂搭建：**
 - Qwen3-8B GRPO 电商：训练中（step 100/625，score_mean 峰值 0.83，Blackwell 2×RTX PRO 6000）
 - Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
-- B3 baseline（DeepRetrieval 电商已完成, 邮件已完成 2026-05-20, LangChain SQR, SQL-R1）
+- B3 baseline（DeepRetrieval 电商已完成, 邮件已完成 2026-05-20, LangChain SQR）
+- ✅ B3 SQL-R1（电商 RL step115 + 邮件 SFT/RL step100，已完成）
 - B4 baseline（GraphRAG）
 - Text2VectorSQL (SFT baseline)
 
