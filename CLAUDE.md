@@ -65,7 +65,7 @@ ssh sunzhen@10.60.200.102
 - **注意：从当前机器（AWS）无法直接访问**（内网地址，Connection timed out）
 - 需要从 ai4sci 或其他同网段机器跳转，或用户自行在本地连接
 
-## 当前实验结果（截至 2026-05-12）
+## 当前实验结果（截至 2026-05-21）
 
 ### 电商 (N=3000)
 
@@ -79,6 +79,7 @@ ssh sunzhen@10.60.200.102
 | GRPO step550 (4B) | 0.798 | 0.844 | 0.825 | 99.8% | 开始过拟合 |
 | GRPO step1200 (4B) | 0.003 | 0.003 | 0.003 | 99.6% | 崩溃 |
 | DAPO step420 (4B) | 0.808 | 0.852 | 0.833 | 99.6% | |
+| **GRPO step100 (8B)** | — | — | — | — | 训练中，score_mean=0.83 (step83)，预计超越4B |
 | GPT-5.4 (Azure) | 0.581 | 0.591 | 0.587 | 100% | model=gpt-5.4-2026-03-05 |
 | GPT-5.4 thinking | 0.680 | 0.723 | 0.704 | 100% | 仅 300 条，reasoning_effort=medium |
 | Claude Opus 4.6 | 0.586 | 0.596 | 0.592 | 99.9% | 通过 GCP Vertex AI |
@@ -136,7 +137,8 @@ ssh sunzhen@10.60.200.102
 - 邮件场景的商业模型（GPT / Gemini / Claude）
 
 **需要训练/复杂搭建：**
-- Qwen3-8B 全系列（base / GRPO / DAPO）
+- Qwen3-8B GRPO 电商：训练中（step 100/625，score_mean 峰值 0.83，Blackwell 2×RTX PRO 6000）
+- Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
 - B3 baseline（DeepRetrieval 电商已完成, 邮件已完成 2026-05-20, LangChain SQR, SQL-R1）
 - B4 baseline（GraphRAG）
 - Text2VectorSQL (SFT baseline)
