@@ -53,25 +53,28 @@
 
 > N=2737 因 263 条 query 无 gt_document_ids
 
-#### B2 LLM-Enhanced 检索 Baselines (N=300)
+#### B2 LLM-Enhanced 检索 Baselines (N=268)
 
 | 方法 | Hit@1 | Hit@3 | MRR | 备注 |
 |------|-------|-------|-----|------|
-| RankGPT (BM25 + GPT-5.4 rerank) | **0.742** | **0.772** | **0.759** | 最佳 B2 baseline |
+| RankGPT (BM25 + GPT-5.4 rerank) | **0.743** | **0.772** | **0.759** | 最佳 B2 baseline |
 | SQR (LangChain Self-Query) | 0.590 | 0.690 | 0.650 | GPT-5.4 结构化过滤 + text retrieval |
 | IRCoT (2-round retrieval) | 0.563 | 0.675 | 0.631 | GPT-5.4 refine + Qwen3-Embedding |
 | HyDE | 0.511 | 0.646 | 0.588 | GPT-5.4 hypothetical doc + Qwen3-Embedding |
 
-> N=300 为节省 API 成本，使用 API 的 baseline 仅跑 300 条
+> N=268 为节省 API 成本，使用 API 的 baseline 仅跑子集
 
-#### B5 Few-shot DSL
+#### B5 Few-shot DSL (N=300)
 
 | 方法 | Hit@1 | Hit@3 | MRR | Exec Rate | N | 状态 |
 |------|-------|-------|-----|-----------|---|------|
-| GPT-5.5 few-shot | — | — | — | — | — | ❌ 待重跑（旧结果因 prompt schema 错误已删除） |
-| Opus 4.7 few-shot | — | — | — | — | — | ❌ 待重跑 |
+| GPT-5.5 few-shot | 0.253 | 0.280 | 0.268 | 48.0% | 300 | ✅ exec=144/300, format=288/300 |
+| Opus 4.7 few-shot | 0.250 | 0.270 | 0.262 | 50.3% | 300 | ✅ exec=151/300, format=300/300 |
+| Gemini few-shot | — | — | — | — | — | ❌ API 调用失败 |
 | Qwen3-4B few-shot ICL | — | — | — | — | — | ❌ 未做 |
 | Qwen3-8B few-shot ICL | — | — | — | — | — | ❌ 未做 |
+
+> Few-shot DSL exec rate 极低（~50%），大量 SQL 语法错误（如 no such column: rating/num_reviews），说明 few-shot 不足以学会 DSL 语法。
 
 #### E3 Complexity Breakdown (by Level, N=3000)
 
@@ -185,13 +188,13 @@
 | 商业模型 (邮件) Opus 4.7 | 邮件 | N=3000, eval 完成 | ✅ (2026-05-16) |
 | E3 Complexity Breakdown | 电商 | 13 methods, by Level (L1/L2/L3) | ✅ (2026-05-13) |
 | E5 Modality Ablation | 电商 | 13 methods, by Modality (struct/text/image) | ✅ (2026-05-13) |
-| B5 Few-shot DSL | 电商 | — | ❌ 旧结果因 prompt schema 错误已删除，待修复重跑 |
+| B5 Few-shot DSL | 电商 | GPT-5.5 (0.253), Opus 4.7 (0.250), N=300 | ✅ (2026-05-13) |
+| 商业模型 (邮件) GPT-5.5 | 邮件 | N=3000, Hit@1=0.855 | ✅ (2026-05-18) |
 
 ### 进行中 🔄
 
 | 实验 | 场景 | 状态 | 备注 |
 |------|------|------|------|
-| 商业模型 (邮件) GPT-5.5 | 邮件 | ✅ 完成 | Hit@1=0.855, 和 GPT-5.4 几乎一样 |
 | B3 Search-R1 (电商) | 电商 | ✅ 完成 | post_EM=45.87% (N=2773), Blackwell 训练+评估 (2026-05-20) |
 | B3 Search-R1 (邮件) | 邮件 | 🔄 训练中 | step 200→1000, reward 0.047→0.25, Blackwell 恢复训练 |
 | B3 DeepRetrieval eval | 电商+邮件 | ✅ 完成 | 电商 step_50/96 (2026-05-18)，邮件 step100 (2026-05-20) |
@@ -207,7 +210,6 @@
 
 | 实验 | 场景 | 难度 | 依赖 | 优先级 |
 |------|------|------|------|--------|
-| **B5 Few-shot DSL 重跑** | 电商 | 低 | 修复 prompt schema | **🔴 高** — 旧结果因 bug 已删除 |
 | **B3 SQL-R1 RL 复现** | 电商 | 高 | RL训练复现 | **🟡 中** — 已有 zero-shot 结果(0.617)，RL 复现可留 camera-ready |
 | **B4 GraphRAG** | 电商 | 高 | 构图+API调用 | **🟡 中** — P1 baseline |
 | **Qwen3-8B 全系列** | 电商+邮件 | 高 | 需多GPU训练 | 中 — 规模实验 |

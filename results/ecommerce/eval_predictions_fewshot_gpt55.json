@@ -1,0 +1,5064 @@
+{
+  "overall": {
+    "count": 300,
+    "exec_success_rate": 0.48,
+    "hit_at_1": 0.25333333333333335,
+    "hit_at_3": 0.28,
+    "mrr": 0.2684953314659197,
+    "recall": 0.29778521546623854,
+    "precision": 0.2091314874632177,
+    "avg_result_size": 51.70666666666666,
+    "total": 300,
+    "format_success": 288,
+    "exec_success": 144
+  },
+  "by_level": {
+    "1": {
+      "count": 106,
+      "exec_success_rate": 0.7735849056603774,
+      "hit_at_1": 0.39622641509433965,
+      "hit_at_3": 0.4528301886792453,
+      "mrr": 0.42449923365572645,
+      "recall": 0.45779807306302694,
+      "precision": 0.31792452830188683,
+      "avg_result_size": 32.39622641509434
+    },
+    "2": {
+      "count": 142,
+      "exec_success_rate": 0.3873239436619718,
+      "hit_at_1": 0.20422535211267606,
+      "hit_at_3": 0.21830985915492956,
+      "mrr": 0.214738430583501,
+      "recall": 0.24524463593382567,
+      "precision": 0.17506812795763116,
+      "avg_result_size": 59.690140845070424
+    },
+    "3": {
+      "count": 52,
+      "exec_success_rate": 0.1346153846153846,
+      "hit_at_1": 0.09615384615384616,
+      "hit_at_3": 0.09615384615384616,
+      "mrr": 0.09728506787330317,
+      "recall": 0.11508135754975897,
+      "precision": 0.08038023209580167,
+      "avg_result_size": 69.26923076923077
+    }
+  },
+  "by_modality": {
+    "structured": {
+      "count": 256,
+      "exec_success_rate": 0.390625,
+      "hit_at_1": 0.24609375,
+      "hit_at_3": 0.2578125,
+      "mrr": 0.2541081276260504,
+      "recall": 0.2737951900099219,
+      "precision": 0.22925564937095824,
+      "avg_result_size": 46.56640625
+    },
+    "text": {
+      "count": 127,
+      "exec_success_rate": 0.4645669291338583,
+      "hit_at_1": 0.23622047244094488,
+      "hit_at_3": 0.2677165354330709,
+      "mrr": 0.25411345640618455,
+      "recall": 0.282798518639534,
+      "precision": 0.1364672546508563,
+      "avg_result_size": 38.61417322834646
+    },
+    "image": {
+      "count": 95,
+      "exec_success_rate": 0.5263157894736842,
+      "hit_at_1": 0.16842105263157894,
+      "hit_at_3": 0.2,
+      "mrr": 0.18773698953265516,
+      "recall": 0.25364064208969656,
+      "precision": 0.13231055628603564,
+      "avg_result_size": 106.61052631578947
+    }
+  },
+  "errors": {
+    "sql_error: no such column: rating": 93,
+    "null_dsl": 12,
+    "sql_error: no such column: num_reviews": 51
+  },
+  "per_query": [
+    {
+      "query_id": "q_00001",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 26,
+      "gt_size": 7,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "precision": 0.2692307692307692
+    },
+    {
+      "query_id": "q_00002",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00003",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00004",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00005",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 22,
+      "gt_size": 3,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.13636363636363635
+    },
+    {
+      "query_id": "q_00006",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 530,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00007",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 82,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00008",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 464,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00009",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 371,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00010",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00011",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00012",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 371,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00013",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2981,
+      "gt_size": 2999,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.9936645548516172,
+      "precision": 0.9996645420999665
+    },
+    {
+      "query_id": "q_00014",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 6,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.3333333333333333
+    },
+    {
+      "query_id": "q_00015",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00016",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00017",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00018",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00019",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 84,
+      "gt_size": 84,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00020",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 149,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00021",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 191,
+      "gt_size": 191,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00022",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.2,
+      "recall": 0.5,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00023",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 301,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00024",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00025",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00026",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 7,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.14285714285714285
+    },
+    {
+      "query_id": "q_00027",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 21,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.047619047619047616,
+      "recall": 1.0,
+      "precision": 0.047619047619047616
+    },
+    {
+      "query_id": "q_00028",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00029",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00030",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 708,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00031",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00032",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00033",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00034",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 127,
+      "gt_size": 127,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00035",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00036",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 149,
+      "gt_size": 149,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00037",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00038",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00039",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00040",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 45,
+      "gt_size": 30,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.6666666666666666
+    },
+    {
+      "query_id": "q_00041",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 221,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00042",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 464,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00043",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00044",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 39,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00045",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00046",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 157,
+      "gt_size": 146,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.9299363057324841
+    },
+    {
+      "query_id": "q_00047",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 398,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00048",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 399,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00049",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 436,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00050",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 112,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00051",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.5,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00052",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 35,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00053",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00054",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00055",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "image"
+      ],
+      "error": null,
+      "result_size": 2980,
+      "gt_size": 2998,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.9939959973315544,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00056",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00057",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 254,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00058",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 111,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00059",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00060",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 127,
+      "gt_size": 127,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00061",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 195,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00062",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00063",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 72,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00064",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 8,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00065",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 725,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00066",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 144,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00067",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 14,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00068",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 793,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00069",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 56,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00070",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 221,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00071",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 708,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00072",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00073",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 556,
+      "gt_size": 556,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00074",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00075",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00076",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 1.0,
+      "precision": 0.1
+    },
+    {
+      "query_id": "q_00077",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00078",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 465,
+      "gt_size": 465,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00079",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00080",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00081",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00082",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00083",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 553,
+      "gt_size": 553,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00084",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00085",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 27,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00086",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00087",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00088",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 205,
+      "gt_size": 195,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.9692307692307692,
+      "precision": 0.9219512195121952
+    },
+    {
+      "query_id": "q_00089",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1037,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00090",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00091",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00092",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00093",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 31,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00094",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00095",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00096",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 464,
+      "gt_size": 464,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00097",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00098",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00099",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00100",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00101",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00102",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 61,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00103",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00104",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00105",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00106",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00107",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00108",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 284,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00109",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 77,
+      "gt_size": 73,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.9863013698630136,
+      "precision": 0.935064935064935
+    },
+    {
+      "query_id": "q_00110",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 40,
+      "gt_size": 3,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.075
+    },
+    {
+      "query_id": "q_00111",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 20,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00112",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00113",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00114",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00115",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 21,
+      "gt_size": 4,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.19047619047619047
+    },
+    {
+      "query_id": "q_00116",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 12,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.16666666666666666
+    },
+    {
+      "query_id": "q_00117",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 444,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00118",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00119",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00120",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00121",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.07142857142857142,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00122",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00123",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2999,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00124",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 856,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00125",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 117,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00126",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 145,
+      "gt_size": 145,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00127",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00128",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 22,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00129",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00130",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00131",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.3333333333333333,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00132",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00133",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 320,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00134",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00135",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 433,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00136",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00137",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00138",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 10,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.1
+    },
+    {
+      "query_id": "q_00139",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 47,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 0.2765957446808511,
+      "precision": 0.65
+    },
+    {
+      "query_id": "q_00140",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 436,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00141",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 159,
+      "gt_size": 136,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.8553459119496856
+    },
+    {
+      "query_id": "q_00142",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00143",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 436,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00144",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00145",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00146",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00147",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 121,
+      "gt_size": 93,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.967741935483871,
+      "precision": 0.743801652892562
+    },
+    {
+      "query_id": "q_00148",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 437,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00149",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 124,
+      "gt_size": 106,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.058823529411764705,
+      "recall": 0.9905660377358491,
+      "precision": 0.8467741935483871
+    },
+    {
+      "query_id": "q_00150",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 64,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00151",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 122,
+      "gt_size": 103,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.1,
+      "recall": 1.0,
+      "precision": 0.8442622950819673
+    },
+    {
+      "query_id": "q_00152",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 196,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00153",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00154",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00155",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 5,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00156",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00157",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 75,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00158",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00159",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 4,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00160",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00161",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 22,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00162",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 10,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00163",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 54,
+      "gt_size": 54,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00164",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00165",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00166",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 105,
+      "gt_size": 105,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00167",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 106,
+      "gt_size": 106,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00168",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 134,
+      "gt_size": 134,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00169",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00170",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00171",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 8,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00172",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 17,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00173",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2990,
+      "gt_size": 3000,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 0.9966666666666667,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00174",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 399,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00175",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00176",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00177",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00178",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00179",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00180",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00181",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 32,
+      "gt_size": 15,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.46875
+    },
+    {
+      "query_id": "q_00182",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00183",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 15,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00184",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 22,
+      "gt_size": 4,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.18181818181818182
+    },
+    {
+      "query_id": "q_00185",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00186",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00187",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 559,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00188",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 7,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00189",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 177,
+      "gt_size": 177,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00190",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00191",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 57,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00192",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00193",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00194",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00195",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 263,
+      "gt_size": 263,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00196",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 357,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00197",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 371,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00198",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00199",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 82,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00200",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 19,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00201",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00202",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 17,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00203",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 59,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00204",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00205",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 288,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00206",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 477,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00207",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00208",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 7,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00209",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 112,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00210",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00211",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 4,
+      "gt_size": 4,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00212",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 320,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00213",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00214",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00215",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 405,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00216",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.5
+    },
+    {
+      "query_id": "q_00217",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 24,
+      "gt_size": 24,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00218",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00219",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00220",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 500,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00221",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00222",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00223",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00224",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00225",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 19,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00226",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 122,
+      "gt_size": 122,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00227",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 62,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00228",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 108,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00229",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 132,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 0.007575757575757576,
+      "precision": 0.5
+    },
+    {
+      "query_id": "q_00230",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.5,
+      "recall": 0.5,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00231",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00232",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 10,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00233",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00234",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 63,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00235",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 8,
+      "gt_size": 8,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00236",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00237",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00238",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00239",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00240",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.5
+    },
+    {
+      "query_id": "q_00241",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00242",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 147,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00243",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.058823529411764705,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00244",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 205,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00245",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00246",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.1
+    },
+    {
+      "query_id": "q_00247",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00248",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 149,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00249",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 136,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00250",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00251",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 1,
+      "mrr": 0.3333333333333333,
+      "recall": 0.75,
+      "precision": 0.15
+    },
+    {
+      "query_id": "q_00252",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00253",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00254",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00255",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 137,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00256",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00257",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00258",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 1,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00259",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00260",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 708,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00261",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00262",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 329,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00263",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 522,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00264",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 84,
+      "gt_size": 84,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00265",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 13,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00266",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00267",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00268",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00269",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 54,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00270",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 7,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.14285714285714285
+    },
+    {
+      "query_id": "q_00271",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 320,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00272",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 131,
+      "gt_size": 111,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.047619047619047616,
+      "recall": 1.0,
+      "precision": 0.8473282442748091
+    },
+    {
+      "query_id": "q_00273",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 58,
+      "gt_size": 47,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.8103448275862069
+    },
+    {
+      "query_id": "q_00274",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 380,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00275",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 1,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.05
+    },
+    {
+      "query_id": "q_00276",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "image"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 0.1
+    },
+    {
+      "query_id": "q_00277",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 2,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00278",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00279",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 146,
+      "gt_size": 146,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00280",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 4,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00281",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 9,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00282",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "null_dsl",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00283",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 122,
+      "gt_size": 122,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00284",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 4,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.25,
+      "recall": 1.0,
+      "precision": 0.25
+    },
+    {
+      "query_id": "q_00285",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 2,
+      "gt_size": 2,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00286",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 320,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00287",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "text"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00288",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 71,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00289",
+      "level": 3,
+      "n": 4,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 9,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00290",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 48,
+      "gt_size": 31,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.047619047619047616,
+      "recall": 0.9032258064516129,
+      "precision": 0.5833333333333334
+    },
+    {
+      "query_id": "q_00291",
+      "level": 2,
+      "n": 2,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 20,
+      "gt_size": 3,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00292",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 145,
+      "gt_size": 145,
+      "hit_at_1": 1,
+      "hit_at_3": 1,
+      "mrr": 1.0,
+      "recall": 1.0,
+      "precision": 1.0
+    },
+    {
+      "query_id": "q_00293",
+      "level": 3,
+      "n": 5,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00294",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 371,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00295",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": "sql_error: no such column: rating",
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00296",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00297",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "text",
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 1,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00298",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": "sql_error: no such column: num_reviews",
+      "result_size": 0,
+      "gt_size": 59,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00299",
+      "level": 1,
+      "n": 1,
+      "modalities": [
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 464,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    },
+    {
+      "query_id": "q_00300",
+      "level": 2,
+      "n": 3,
+      "modalities": [
+        "image",
+        "structured"
+      ],
+      "error": null,
+      "result_size": 0,
+      "gt_size": 0,
+      "hit_at_1": 0,
+      "hit_at_3": 0,
+      "mrr": 0.0,
+      "recall": 0.0,
+      "precision": 0.0
+    }
+  ]
+}

@@ -127,43 +127,78 @@ ssh sunzhen@10.60.200.102
 
 注：邮件 SQL-R1 远低于 DSL 方法（0.54 vs 0.91），根因是 SQL LIKE 无法做语义匹配，邮件以自由文本为主（Subject/Message），31% 查询因过多 LIKE+AND 条件返回空结果。电商 SQL-R1（0.78）表现更好，因结构化字段（brand/color/price）适合精确匹配。
 
+### B2 LLM 增强检索 Baselines (电商, N=268, GPT-5.4)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| RankGPT | 0.743 | 0.772 | 0.759 | LLM listwise 重排 (on RRF top-100) |
+| IRCoT | 0.563 | 0.675 | 0.631 | 多轮检索+推理 (2轮 RRF) |
+| HyDE | 0.511 | 0.646 | 0.588 | 假设文档生成+向量检索 |
+
+注：N=268（子集，非全量 3000）。RankGPT 效果最好但仍远低于 RL (0.743 vs 0.809)。
+
+### B3 受限结构化查询 Baselines (电商)
+
+| 方法 | Hit@1 | Hit@3 | MRR | N | 备注 |
+|------|-------|-------|-----|---|------|
+| DeepRetrieval (Boolean+BM25) | 0.638 | 0.729 | 0.697 | 2737 | GRPO epoch2, full eval |
+| LangChain SQR | 0.590 | 0.690 | 0.650 | 268 | GPT-5.4 结构化过滤+向量 |
+| SQL-R1 (zero-shot) | 0.617 | 0.637 | 0.628 | 300 | GPT-5.4 纯 SQL, exec=69.3% |
+| Search-R1 (BM25 multi-turn) | 0.459 (post-EM) | — | — | 2773 | verl GRPO step800 |
+
+### B5 Few-shot DSL (电商, N=300)
+
+| 方法 | Hit@1 | Hit@3 | MRR | Exec Rate | 备注 |
+|------|-------|-------|-----|-----------|------|
+| GPT-5.5 few-shot | 0.253 | 0.280 | 0.268 | 48.0% | format=288/300 |
+| Opus 4.7 few-shot | 0.250 | 0.270 | 0.262 | 50.3% | format=300/300 |
+
+注：Few-shot DSL exec rate 极低（~50%），大量 SQL 语法错误，说明 few-shot 不足以学会 DSL。
+
+### 邮件商业模型 (N=3000)
+
+| 方法 | Hit@1 | Hit@3 | MRR | Exec Rate |
+|------|-------|-------|-----|-----------|
+| GPT-5.5 | 0.855 | 0.864 | 0.861 | 99.9% |
+| GPT-5.4 | 0.854 | 0.864 | 0.859 | 99.9% |
+| Opus 4.7 | 0.830 | 0.837 | 0.834 | 96.6% |
+
+注：邮件场景商业模型表现明显好于电商（GPT-5.5 邮件 0.855 vs 电商 0.667），但仍低于 RL (DAPO=0.909)。
+
 ### 关键结论
 
 1. RL 显著优于所有商业大模型：DAPO 电商 Hit@1=0.808 vs GPT-5.5=0.667 vs Opus 4.7=0.642
 2. RL > SFT：电商 +12.8pp，邮件 +1.8pp
 3. RL >> 纯检索 baselines：GRPO Hit@1=0.809 vs BGE-Reranker=0.593 vs BM25=0.548
-4. GRPO 在电商上 step300 后开始过拟合，step1200 完全崩溃
-5. DAPO 比 GRPO 稍好（邮件场景更明显）
-6. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
-7. Opus 4.7 在 image 模态上明显弱于 GPT-5.5（0.349 vs 0.481）
-8. 纯检索中 BGE-Reranker 最佳，BM25 ≈ BGE-M3 > ColQwen；RRF 融合提升有限
+4. RL >> B2 LLM 增强：GRPO 0.809 vs RankGPT=0.743 vs IRCoT=0.563
+5. RL >> B3 受限结构化：GRPO 0.809 vs DeepRetrieval=0.638 vs SQR=0.590
+6. Few-shot DSL 完全失败：exec rate ~50%，Hit@1 ~0.25，说明 DSL 需要 RL 训练
+7. GRPO 在电商上 step300 后开始过拟合，step1200 完全崩溃
+8. DAPO 比 GRPO 稍好（邮件场景更明显）
+9. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
+10. 邮件场景商业模型远好于电商（GPT-5.5: 0.855 vs 0.667），但 RL 差距仍显著
 
 ### 尚未完成
 
-**B1 纯检索已完成（2026-05-12）：**
-- ✅ BM25, ColQwen, RRF, BGE-M3, BGE-Reranker, Dense Image（结果见上方表格）
-- Dense Image 因 Qwen3-VL-Embedding-8B 模型权重不完整（language_model 随机初始化），结果极差
-- BGE-M3（多粒度检索，GPU，需装 FlagEmbedding）
-- BGE-reranker（交叉编码重排，GPU，需装 FlagEmbedding）
-- RRF（BM25 + ColQwen 融合，CPU，依赖前两者输出）
+**已完成 Baselines：**
+- ✅ B1: BM25, ColQwen, RRF, BGE-M3, BGE-Reranker, Dense Image (2026-05-12)
+- ✅ B2: HyDE, IRCoT, RankGPT (2026-05-13, N=268)
+- ✅ B3: DeepRetrieval 电商+邮件, LangChain SQR, SQL-R1, Search-R1 电商 (2026-05-13~20)
+- ✅ B5 Few-shot: GPT-5.5, Opus 4.7 (2026-05-13, N=300)
+- ✅ 邮件商业模型: GPT-5.4, GPT-5.5, Opus 4.7 (2026-05-16~18)
+- ✅ 分析实验: E3 Complexity Breakdown, E5 Modality Ablation (2026-05-20)
 
-**需要 API 调用：**
-- B2 baseline（HyDE, IRCoT, RankGPT, Self-RAG）
-- 邮件场景的商业模型（GPT / Gemini / Claude）
+**进行中：**
+- 🔄 Qwen3-8B GRPO 电商：训练中（step 100/625，score_mean 峰值 0.83，Blackwell 2×RTX PRO 6000）
+- 🔄 Search-R1 邮件 RL：从 step 200 恢复训练中（→1000）
 
-**需要训练/复杂搭建：**
-- Qwen3-8B GRPO 电商：训练中（step 100/625，score_mean 峰值 0.83，Blackwell 2×RTX PRO 6000）
+**待完成：**
 - Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
-- B3 baseline（DeepRetrieval 电商已完成, 邮件已完成 2026-05-20, LangChain SQR）
-- ✅ B3 SQL-R1（电商 RL step115 + 邮件 SFT/RL step100，已完成）
-- B4 baseline（GraphRAG）
-- Text2VectorSQL (SFT baseline)
-
-**需要已有结果做分析：**
-- Qwen3-4B/8B few-shot ICL
-- Action Space Ablation (E2)
-- Complexity Breakdown (E3) — 需按 Level 分层报数
-- Modality Ablation (E5)
+- B4 GraphRAG：代码完成，KG cache 116 条，需继续跑
+- B2 全量评估：当前 N=268，需扩展到 N=3000
+- B3 SQR/SQL-R1 全量评估：当前 N=268/300
+- B5 Few-shot Gemini：代码完成，API 调用失败
+- Action Space Ablation (E2)：数据准备好，未跑训练
 
 ### 数据格式说明
 
