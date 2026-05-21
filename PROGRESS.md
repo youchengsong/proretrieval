@@ -1,6 +1,6 @@
 # LocalSearch-R1 实验进展
 
-> 最后更新：2026-05-19
+> 最后更新：2026-05-21
 > 目标：EMNLP 2026 Long Paper（ARR May cycle，截止 2026-05-25）
 
 ## 项目简介
@@ -121,10 +121,13 @@
 | DeepRetrieval ep2 step_96 | **0.638** | **0.729** | **0.697** | 100.0% | 2737 | Qwen3-4B GRPO, 2 epochs, BM25 Boolean queries |
 | DeepRetrieval ep1 step_96 | 0.635 | 0.725 | 0.696 | 100.0% | 2737 | 1 epoch |
 | DeepRetrieval ep1 step_50 | 0.617 | 0.704 | 0.678 | 99.7% | 2737 | |
+| Search-R1 step_800 (post) | 0.459 | — | — | — | 2773 | Qwen3-4B GRPO, post_EM (Doc N → product_id mapping) |
+| Search-R1 step_800 (raw) | 0.002 | — | — | — | 2773 | raw EM, 模型输出 "Doc N" 而非 product_id |
 | SQL-R1 (subset) | 0.617 | 0.637 | 0.628 | 69.3% | 300 | exec=208/300 |
 | DeepRetrieval (subset) | 0.557 | 0.653 | 0.613 | — | 300 | top-20 per query |
 
 > DeepRetrieval full eval (N=2737): Epoch 2 仅比 epoch 1 提升 +0.3pp Hit@1 (0.638 vs 0.635)，模型已基本饱和。优于 B1 最佳(BGE-Reranker=0.593)，接近商业模型(GPT-5.5=0.667)，但远低于我们的 RL(0.809)，说明 BM25 Boolean queries 的 action space 不如多模态 DSL。
+> Search-R1 电商 post_EM=45.87%: 模型通过多轮 BM25 搜索找到相关文档但输出 "Doc 1" 格式而非 product_id，需后处理映射。即使后处理后 EM 仍远低于 DeepRetrieval(0.638)和我们的 DSL(0.809)，因为 BM25 text-only 检索无法利用结构化字段和图像特征。
 
 ### 邮件场景 (Email, N=3000, Qwen3-4B)
 
@@ -137,9 +140,11 @@
 | Opus 4.7 (proxy) | 0.830 | 0.837 | 0.834 | 96.7% | L1=0.925, L2=0.815, L3=0.669 |
 | GPT-5.5 (Azure) | 0.855 | 0.864 | 0.861 | 99.9% | L1=0.923, L2=0.838, L3=0.753 |
 | DeepRetrieval step100 | 0.745 | 0.851 | 0.805 | 99.9% | N=2569, Qwen3-4B GRPO, Boolean+BM25 |
+| Search-R1 (邮件) | 🔄 训练中 | — | — | — | step 200→1000, reward 0.047→0.25 |
 | Base (zero-shot) | 0.243 | 0.244 | 0.244 | 24.8% |
 
 > 邮件场景 RL 同样优于商业模型：DAPO=0.909 > SFT=0.891 > GPT-5.5=0.855 ≈ GPT-5.4=0.854 > Opus 4.7=0.830。DeepRetrieval(0.745) 低于我们的 RL(0.909) 16.4pp，差距比电商场景(17.1pp)略小。
+> Search-R1 邮件训练中：从 SFT → GRPO，reward 持续上升。需要修复 verl agent loop stop string bug 才能正常训练。
 
 ---
 
@@ -153,8 +158,8 @@
 6. **商业模型排序**：GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 7. **纯检索排序**：BGE-Reranker > RRF ≈ BM25 ≈ BGE-M3 > ColQwen
 8. **LLM-Enhanced 检索**：RankGPT(0.742) > SQR(0.590) > IRCoT(0.563) > HyDE(0.511)，RankGPT 远超其他但仍低于 RL(0.809)
-9. **RL-Based 检索（电商）**：DeepRetrieval ep2(0.638) ≈ ep1(0.635) > SQL-R1(0.617) > BM25(0.548)，2 epoch 几乎无提升(+0.3pp)说明已饱和，远低于我们的 RL(0.809)，action space 差异是关键
-10. **RL-Based 检索（邮件）**：DeepRetrieval(0.745) 远低于我们的 RL(0.909)，差距 16.4pp，与电商场景(17.1pp)相当，双场景均验证 DSL > Boolean query
+9. **RL-Based 检索（电商）**：DeepRetrieval ep2(0.638) ≈ ep1(0.635) > Search-R1 post(0.459) > SQL-R1(0.617) > BM25(0.548)，均远低于我们的 RL(0.809)。Search-R1 最弱因为 BM25 text-only 无法利用结构化+图像特征
+10. **RL-Based 检索（邮件）**：DeepRetrieval(0.745) 远低于我们的 RL(0.909)，差距 16.4pp。Search-R1 邮件训练中
 11. **邮件商业模型**：GPT-5.5(0.855) ≈ GPT-5.4(0.854) > Opus 4.7(0.830)；GPT-5.5 在邮件上无提升（电商提升明显0.667→0.581）；Opus 4.7 格式失败率高(99 null_dsl)
 
 ---
@@ -175,6 +180,7 @@
 | B3 DeepRetrieval (N=300) | 电商 | N=300 子集评估 | ✅ (2026-05-16) |
 | B3 DeepRetrieval (full, N=2737) | 电商 | 修复pipeline+重训+全量评估 | ✅ (2026-05-18) |
 | B3 DeepRetrieval (邮件, N=2569) | 邮件 | Qwen3-4B GRPO, Boolean+BM25 | ✅ (2026-05-20) |
+| B3 Search-R1 (电商, N=2773) | 电商 | Qwen3-4B GRPO, BM25 multi-turn, verl 0.7.1 | ✅ (2026-05-20) |
 | 商业模型 (邮件) GPT-5.4 | 邮件 | N=2999, eval 完成 | ✅ (2026-05-16) |
 | 商业模型 (邮件) Opus 4.7 | 邮件 | N=3000, eval 完成 | ✅ (2026-05-16) |
 | E3 Complexity Breakdown | 电商 | 13 methods, by Level (L1/L2/L3) | ✅ (2026-05-13) |
@@ -186,7 +192,8 @@
 | 实验 | 场景 | 状态 | 备注 |
 |------|------|------|------|
 | 商业模型 (邮件) GPT-5.5 | 邮件 | ✅ 完成 | Hit@1=0.855, 和 GPT-5.4 几乎一样 |
-| Search-R1 (P0 baseline) | 电商 | ⚠️ 102 宕机 | 训练刚启动，102 不可达 |
+| B3 Search-R1 (电商) | 电商 | ✅ 完成 | post_EM=45.87% (N=2773), Blackwell 训练+评估 (2026-05-20) |
+| B3 Search-R1 (邮件) | 邮件 | 🔄 训练中 | step 200→1000, reward 0.047→0.25, Blackwell 恢复训练 |
 | B3 DeepRetrieval eval | 电商+邮件 | ✅ 完成 | 电商 step_50/96 (2026-05-18)，邮件 step100 (2026-05-20) |
 
 ### 已暂停 ⏸️
@@ -250,4 +257,9 @@
 | 2026-05-18 | GPT-5.5 邮件推理+评估完成 (Hit@1=0.855) |
 | 2026-05-19 | B3 DeepRetrieval epoch 2 训练+评估完成 (Hit@1=0.638, +0.3pp, 已饱和) |
 | 2026-05-19 | SQL-R1 详细复现调研完成（见 Downloads/SQL-R1_复现调研报告.md）|
+| 2026-05-20 | B3 Search-R1 电商训练完成 (step_800 merged), 评估 post_EM=45.87% |
+| 2026-05-20 | B3 DeepRetrieval 邮件评估完成 (step100, Hit@1=0.745) |
+| 2026-05-21 | B3 Search-R1 邮件 RL 训练启动 (Blackwell, verl 0.7.1 + BM25) |
+| 2026-05-21 | 修复 verl agent loop stop string bug (邮件 SFT 模型幻觉导致 tool call 失败) |
+| 2026-05-21 | Search-R1 邮件训练 step 200→1000 恢复中 (磁盘满修复, 清理 254G) |
 | **2026-05-25** | **ARR May 截止** |

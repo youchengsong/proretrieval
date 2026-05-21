@@ -1,0 +1,25 @@
+tools:
+  - class_name: verl.tools.search_tool.SearchTool
+    config:
+      type: native
+      retrieval_service_url: "http://127.0.0.1:8000/retrieve"
+      topk: 3
+      num_workers: 2
+      rate_limit: 120
+      timeout: 30
+      enable_global_rate_limit: false
+    tool_schema:
+      type: function
+      function:
+        name: search
+        description: "Search for relevant documents based on queries."
+        parameters:
+          type: object
+          properties:
+            query_list:
+              type: array
+              description: "List of search queries"
+              items:
+                type: string
+          required:
+            - query_list
