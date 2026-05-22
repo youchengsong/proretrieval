@@ -53,16 +53,16 @@
 
 > N=2737 因 263 条 query 无 gt_document_ids
 
-#### B2 LLM-Enhanced 检索 Baselines (N=268)
+#### B2 LLM-Enhanced 检索 Baselines (N=2737)
 
 | 方法 | Hit@1 | Hit@3 | MRR | 备注 |
 |------|-------|-------|-----|------|
-| RankGPT (BM25 + GPT-5.4 rerank) | **0.743** | **0.772** | **0.759** | 最佳 B2 baseline |
-| SQR (LangChain Self-Query) | 0.590 | 0.690 | 0.650 | GPT-5.4 结构化过滤 + text retrieval |
-| IRCoT (2-round retrieval) | 0.563 | 0.675 | 0.631 | GPT-5.4 refine + Qwen3-Embedding |
-| HyDE | 0.511 | 0.646 | 0.588 | GPT-5.4 hypothetical doc + Qwen3-Embedding |
+| RankGPT (RRF + GPT-5.4 rerank) | **0.762** | **0.801** | **0.784** | 最佳 B2 baseline |
+| SQR (LangChain Self-Query) | 0.607 | 0.692 | 0.659 | GPT-5.4 结构化过滤 + Qwen3-Embedding |
+| IRCoT (2-round retrieval) | 0.547 | 0.663 | 0.617 | GPT-5.4 refine + Qwen3-Embedding |
+| HyDE | 0.534 | 0.634 | 0.597 | GPT-5.4 hypothetical doc + Qwen3-Embedding |
 
-> N=268 为节省 API 成本，使用 API 的 baseline 仅跑子集
+> 已扩到全量 N=2737（原仅 N=268 子集）。RankGPT 全量结果与子集基本一致(0.762 vs 0.743)。
 
 #### B5 Few-shot DSL (N=300)
 
