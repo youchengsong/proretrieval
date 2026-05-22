@@ -115,6 +115,7 @@ def main():
         "B3 SQR": "data/ecommerce/result/b3_langchain_sqr.json",
         "B3 SQL-R1 zero-shot": "data/ecommerce/result/b3_sql_r1.json",
         "B4 GraphRAG": "data/ecommerce/result/b4_graphrag.json",
+        "B3 Search-R1": "data/ecommerce/result/b3_search_r1_step800.json",
     }
 
     # === Email ranked-list files ===
