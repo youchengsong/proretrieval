@@ -1,0 +1,65 @@
+nohup: ignoring input
+/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py:360: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df_email["year"] = pd.to_datetime(df_email["Date"], errors="coerce", utc=True).dt.year
+[shard 2] Loading...
+/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py:300: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df["year"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.year
+Traceback (most recent call last):
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 444, in <module>
+    run_shard(args._shard, args._total)
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 305, in run_shard
+    subj_mat = np.stack(sf["text_features"].values).astype(np.float32)
+  File "/data/youchengsong/conda3/envs/DSL-R1/lib/python3.10/site-packages/numpy/core/shape_base.py", line 449, in stack
+    raise ValueError('all input arrays must have the same shape')
+ValueError: all input arrays must have the same shape
+[shard 1] Loading...
+/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py:300: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df["year"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.year
+[shard 3] Loading...
+[shard 0] Loading...
+/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py:300: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df["year"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.year
+/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py:300: UserWarning: Could not infer format, so each element will be parsed individually, falling back to `dateutil`. To ensure parsing is consistent and as-expected, please specify a format.
+  df["year"] = pd.to_datetime(df["Date"], errors="coerce", utc=True).dt.year
+Traceback (most recent call last):
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 444, in <module>
+    run_shard(args._shard, args._total)
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 305, in run_shard
+    subj_mat = np.stack(sf["text_features"].values).astype(np.float32)
+  File "/data/youchengsong/conda3/envs/DSL-R1/lib/python3.10/site-packages/numpy/core/shape_base.py", line 449, in stack
+    raise ValueError('all input arrays must have the same shape')
+ValueError: all input arrays must have the same shape
+Traceback (most recent call last):
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 444, in <module>
+    run_shard(args._shard, args._total)
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 305, in run_shard
+    subj_mat = np.stack(sf["text_features"].values).astype(np.float32)
+  File "/data/youchengsong/conda3/envs/DSL-R1/lib/python3.10/site-packages/numpy/core/shape_base.py", line 449, in stack
+    raise ValueError('all input arrays must have the same shape')
+ValueError: all input arrays must have the same shape
+Traceback (most recent call last):
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 444, in <module>
+    run_shard(args._shard, args._total)
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 305, in run_shard
+    subj_mat = np.stack(sf["text_features"].values).astype(np.float32)
+  File "/data/youchengsong/conda3/envs/DSL-R1/lib/python3.10/site-packages/numpy/core/shape_base.py", line 449, in stack
+    raise ValueError('all input arrays must have the same shape')
+ValueError: all input arrays must have the same shape
+=== Steps 5-7: 生成 queries ===
+Generating 3000 queries...
+Steps 5-7 done → /data/youchengsong/DSL-R1/data/email/test/_tmp_email_step7_test.jsonl
+
+=== Step 8: GPU [2, 4, 5, 6] ===
+  shard 0 → GPU 2 (pid=1701179)
+  shard 1 → GPU 4 (pid=1701180)
+  shard 2 → GPU 5 (pid=1701181)
+  shard 3 → GPU 6 (pid=1701182)
+All shards done.
+
+=== Merging → /data/youchengsong/DSL-R1/data/email/test/queries_email_test_step8.jsonl ===
+Traceback (most recent call last):
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 446, in <module>
+    main()
+  File "/data/youchengsong/DSL-R1/src/email/pipeline_email_test.py", line 423, in main
+    with open(DATA_DIR / f"test/_shard{shard}.jsonl") as f:
+FileNotFoundError: [Errno 2] No such file or directory: '/data/youchengsong/DSL-R1/data/email/test/_shard0.jsonl'

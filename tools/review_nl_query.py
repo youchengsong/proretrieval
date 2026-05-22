@@ -5,6 +5,8 @@
 用法：
     python review_nl_query.py --input /path/to/step9.jsonl --output /path/to/review.jsonl
     python review_nl_query.py --input /path/to/step9.jsonl --output /path/to/review.jsonl --port 8080
+    python review_nl_query.py --input /path/to/step9.jsonl --output /path/to/review_A.jsonl --start 0 --end 10000 --port 7860
+    python review_nl_query.py --input /path/to/step9.jsonl --output /path/to/review_B.jsonl --start 10000 --end 20000 --port 7861
 
 审查结果保存到 output 文件，每条记录格式：
     {"query_id": "q_00001", "action": "approve|reject|edit", "nl_query": "..."}
@@ -418,6 +420,8 @@ if __name__ == "__main__":
     parser.add_argument("--output", default="/data/youchengsong/DSL-R1/data/ecommerce/train/queries_product_train_review.jsonl")
     parser.add_argument("--port",   type=int, default=7860)
     parser.add_argument("--host",   default="0.0.0.0")
+    parser.add_argument("--start",  type=int, default=0,    help="起始索引（含）")
+    parser.add_argument("--end",    type=int, default=None, help="结束索引（不含），默认到末尾")
     args = parser.parse_args()
 
     INPUT_FILE  = args.input
@@ -425,8 +429,9 @@ if __name__ == "__main__":
 
     print(f"Loading {INPUT_FILE} ...")
     queries  = load_queries(INPUT_FILE)
+    queries  = queries[args.start:args.end]
     results  = load_results(OUTPUT_FILE)
-    print(f"Loaded {len(queries)} queries, {len(results)} already reviewed")
+    print(f"Loaded {len(queries)} queries (idx {args.start}~{args.end}), {len(results)} already reviewed")
     print(f"Review results → {OUTPUT_FILE}")
     print(f"Open: http://localhost:{args.port}")
 

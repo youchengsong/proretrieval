@@ -416,9 +416,28 @@ def run_shard(shard, total):
     stats = {"ok": 0, "empty": 0, "too_large": 0}; results = []
     for q in queries:
         ret = q["dsl"]["retrieval_list"]
-        ts  = [set(t_ids[topk(tc[r["query"]], t_mat, TOP_K)]) for r in ret if r["type"] == "text"]
-        is_ = [set(i_ids[topk(ic[r["query"]], i_mat, TOP_K)]) for r in ret if r["type"] == "image"]
-        gt  = eval_dsl(q, apply_superset(q, df), ts, is_)
+        # Step 1: 先用结构化条件缩小语料库
+        sup_df = apply_superset(q, df)
+        sup_pids = set(sup_df["product_id"])
+        # Step 2: 在超集内做 embedding top-k
+        sup_t_idx = np.array([i for i, pid in enumerate(t_ids) if pid in sup_pids])
+        sup_i_idx = np.array([i for i, pid in enumerate(i_ids) if pid in sup_pids])
+        ts = []
+        for r in ret:
+            if r["type"] == "text" and len(sup_t_idx) > 0:
+                k_ = min(TOP_K, len(sup_t_idx))
+                ts.append(set(t_ids[sup_t_idx[topk(tc[r["query"]], t_mat[sup_t_idx], k_)]]))
+            elif r["type"] == "text":
+                ts.append(set())
+        is_ = []
+        for r in ret:
+            if r["type"] == "image" and len(sup_i_idx) > 0:
+                k_ = min(TOP_K, len(sup_i_idx))
+                is_.append(set(i_ids[sup_i_idx[topk(ic[r["query"]], i_mat[sup_i_idx], k_)]]))
+            elif r["type"] == "image":
+                is_.append(set())
+        # Step 3: 填回占位符，在完整语料上执行
+        gt  = eval_dsl(q, df, ts, is_)
         if   len(gt) == 0:     q["gt_document_ids"] = None; stats["empty"]     += 1
         elif len(gt) > MAX_GT: q["gt_document_ids"] = None; stats["too_large"] += 1
         else:                  q["gt_document_ids"] = gt;   stats["ok"]        += 1

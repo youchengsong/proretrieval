@@ -332,13 +332,26 @@ def run_shard(shard, total):
 
     stats = {"ok": 0, "empty": 0, "too_large": 0}; results = []
     for q in queries:
+        # Step 1: 先用结构化条件缩小语料库
+        sup_df = apply_superset_email(q, df)
+        sup_mids = set(sup_df["Message_ID"])
+        sup_subj_idx = np.array([i for i, mid in enumerate(subj_ids) if mid in sup_mids])
+        sup_msg_idx  = np.array([i for i, mid in enumerate(msg_ids)  if mid in sup_mids])
+        # Step 2: 在超集内做 embedding top-k
         text_sets = []
         for r in q["dsl"]["retrieval_list"]:
-            if r["field"] == "Subject":
-                text_sets.append(set(subj_ids[topk(sc[r["query"]], subj_mat, TOP_K)]))
+            if r["field"] == "Subject" and len(sup_subj_idx) > 0:
+                k_ = min(TOP_K, len(sup_subj_idx))
+                text_sets.append(set(subj_ids[sup_subj_idx[topk(sc[r["query"]], subj_mat[sup_subj_idx], k_)]]))
+            elif r["field"] == "Subject":
+                text_sets.append(set())
+            elif len(sup_msg_idx) > 0:
+                k_ = min(TOP_K, len(sup_msg_idx))
+                text_sets.append(set(msg_ids[sup_msg_idx[topk(mc[r["query"]], msg_mat[sup_msg_idx], k_)]]))
             else:
-                text_sets.append(set(msg_ids[topk(mc[r["query"]], msg_mat, TOP_K)]))
-        gt = eval_dsl_email(q, apply_superset_email(q, df), text_sets)
+                text_sets.append(set())
+        # Step 3: 填回占位符，在完整语料上执行
+        gt = eval_dsl_email(q, df, text_sets)
         if   len(gt) == 0:     q["gt_document_ids"] = None; stats["empty"]     += 1
         elif len(gt) > MAX_GT: q["gt_document_ids"] = None; stats["too_large"] += 1
         else:                  q["gt_document_ids"] = gt;   stats["ok"]        += 1
