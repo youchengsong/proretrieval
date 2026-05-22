@@ -11,9 +11,10 @@ we build a product-centric KG and use entity matching + graph traversal for retr
 Paradigm: Knowledge-Graph Retrieval — complementary to our DSL approach
 (graph-edge structure vs field-constraint structure).
 """
-import argparse, json, math, os, re, time
+import argparse, json, math, os, re, time, asyncio, threading
 from collections import Counter, defaultdict
-from openai import AzureOpenAI
+from openai import AzureOpenAI, AsyncAzureOpenAI
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 DATA_DIR = "/home/sunzhen/LocalSearch/data/ecommerce/test"
 RESULT_DIR = "/home/sunzhen/LocalSearch/data/ecommerce/result"
@@ -140,6 +141,8 @@ class ProductKG:
 
         if constraints:
             for c in constraints:
+                if not isinstance(c, str):
+                    c = json.dumps(c) if isinstance(c, dict) else str(c)
                 c_lower = c.lower()
                 price_match = re.search(r'(?:under|below|less than|<)\s*\$?(\d+)', c_lower)
                 if price_match:
@@ -169,11 +172,76 @@ class ProductKG:
         return [pid for pid, score in ranked if score > 0]
 
 
+CONCURRENCY = 10
+MAX_RETRIES = 3
+
+
+def call_llm(client, prompt, max_tokens):
+    for retry in range(MAX_RETRIES):
+        try:
+            resp = client.chat.completions.create(
+                model=AZURE_DEPLOY,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0,
+                max_completion_tokens=max_tokens,
+            )
+            raw = resp.choices[0].message.content.strip()
+            parsed = parse_json(raw)
+            if parsed is not None:
+                return parsed
+            if retry < MAX_RETRIES - 1:
+                time.sleep(2 ** retry)
+                continue
+            return None
+        except Exception as e:
+            if retry < MAX_RETRIES - 1:
+                time.sleep(2 ** retry)
+            else:
+                raise e
+    return None
+
+
+def extract_product_entities(client, p):
+    pid = p["product_id"]
+    prompt = EXTRACT_PROMPT.format(
+        pid=pid,
+        brand=p.get("brand", ""),
+        color=p.get("color", ""),
+        category=p.get("category", ""),
+        price=p.get("price", ""),
+        rating=p.get("average_rating", ""),
+        text=(p.get("text", "") or "")[:500],
+    )
+    try:
+        parsed = call_llm(client, prompt, 1500)
+        entities = parsed.get("entities", []) if parsed else []
+    except Exception as e:
+        print(f"  Failed entity extraction for {pid}: {e}")
+        entities = []
+    return pid, entities
+
+
+def extract_query_entities(client, q):
+    qid = q["query_id"]
+    prompt = QUERY_EXTRACT_PROMPT.format(query=q["natural_language_query"])
+    try:
+        parsed = call_llm(client, prompt, 300)
+        query_entities = parsed.get("entities", []) if parsed else []
+        constraints = parsed.get("constraints", []) if parsed else []
+    except Exception as e:
+        print(f"  Failed query extraction for {qid}: {e}")
+        query_entities, constraints = [], []
+    return qid, query_entities, constraints
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--index-limit", type=int, default=None,
                         help="Limit products indexed (for cost control)")
+    parser.add_argument("--concurrency", type=int, default=CONCURRENCY)
+    parser.add_argument("--retry-empty", action="store_true",
+                        help="Re-extract products that previously got empty entities")
     args = parser.parse_args()
 
     queries = load_queries(GT_FILE, limit=args.limit)
@@ -188,6 +256,8 @@ def main():
         api_version="2024-12-01-preview",
     )
 
+    concurrency = args.concurrency
+
     # Phase 1: Build KG (extract entities from products)
     kg = ProductKG()
     kg_cache_file = os.path.join(RESULT_DIR, "b4_graphrag_kg_cache.jsonl")
@@ -198,52 +268,42 @@ def main():
                 d = json.loads(line)
                 kg_cache[d["product_id"]] = d.get("entities", [])
         print(f"  Loaded {len(kg_cache)} cached entity extractions")
+        if args.retry_empty:
+            empty_count = sum(1 for v in kg_cache.values() if not v)
+            print(f"  Found {empty_count} empty-entity entries, will re-extract")
+            kg_cache = {k: v for k, v in kg_cache.items() if v}
+            with open(kg_cache_file, "w") as f:
+                for pid, ents in kg_cache.items():
+                    f.write(json.dumps({"product_id": pid, "entities": ents}, ensure_ascii=False) + "\n")
+            print(f"  Rewrote cache with {len(kg_cache)} valid entries")
 
     products_to_index = products
     if args.index_limit:
         products_to_index = products[:args.index_limit]
 
     todo_products = [p for p in products_to_index if p["product_id"] not in kg_cache]
-    print(f"  Need to extract entities for {len(todo_products)} products")
+    print(f"  Need to extract entities for {len(todo_products)} products (concurrency={concurrency})")
 
-    for i, p in enumerate(todo_products):
-        pid = p["product_id"]
-        prompt = EXTRACT_PROMPT.format(
-            pid=pid,
-            brand=p.get("brand", ""),
-            color=p.get("color", ""),
-            category=p.get("category", ""),
-            price=p.get("price", ""),
-            rating=p.get("average_rating", ""),
-            text=(p.get("text", "") or "")[:500],
-        )
+    write_lock = threading.Lock()
+    done_count = [0]
+    t0 = time.time()
 
-        entities = []
-        for retry in range(3):
-            try:
-                resp = client.chat.completions.create(
-                    model=AZURE_DEPLOY,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0,
-                    max_completion_tokens=500,
-                )
-                raw = resp.choices[0].message.content.strip()
-                parsed = parse_json(raw)
-                if parsed:
-                    entities = parsed.get("entities", [])
-                break
-            except Exception as e:
-                if retry < 2:
-                    time.sleep(2 ** retry)
-                else:
-                    print(f"  Failed entity extraction for {pid}: {e}")
+    def phase1_worker(p):
+        pid, entities = extract_product_entities(client, p)
+        with write_lock:
+            kg_cache[pid] = entities
+            with open(kg_cache_file, "a") as f:
+                f.write(json.dumps({"product_id": pid, "entities": entities}, ensure_ascii=False) + "\n")
+            done_count[0] += 1
+            if done_count[0] % 100 == 0:
+                elapsed = time.time() - t0
+                qps = done_count[0] / elapsed if elapsed > 0 else 0
+                print(f"  Entity extraction: [{done_count[0]}/{len(todo_products)}] {qps:.1f}/s")
 
-        kg_cache[pid] = entities
-        with open(kg_cache_file, "a") as f:
-            f.write(json.dumps({"product_id": pid, "entities": entities}, ensure_ascii=False) + "\n")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        list(executor.map(phase1_worker, todo_products))
 
-        if (i + 1) % 100 == 0:
-            print(f"  Entity extraction: [{i+1}/{len(todo_products)}]")
+    print(f"  Phase 1 done: {done_count[0]} products in {time.time()-t0:.0f}s")
 
     for p in products:
         pid = p["product_id"]
@@ -263,50 +323,34 @@ def main():
         print(f"  Found {len(existing)} existing query results, resuming...")
 
     todo_queries = [q for q in queries if q["query_id"] not in existing]
-    print(f"  Todo: {len(todo_queries)} queries")
+    print(f"  Todo: {len(todo_queries)} queries (concurrency={concurrency})")
 
-    for i, q in enumerate(todo_queries):
-        qid = q["query_id"]
-        query_text = q["natural_language_query"]
+    done_count[0] = 0
+    t1 = time.time()
 
-        prompt = QUERY_EXTRACT_PROMPT.format(query=query_text)
-        query_entities = []
-        constraints = []
-
-        for retry in range(3):
-            try:
-                resp = client.chat.completions.create(
-                    model=AZURE_DEPLOY,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0,
-                    max_completion_tokens=300,
-                )
-                raw = resp.choices[0].message.content.strip()
-                parsed = parse_json(raw)
-                if parsed:
-                    query_entities = parsed.get("entities", [])
-                    constraints = parsed.get("constraints", [])
-                break
-            except Exception as e:
-                if retry < 2:
-                    time.sleep(2 ** retry)
-                else:
-                    print(f"  Failed query extraction for {qid}: {e}")
-
+    def phase2_worker(q):
+        qid, query_entities, constraints = extract_query_entities(client, q)
         ranked = kg.search(query_entities, constraints, top_k=TOP_K)
-
-        existing[qid] = {
+        result = {
             "query_id": qid,
             "ranked": ranked,
             "query_entities": query_entities[:10],
             "result_count": len(ranked),
         }
+        with write_lock:
+            existing[qid] = result
+            with open(log_file, "a") as f:
+                f.write(json.dumps(result, ensure_ascii=False) + "\n")
+            done_count[0] += 1
+            if done_count[0] % 100 == 0:
+                elapsed = time.time() - t1
+                qps = done_count[0] / elapsed if elapsed > 0 else 0
+                print(f"  Query: [{done_count[0]}/{len(todo_queries)}] {qps:.1f}/s")
 
-        with open(log_file, "a") as f:
-            f.write(json.dumps(existing[qid], ensure_ascii=False) + "\n")
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        list(executor.map(phase2_worker, todo_queries))
 
-        if (i + 1) % 50 == 0:
-            print(f"  Query: [{i+1}/{len(todo_queries)}] done")
+    print(f"  Phase 2 done: {done_count[0]} queries in {time.time()-t1:.0f}s")
 
     predictions = {}
     for q in queries:
