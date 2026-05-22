@@ -178,6 +178,17 @@ ssh sunzhen@10.60.200.102
 9. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 10. 邮件场景商业模型远好于电商（GPT-5.5: 0.855 vs 0.667），但 RL 差距仍显著
 
+### B2/B3 LLM-Enhanced Baselines (邮件, N=300, GPT-5.4)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| RankGPT | 0.890 | 0.910 | 0.903 | RRF + GPT-5.4 listwise rerank |
+| SQR (LangChain) | 0.617 | 0.713 | 0.671 | GPT-5.4 结构化过滤 + Qwen3-Embedding |
+| IRCoT | 0.523 | 0.610 | 0.579 | 2-round retrieval + GPT-5.4 refine |
+| HyDE | 0.523 | 0.590 | 0.567 | GPT-5.4 hypothetical email + Qwen3-Embedding |
+
+注：N=300（前300条，约比全量简单3pp）。RankGPT 邮件比电商好(0.890 vs 0.743)，接近 DAPO(0.909)。
+
 ### 尚未完成
 
 **已完成 Baselines：**

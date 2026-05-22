@@ -149,6 +149,22 @@
 > 邮件场景 RL 同样优于商业模型：DAPO=0.909 > SFT=0.891 > GPT-5.5=0.855 ≈ GPT-5.4=0.854 > Opus 4.7=0.830。DeepRetrieval(0.745) 低于我们的 RL(0.909) 16.4pp，差距比电商场景(17.1pp)略小。
 > Search-R1 邮件训练中：从 SFT → GRPO，reward 持续上升。需要修复 verl agent loop stop string bug 才能正常训练。
 
+#### B1 纯检索 Baselines (邮件, N=3000)
+
+> 已在 ai4sci 上完成，结果在 `data/email/result/b1_*.json`（BM25, ColQwen, RRF, BGE-M3, BGE-Reranker）。详见 `compute_ndcg_all.py` 输出。
+
+#### B2 LLM-Enhanced 检索 Baselines (邮件, N=300)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| RankGPT (RRF + GPT-5.4 rerank) | **0.890** | **0.910** | **0.903** | 最佳 B2 baseline |
+| SQR (LangChain Self-Query) | 0.617 | 0.713 | 0.671 | GPT-5.4 结构化过滤 + Qwen3-Embedding |
+| IRCoT (2-round retrieval) | 0.523 | 0.610 | 0.579 | GPT-5.4 refine + Qwen3-Embedding |
+| HyDE | 0.523 | 0.590 | 0.567 | GPT-5.4 hypothetical email + Qwen3-Embedding |
+
+> N=300（前300条，约比全量3000简单3pp）。RankGPT 邮件比电商表现更好(0.890 vs 0.743)，接近 RL 方法(DAPO=0.909)，差距仅 1.9pp（电商差距 6.6pp）。SQR 在邮件上也比电商好(0.617 vs 0.590)。IRCoT 和 HyDE 在邮件上表现接近(0.523)，远低于电商(0.563/0.511)。
+> RankGPT 高分分析：邮件 RRF 初始结果已经较好（邮件 query 更结构化），GPT-5.4 重排容易提升；但前300条偏简单，估计全量 RankGPT ~0.85-0.86。
+
 ---
 
 ## 关键结论
@@ -180,6 +196,8 @@
 | 商业模型 (电商) | 电商 | GPT-5.4/5.5, Opus 4.6/4.7, Gemini | ✅ |
 | B1 纯检索 Baselines | 电商 | BM25, ColQwen, RRF, BGE-M3, Reranker, Dense Image | ✅ (2026-05-12) |
 | B2 LLM-Enhanced Baselines | 电商 | HyDE, IRCoT, RankGPT, SQR (N=300) | ✅ (2026-05-13) |
+| B2 LLM-Enhanced Baselines | 邮件 | HyDE, IRCoT, RankGPT (N=300) | ✅ (2026-05-22) |
+| B3 LangChain SQR | 邮件 | GPT-5.4 + Qwen3-Embedding (N=300) | ✅ (2026-05-22) |
 | B3 DeepRetrieval (N=300) | 电商 | N=300 子集评估 | ✅ (2026-05-16) |
 | B3 DeepRetrieval (full, N=2737) | 电商 | 修复pipeline+重训+全量评估 | ✅ (2026-05-18) |
 | B3 DeepRetrieval (邮件, N=2569) | 邮件 | Qwen3-4B GRPO, Boolean+BM25 | ✅ (2026-05-20) |
@@ -264,4 +282,5 @@
 | 2026-05-21 | B3 Search-R1 邮件 RL 训练启动 (Blackwell, verl 0.7.1 + BM25) |
 | 2026-05-21 | 修复 verl agent loop stop string bug (邮件 SFT 模型幻觉导致 tool call 失败) |
 | 2026-05-21 | Search-R1 邮件训练 step 200→1000 恢复中 (磁盘满修复, 清理 254G) |
+| 2026-05-22 | 邮件 B2 (RankGPT/IRCoT/HyDE) + B3 SQR N=300 全部完成 |
 | **2026-05-25** | **ARR May 截止** |
