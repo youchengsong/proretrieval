@@ -217,7 +217,7 @@ ssh sunzhen@10.60.200.102
 
 **待完成：**
 - Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
-- B4 GraphRAG：代码完成，KG cache 116 条，需继续跑
+- B4 GraphRAG：✅ 已完成 (Hit@1=0.493, N=2737)，低于 BM25(0.548)，图谱方法不适合产品检索
 - B2 全量评估：当前 N=268，需扩展到 N=3000
 - B3 SQR/SQL-R1 全量评估：当前 N=268/300
 - B5 Few-shot Gemini：代码完成，API 调用失败

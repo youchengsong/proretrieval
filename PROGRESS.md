@@ -129,6 +129,15 @@
 | SQL-R1 (subset) | 0.617 | 0.637 | 0.628 | 69.3% | 300 | exec=208/300 |
 | DeepRetrieval (subset) | 0.557 | 0.653 | 0.613 | — | 300 | top-20 per query |
 
+#### B4 Graph-Based 检索 Baselines (电商, N=2737)
+
+| 方法 | Hit@1 | Hit@3 | MRR | 备注 |
+|------|-------|-------|-----|------|
+| GraphRAG | 0.493 | 0.582 | 0.551 | GPT-5.4 KG extraction + vector, 低于 BM25 |
+| LightRAG | — | — | — | 🔄 运行中，初步结果全0 |
+
+> GraphRAG(0.493) 低于 BM25(0.548)，远低于 RL(0.809)。图谱方法不适合产品检索场景，因为产品间关系稀疏且 query 需要精确属性匹配而非关系推理。
+
 > DeepRetrieval full eval (N=2737): Epoch 2 仅比 epoch 1 提升 +0.3pp Hit@1 (0.638 vs 0.635)，模型已基本饱和。优于 B1 最佳(BGE-Reranker=0.593)，接近商业模型(GPT-5.5=0.667)，但远低于我们的 RL(0.809)，说明 BM25 Boolean queries 的 action space 不如多模态 DSL。
 > Search-R1 电商 post_EM=45.87%: 模型通过多轮 BM25 搜索找到相关文档但输出 "Doc 1" 格式而非 product_id，需后处理映射。即使后处理后 EM 仍远低于 DeepRetrieval(0.638)和我们的 DSL(0.809)，因为 BM25 text-only 检索无法利用结构化字段和图像特征。
 
