@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2916" height="1536" viewBox="0 0 2916 1536" role="img" aria-labelledby="title desc">
+  <title id="title">LocalSearch-R1 vector method diagram</title>
+  <desc id="desc">Vector reconstruction of a LocalSearch-R1 architecture diagram, showing natural language query, RL-trained LLM, DSL execution engine, SQL filter, text and image embedding search, placeholder injection, ranked results, and the SFT/RL training loop.</desc>
+  <defs>
+    <linearGradient id="greenFill" x1="0" x2="1">
+      <stop offset="0" stop-color="#dff2d5"/>
+      <stop offset="1" stop-color="#b8df9e"/>
+    </linearGradient>
+    <linearGradient id="blueFill" x1="0" x2="1">
+      <stop offset="0" stop-color="#edf7ff"/>
+      <stop offset="1" stop-color="#cfe9ff"/>
+    </linearGradient>
+    <linearGradient id="orangeFill" x1="0" x2="1">
+      <stop offset="0" stop-color="#fff0d2"/>
+      <stop offset="1" stop-color="#ffd89b"/>
+    </linearGradient>
+    <linearGradient id="panelFill" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f4f4f4"/>
+    </linearGradient>
+    <marker id="arrowBlack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#111"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#6c9d50"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#106fa5"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#cc7b12"/>
+    </marker>
+    <style>
+      .serif { font-family: Georgia, "Times New Roman", serif; fill: #050505; }
+      .sans { font-family: Arial, Helvetica, sans-serif; fill: #050505; }
+      .mono { font-family: Menlo, Consolas, "Courier New", monospace; fill: #050505; }
+      .micro { font-size: 16px; }
+      .title { font-size: 54px; font-weight: 700; }
+      .h1 { font-size: 46px; font-weight: 700; }
+      .h2 { font-size: 38px; font-weight: 700; }
+      .h3 { font-size: 31px; font-weight: 700; }
+      .body { font-size: 31px; }
+      .small { font-size: 25px; }
+      .tiny { font-size: 20px; }
+      .box { fill: url(#panelFill); stroke: #111; stroke-width: 5; }
+      .thin { fill: url(#panelFill); stroke: #555; stroke-width: 2; }
+      .greenBox { fill: url(#greenFill); stroke: #7bad5e; stroke-width: 7; }
+      .blueBox { fill: url(#blueFill); stroke: #096da8; stroke-width: 7; }
+      .orangeBox { fill: url(#orangeFill); stroke: #c97912; stroke-width: 7; }
+      .line { fill: none; stroke: #111; stroke-width: 6; marker-end: url(#arrowBlack); }
+      .greenLine { fill: none; stroke: #6c9d50; stroke-width: 7; marker-end: url(#arrowGreen); }
+      .blueLine { fill: none; stroke: #106fa5; stroke-width: 7; marker-end: url(#arrowBlue); }
+      .orangeLine { fill: none; stroke: #cc7b12; stroke-width: 7; marker-end: url(#arrowOrange); }
+      .noArrow { fill: none; stroke: #111; stroke-width: 4; }
+    </style>
+  </defs>
+
+  <rect width="2916" height="1536" fill="#fff"/>
+
+  <!-- Natural language query -->
+  <text class="serif h2" x="270" y="285" text-anchor="middle">
+    <tspan x="270" dy="0">Natural Language</tspan>
+    <tspan x="270" dy="52">Query</tspan>
+  </text>
+  <rect class="box" x="32" y="380" width="492" height="340" rx="44"/>
+  <text class="serif body" x="278" y="450" text-anchor="middle">
+    <tspan x="278" dy="0">‘Find red Nike</tspan>
+    <tspan x="278" dy="47">running shoes under</tspan>
+    <tspan x="278" dy="47">$100 with good</tspan>
+    <tspan x="278" dy="47">reviews that look like</tspan>
+    <tspan x="278" dy="47">classic sneakers’</tspan>
+  </text>
+  <path class="line" d="M524 555 L612 555"/>
+
+  <!-- LLM method block -->
+  <text class="serif h2" x="900" y="348" text-anchor="middle" fill="#8d1b1b">Our Method</text>
+  <rect class="greenBox" x="620" y="380" width="570" height="325" rx="50"/>
+  <text class="serif h1" x="905" y="525" text-anchor="middle">
+    <tspan x="905" dy="0">RL-trained LLM</tspan>
+    <tspan x="905" dy="68">(Qwen3-4B/8B)</tspan>
+  </text>
+  <path class="greenLine" d="M1190 580 L1332 580"/>
+  <text class="serif small" x="1265" y="494" text-anchor="middle">
+    <tspan x="1265" dy="0">DSL</tspan>
+    <tspan x="1265" dy="35">Program</tspan>
+  </text>
+
+  <!-- DSL code output -->
+  <rect class="thin" x="548" y="730" width="690" height="255" rx="0"/>
+  <text class="mono micro" x="566" y="768">
+    <tspan x="566" dy="0">{</tspan>
+    <tspan x="595" dy="25">"sql": "WHERE brand='Nike' AND price &lt; 100</tspan>
+    <tspan x="685" dy="23">AND average_rating &gt;= 4.0 AND product_id IN</tspan>
+    <tspan x="685" dy="23">&lt;text_0&gt; AND product_id IN &lt;image_0&gt;",</tspan>
+    <tspan x="595" dy="25">"retrieval_list": [</tspan>
+    <tspan x="635" dy="23">{"type":"text","field":"title",</tspan>
+    <tspan x="655" dy="23">"query":"red running shoes"},</tspan>
+    <tspan x="635" dy="23">{"type":"image","field":"image_url",</tspan>
+    <tspan x="655" dy="23">"query":"classic red Nike sneaker"}</tspan>
+    <tspan x="595" dy="23">]</tspan>
+    <tspan x="566" dy="23">}</tspan>
+  </text>
+
+  <!-- DSL execution engine title -->
+  <text class="serif title" x="1860" y="205" text-anchor="middle">DSL Execution Engine</text>
+
+  <!-- SQL filter path -->
+  <path class="blueLine" d="M1190 580 C1265 580 1250 350 1335 350"/>
+  <rect class="blueBox" x="1335" y="250" width="260" height="195" rx="30"/>
+  <text class="serif h2" x="1465" y="325" text-anchor="middle">
+    <tspan x="1465" dy="0">SQL</tspan>
+    <tspan x="1465" dy="62">Filter</tspan>
+  </text>
+  <path class="blueLine" d="M1595 348 L1678 348"/>
+  <g transform="translate(1680 307)">
+    <rect x="0" y="0" width="80" height="90" rx="6" fill="url(#blueFill)" stroke="#367a9d" stroke-width="3"/>
+    <path d="M62 7 C82 13 85 35 64 56 C82 56 80 82 58 97 C64 71 58 37 62 7 Z" fill="#0b5278" stroke="#0b5278"/>
+  </g>
+  <text class="serif body" x="1810" y="376" text-anchor="middle">SQLite</text>
+  <path class="blueLine" d="M1760 350 L1930 350"/>
+
+  <!-- Metadata box -->
+  <text class="serif body" x="2040" y="265" text-anchor="middle">Metadata</text>
+  <rect class="blueBox" x="1942" y="280" width="170" height="195" rx="22"/>
+  <text class="serif small" x="1970" y="315">
+    <tspan x="1970" dy="0">• brand</tspan>
+    <tspan x="1970" dy="35">• category</tspan>
+    <tspan x="1970" dy="35">• price</tspan>
+    <tspan x="1970" dy="35">• rating</tspan>
+    <tspan x="1970" dy="35">...</tspan>
+  </text>
+  <path class="blueLine" d="M2112 380 C2155 380 2118 488 2192 500"/>
+
+  <!-- Text retrieval path -->
+  <rect class="greenBox" x="1335" y="495" width="260" height="195" rx="28"/>
+  <text class="serif h2" x="1465" y="560" text-anchor="middle">
+    <tspan x="1465" dy="0">Text</tspan>
+    <tspan x="1465" dy="54">Embedding</tspan>
+    <tspan x="1465" dy="54">Search</tspan>
+  </text>
+  <path class="greenLine" d="M1190 580 L1335 580"/>
+  <path class="greenLine" d="M1595 580 L1650 580"/>
+  <polygon points="1650,485 1870,520 1870,640 1650,690" fill="url(#greenFill)" stroke="#6c9d50" stroke-width="7"/>
+  <text class="serif small" x="1760" y="570" text-anchor="middle">
+    <tspan x="1760" dy="0">Qwen3-</tspan>
+    <tspan x="1760" dy="35">Embedding-8B</tspan>
+    <tspan x="1760" dy="35">encoder</tspan>
+  </text>
+  <path class="greenLine" d="M1870 580 L1935 580"/>
+  <g transform="translate(1935 525)" stroke="#6c9d50" stroke-width="7" fill="url(#greenFill)">
+    <ellipse cx="65" cy="20" rx="65" ry="20"/>
+    <path d="M0 20 V120 C0 148 130 148 130 120 V20"/>
+    <ellipse cx="65" cy="120" rx="65" ry="20"/>
+  </g>
+  <text class="serif body" x="2000" y="610" text-anchor="middle">
+    <tspan x="2000" dy="0">Text</tspan>
+    <tspan x="2000" dy="45">Index</tspan>
+  </text>
+  <text class="serif small" x="2015" y="705" text-anchor="middle">&lt;text_0&gt; IDs</text>
+  <path class="greenLine" d="M2065 580 L2190 580"/>
+
+  <!-- Image retrieval path -->
+  <rect class="orangeBox" x="1335" y="740" width="260" height="195" rx="28"/>
+  <text class="serif h2" x="1465" y="805" text-anchor="middle">
+    <tspan x="1465" dy="0">Image</tspan>
+    <tspan x="1465" dy="54">Embedding</tspan>
+    <tspan x="1465" dy="54">Search</tspan>
+  </text>
+  <path class="orangeLine" d="M1190 580 C1265 580 1250 825 1335 825"/>
+  <path class="orangeLine" d="M1595 825 L1650 825"/>
+  <polygon points="1650,730 1870,765 1870,885 1650,935" fill="url(#orangeFill)" stroke="#cc7b12" stroke-width="7"/>
+  <text class="serif small" x="1760" y="810" text-anchor="middle">
+    <tspan x="1760" dy="0">Qwen3-VL-</tspan>
+    <tspan x="1760" dy="35">Embedding-8B</tspan>
+    <tspan x="1760" dy="35">encoder</tspan>
+  </text>
+  <path class="orangeLine" d="M1870 825 L1935 825"/>
+  <g transform="translate(1935 770)" stroke="#cc7b12" stroke-width="7" fill="url(#orangeFill)">
+    <ellipse cx="65" cy="20" rx="65" ry="20"/>
+    <path d="M0 20 V120 C0 148 130 148 130 120 V20"/>
+    <ellipse cx="65" cy="120" rx="65" ry="20"/>
+  </g>
+  <text class="serif body" x="2000" y="855" text-anchor="middle">
+    <tspan x="2000" dy="0">Image</tspan>
+    <tspan x="2000" dy="45">Index</tspan>
+  </text>
+  <text class="serif small" x="2005" y="950" text-anchor="middle">&lt;image_0&gt; IDs</text>
+  <path class="orangeLine" d="M2065 825 C2130 825 2105 690 2190 672"/>
+
+  <!-- Injection and results -->
+  <rect class="box" x="2190" y="420" width="295" height="330" rx="34"/>
+  <text class="serif h2" x="2338" y="485" text-anchor="middle">
+    <tspan x="2338" dy="0">Placeholder</tspan>
+    <tspan x="2338" dy="55">Injection</tspan>
+    <tspan x="2338" dy="62">+</tspan>
+    <tspan x="2338" dy="55">SQL</tspan>
+    <tspan x="2338" dy="55">Execution</tspan>
+  </text>
+  <path class="line" d="M2485 585 L2555 585"/>
+  <text class="serif small" x="2220" y="835">
+    <tspan x="2220" dy="0">&lt;text_0&gt; → IN (‘P001’, ‘P042’,…)</tspan>
+    <tspan x="2220" dy="42">&lt;image_0&gt; → IN (‘P187’, ‘P203’,…)</tspan>
+  </text>
+
+  <!-- Ranked results thumbnail -->
+  <text class="serif h2" x="2640" y="305" text-anchor="middle">
+    <tspan x="2640" dy="0">Ranked</tspan>
+    <tspan x="2640" dy="62">Results</tspan>
+  </text>
+  <rect x="2540" y="400" width="270" height="360" fill="#fff" stroke="#111" stroke-width="4"/>
+  <g transform="translate(2575 425)">
+    <rect x="0" y="0" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
+    <path d="M12 38 C35 20 60 28 76 34 C58 48 28 50 12 38 Z" fill="#c42a1c" stroke="#8b1a12"/>
+    <text class="mono micro" x="88" y="18">Red Nike shoe</text>
+    <text class="mono tiny" x="95" y="42">score 0.91</text>
+    <rect x="0" y="78" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
+    <path d="M12 116 C35 98 60 106 76 112 C58 126 28 128 12 116 Z" fill="#17285f" stroke="#0c1430"/>
+    <text class="mono micro" x="88" y="96">Running shoe</text>
+    <text class="mono tiny" x="95" y="120">score 0.87</text>
+    <rect x="0" y="156" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
+    <path d="M12 194 C35 176 60 184 76 190 C58 204 28 206 12 194 Z" fill="#135137" stroke="#0a2e1f"/>
+    <text class="mono micro" x="88" y="174">Classic shoe</text>
+    <text class="mono tiny" x="95" y="198">score 0.82</text>
+    <rect x="0" y="234" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
+    <path d="M12 272 C35 254 60 262 76 268 C58 282 28 284 12 272 Z" fill="#7a1717" stroke="#4c0f0f"/>
+    <text class="mono micro" x="88" y="252">Review match</text>
+    <text class="mono tiny" x="95" y="276">score 0.79</text>
+  </g>
+
+  <!-- SQL fusion callout -->
+  <path d="M2110 300 L2185 335 L2098 344 L2188 380 L2112 402 L2228 410 L2264 456 L2298 382 L2352 430 L2367 365 L2460 410 L2428 362 L2524 365 L2442 329 L2492 272 L2376 292 L2382 235 L2316 282 L2270 214 L2240 288 L2106 253 L2200 298 Z"
+        fill="#e9f5ff" stroke="#0c5b8b" stroke-width="6"/>
+  <text class="serif small" x="2312" y="322" text-anchor="middle">
+    <tspan x="2312" dy="0">AND/OR/NOT fusion</tspan>
+    <tspan x="2312" dy="34">via SQL logic</tspan>
+  </text>
+
+  <!-- Training loop -->
+  <rect x="35" y="1010" width="2860" height="405" rx="22" fill="#fff" stroke="#777" stroke-width="3"/>
+  <text class="serif h1" x="60" y="1090">Training Loop</text>
+  <g transform="translate(122 1140)" stroke="#111" stroke-width="4">
+    <path d="M0 0 H75 L100 25 V132 H0 Z" fill="#ffe4a7"/>
+    <path d="M75 0 V25 H100" fill="none"/>
+    <rect x="20" y="22" width="32" height="32" fill="#ff9c45"/>
+    <line x1="20" y1="70" x2="80" y2="70"/>
+    <line x1="20" y1="90" x2="80" y2="90"/>
+    <line x1="20" y1="110" x2="80" y2="110"/>
+    <circle cx="103" cy="105" r="32" fill="#b7d7e7"/>
+    <line x1="126" y1="130" x2="160" y2="168"/>
+  </g>
+  <text class="serif body" x="160" y="1337" text-anchor="middle">
+    <tspan x="160" dy="0">Expert DSL</tspan>
+    <tspan x="160" dy="48">Examples</tspan>
+  </text>
+  <path class="line" d="M280 1240 L375 1240"/>
+  <rect class="box" x="375" y="1125" width="575" height="260" rx="24"/>
+  <text class="serif h1" x="663" y="1275" text-anchor="middle">Stage 1: SFT</text>
+  <path class="line" d="M950 1260 L1015 1260"/>
+  <rect class="box" x="1018" y="1122" width="1840" height="265" rx="24"/>
+  <text class="serif h1" x="1893" y="1198" text-anchor="middle">Stage 2: RL (GRPO/DAPO)</text>
+  <text class="serif h2" x="1893" y="1265" text-anchor="middle">Hierarchical composite reward</text>
+  <text class="serif title" x="1893" y="1342" text-anchor="middle">
+    <tspan font-style="italic">R</tspan><tspan baseline-shift="sub" font-size="38">format</tspan>
+    <tspan> → </tspan>
+    <tspan font-style="italic">R</tspan><tspan baseline-shift="sub" font-size="38">exec</tspan>
+    <tspan> → </tspan>
+    <tspan font-style="italic">R</tspan><tspan baseline-shift="sub" font-size="38">result</tspan>
+  </text>
+
+  <!-- Reward signal feedback -->
+  <path d="M1880 1125 L1880 1080 L900 1080 L900 995" fill="none" stroke="#111" stroke-width="5" stroke-dasharray="14 14" marker-end="url(#arrowBlack)"/>
+  <text class="serif h2" x="1370" y="1062" text-anchor="middle">Reward Signal. Execution-based Reward</text>
+</svg>
