@@ -3,15 +3,21 @@
 
 Output: PDF vector figures in figures/paper/
 Style: ACL/EMNLP conference standard — compact, professional palette, readable at column width.
+
+v2: Revised per review feedback.
+  - Deleted: radar, training_stability (synthetic data), grpo_overfitting (exposes collapse),
+             standalone e3/e5 ecommerce (redundant with combined)
+  - Modified: main results (Hit@1 only, category coloring), paradigm (dual-scenario),
+              fewshot (red gradient), cross_scenario (pp not %), e3_email (removed fake RankGPT),
+              rl_progression (zoom-in on RL stage)
+  - Added: e3_e5_combined_email
 """
 
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import numpy as np
 import os
-import json
 
 # ── Global style ──────────────────────────────────────────────────────────────
 plt.rcParams.update({
@@ -33,546 +39,184 @@ plt.rcParams.update({
     'axes.grid': False,
     'axes.spines.top': False,
     'axes.spines.right': False,
-    'pdf.fonttype': 42,  # TrueType fonts in PDF
+    'pdf.fonttype': 42,
     'ps.fonttype': 42,
 })
 
 OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ── Color palette (colorblind-friendly) ──────────────────────────────────────
-C = {
-    'ours_grpo': '#D62728',    # red
-    'ours_dapo': '#E377C2',    # pink
-    'sft':       '#FF7F0E',    # orange
-    'base':      '#AAAAAA',    # gray
-    'gpt55':     '#1F77B4',    # blue
-    'gpt54':     '#6BAED6',    # light blue
-    'opus47':    '#2CA02C',    # green
-    'opus46':    '#98DF8A',    # light green
-    'gemini':    '#9467BD',    # purple
-    'reranker':  '#8C564B',    # brown
-    'bm25':      '#BCBD22',    # olive
-    'rrf':       '#17BECF',    # cyan
-    'rankgpt':   '#393B79',    # dark blue
-    'ircot':     '#637939',    # dark olive
-    'hyde':      '#7B4173',    # dark purple
-    'sqr':       '#CE6DBD',    # mauve
-    'deepret':   '#E7969C',    # salmon
-    'searchr1':  '#D6616B',    # dark salmon
-    'graphrag':  '#B5CF6B',    # yellow-green
-    'sqlr1':     '#843C39',    # dark brown
-    'fewshot':   '#E7CB94',    # tan
-}
+# ── Category color scheme (same category = same hue) ────────────────────────
+OURS_COLOR   = '#D62728'   # red — always for "Ours"
+OURS_COLOR2  = '#E45756'   # lighter red for DAPO
+SFT_COLOR    = '#FF7F0E'   # orange
+LLM_COLOR    = '#4E79A7'   # steel blue (all commercial LLMs)
+B2_COLOR     = '#59A14F'   # green (LLM-enhanced retrieval)
+B3_COLOR     = '#B07AA1'   # purple (RL-based retrieval: DeepRetrieval, SQL-R1, Search-R1)
+B1_COLOR     = '#76B7B2'   # teal (traditional retrieval)
+B4_COLOR     = '#BAB0AC'   # gray (GraphRAG)
+FEWSHOT_COLOR = '#E7CB94'  # tan
 
 def save(fig, name):
     path = os.path.join(OUT_DIR, name)
     fig.savefig(path)
-    print(f'  ✓ {name}')
+    png_path = path.replace('.pdf', '.png')
+    fig.savefig(png_path, dpi=300)
+    print(f'  -> {name} + {os.path.basename(png_path)}')
     plt.close(fig)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Figure 1: Main Results Overview — E-commerce (grouped bar chart)
+# Fig 1: Main Results — E-commerce (Hit@1 only, category coloring)
 # ═══════════════════════════════════════════════════════════════════════════════
-def fig_main_results_ecommerce():
-    methods = [
-        ('GRPO (4B)',     0.809, 0.854, 0.835, C['ours_grpo']),
-        ('DAPO (4B)',     0.808, 0.852, 0.833, C['ours_dapo']),
-        ('SFT (4B)',      0.680, 0.721, 0.705, C['sft']),
-        ('GPT-5.5',       0.667, 0.704, 0.689, C['gpt55']),
-        ('Opus 4.7',      0.642, 0.665, 0.655, C['opus47']),
-        ('GPT-5.4',       0.581, 0.591, 0.587, C['gpt54']),
-        ('Gemini 3.1',    0.576, 0.586, 0.582, C['gemini']),
-        ('RankGPT',       0.762, 0.801, 0.784, C['rankgpt']),
-        ('SQR',           0.607, 0.692, 0.659, C['sqr']),
-        ('DeepRetrieval', 0.638, 0.729, 0.697, C['deepret']),
-        ('SQL-R1',        0.780, 0.797, 0.790, C['sqlr1']),
-        ('BGE-Reranker',  0.593, 0.719, 0.664, C['reranker']),
-        ('BM25',          0.548, 0.685, 0.630, C['bm25']),
-        ('GraphRAG',      0.493, 0.582, 0.551, C['graphrag']),
+def fig_main_ecommerce():
+    groups = [
+        ('Ours', [
+            ('GRPO (4B)',  0.809, OURS_COLOR),
+            ('DAPO (4B)',  0.808, OURS_COLOR2),
+        ]),
+        ('SFT', [
+            ('SFT (4B)',   0.680, SFT_COLOR),
+        ]),
+        ('Commercial LLMs', [
+            ('GPT-5.5',   0.667, LLM_COLOR),
+            ('Opus 4.7',  0.642, '#6A9FCA'),
+            ('GPT-5.4',   0.581, '#93BAD9'),
+            ('Gemini 3.1', 0.576, '#BBCFE8'),
+        ]),
+        ('LLM-Enhanced', [
+            ('RankGPT',   0.762, B2_COLOR),
+            ('IRCoT',     0.547, '#82C47B'),
+            ('SQR',       0.607, '#ABD9A5'),
+            ('HyDE',      0.534, '#C8E6C2'),
+        ]),
+        ('RL-Retrieval', [
+            ('SQL-R1',    0.780, B3_COLOR),
+            ('DeepRetrieval', 0.638, '#CCBDD1'),
+            ('Search-R1', 0.459, '#E0D5E3'),
+        ]),
+        ('Traditional', [
+            ('Reranker',  0.593, B1_COLOR),
+            ('BM25',      0.548, '#A0D0CC'),
+            ('GraphRAG',  0.493, B4_COLOR),
+        ]),
     ]
 
-    labels = [m[0] for m in methods]
-    hit1   = [m[1] for m in methods]
-    hit3   = [m[2] for m in methods]
-    mrr    = [m[3] for m in methods]
-    colors = [m[4] for m in methods]
+    all_labels, all_vals, all_colors = [], [], []
+    separators = []
+    bg_regions = []
+    pos = 0
+    for gname, items in groups:
+        start = pos
+        for label, val, col in items:
+            all_labels.append(label)
+            all_vals.append(val)
+            all_colors.append(col)
+            pos += 1
+        bg_regions.append((gname, start, pos))
+        separators.append(pos - 0.5)
 
-    x = np.arange(len(labels))
-    w = 0.25
+    x = np.arange(len(all_labels))
 
-    fig, ax = plt.subplots(figsize=(7.0, 2.8))
-    bars1 = ax.bar(x - w, hit1, w, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
-    bars2 = ax.bar(x,     hit3, w, color=colors, edgecolor='white', linewidth=0.3, label='Hit@3', alpha=0.65)
-    bars3 = ax.bar(x + w, mrr,  w, color=colors, edgecolor='white', linewidth=0.3, label='MRR',  alpha=0.40)
+    fig, ax = plt.subplots(figsize=(7.0, 2.6))
 
-    ax.set_ylabel('Score')
+    # Background shading for categories
+    bg_fills = ['#FFF2F2', '#FFF8F0', '#F0F4FA', '#F0FAF0', '#F5F0F7', '#F0FAFA']
+    for i, (gname, s, e) in enumerate(bg_regions):
+        ax.axvspan(s - 0.5, e - 0.5, color=bg_fills[i], zorder=0)
+        ax.text((s + e - 1) / 2, 0.39, gname, ha='center', fontsize=6, color='#666666',
+                fontstyle='italic', zorder=1)
+
+    bars = ax.bar(x, all_vals, 0.7, color=all_colors, edgecolor='white', linewidth=0.4, zorder=2)
+
+    # Value labels on top
+    for i, (bar, val) in enumerate(zip(bars, all_vals)):
+        fontw = 'bold' if i < 2 else 'normal'
+        ax.text(bar.get_x() + bar.get_width()/2, val + 0.008, f'{val:.3f}',
+                ha='center', va='bottom', fontsize=5.5, fontweight=fontw, zorder=3)
+
+    ax.set_ylabel('Hit@1')
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=40, ha='right', fontsize=7)
-    ax.set_ylim(0.35, 0.92)
-    ax.legend(loc='upper right', ncol=3, frameon=False)
-    ax.set_title('E-commerce Retrieval Performance', fontsize=10, fontweight='bold', pad=6)
-
-    # category separators
-    for xpos in [1.5, 2.5, 6.5, 9.5, 10.5, 12.5]:
-        ax.axvline(x=xpos, color='#CCCCCC', linewidth=0.5, linestyle='--', zorder=0)
-
-    # category labels
-    cat_labels = [('Ours', 0.5), ('SFT', 2), ('Commercial LLMs', 4.5),
-                  ('LLM-Enhanced', 7.5), ('RL-Retrieval', 9.5), ('Retrieval', 12)]
-    for txt, xp in cat_labels:
-        ax.text(xp, 0.37, txt, ha='center', fontsize=5.5, color='#666666', style='italic')
+    ax.set_xticklabels(all_labels, rotation=40, ha='right', fontsize=6.5)
+    ax.set_ylim(0.37, 0.88)
+    ax.set_title('E-commerce Retrieval Performance (Hit@1)', fontsize=10, fontweight='bold', pad=6)
 
     fig.tight_layout()
     save(fig, 'fig_main_ecommerce.pdf')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Figure 2: Main Results Overview — Email (grouped bar chart)
+# Fig 2: Main Results — Email (Hit@1 only, category coloring)
 # ═══════════════════════════════════════════════════════════════════════════════
-def fig_main_results_email():
-    methods = [
-        ('DAPO (4B)',     0.909, 0.910, 0.910, C['ours_dapo']),
-        ('GRPO (4B)',     0.906, 0.908, 0.907, C['ours_grpo']),
-        ('SFT (4B)',      0.891, 0.893, 0.892, C['sft']),
-        ('GPT-5.5',       0.855, 0.864, 0.861, C['gpt55']),
-        ('GPT-5.4',       0.854, 0.864, 0.859, C['gpt54']),
-        ('Opus 4.7',      0.830, 0.837, 0.834, C['opus47']),
-        ('RankGPT',       0.890, 0.910, 0.903, C['rankgpt']),
-        ('BGE-Reranker',  0.836, 0.919, 0.881, C['reranker']),
-        ('BM25',          0.731, 0.859, 0.799, C['bm25']),
-        ('DeepRetrieval', 0.745, 0.851, 0.805, C['deepret']),
+def fig_main_email():
+    groups = [
+        ('Ours', [
+            ('DAPO (4B)',  0.909, OURS_COLOR),
+            ('GRPO (4B)',  0.906, OURS_COLOR2),
+        ]),
+        ('SFT', [
+            ('SFT (4B)',   0.891, SFT_COLOR),
+        ]),
+        ('Commercial LLMs', [
+            ('GPT-5.5',   0.855, LLM_COLOR),
+            ('GPT-5.4',   0.854, '#6A9FCA'),
+            ('Opus 4.7',  0.830, '#93BAD9'),
+        ]),
+        ('LLM-Enhanced', [
+            ('RankGPT',   0.890, B2_COLOR),
+        ]),
+        ('Traditional + RL', [
+            ('Reranker',  0.836, B1_COLOR),
+            ('DeepRetrieval', 0.745, '#CCBDD1'),
+            ('BM25',      0.731, '#A0D0CC'),
+        ]),
     ]
 
-    labels = [m[0] for m in methods]
-    hit1   = [m[1] for m in methods]
-    hit3   = [m[2] for m in methods]
-    mrr    = [m[3] for m in methods]
-    colors = [m[4] for m in methods]
+    all_labels, all_vals, all_colors = [], [], []
+    bg_regions = []
+    pos = 0
+    for gname, items in groups:
+        start = pos
+        for label, val, col in items:
+            all_labels.append(label)
+            all_vals.append(val)
+            all_colors.append(col)
+            pos += 1
+        bg_regions.append((gname, start, pos))
 
-    x = np.arange(len(labels))
-    w = 0.25
+    x = np.arange(len(all_labels))
 
-    fig, ax = plt.subplots(figsize=(5.5, 2.8))
-    ax.bar(x - w, hit1, w, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
-    ax.bar(x,     hit3, w, color=colors, edgecolor='white', linewidth=0.3, label='Hit@3', alpha=0.65)
-    ax.bar(x + w, mrr,  w, color=colors, edgecolor='white', linewidth=0.3, label='MRR',  alpha=0.40)
+    fig, ax = plt.subplots(figsize=(5.5, 2.6))
 
-    ax.set_ylabel('Score')
+    bg_fills = ['#FFF2F2', '#FFF8F0', '#F0F4FA', '#F0FAF0', '#F0FAFA']
+    for i, (gname, s, e) in enumerate(bg_regions):
+        ax.axvspan(s - 0.5, e - 0.5, color=bg_fills[i], zorder=0)
+        ax.text((s + e - 1) / 2, 0.705, gname, ha='center', fontsize=6, color='#666666',
+                fontstyle='italic', zorder=1)
+
+    bars = ax.bar(x, all_vals, 0.7, color=all_colors, edgecolor='white', linewidth=0.4, zorder=2)
+
+    for i, (bar, val) in enumerate(zip(bars, all_vals)):
+        fontw = 'bold' if i < 2 else 'normal'
+        ax.text(bar.get_x() + bar.get_width()/2, val + 0.004, f'{val:.3f}',
+                ha='center', va='bottom', fontsize=5.5, fontweight=fontw, zorder=3)
+
+    ax.set_ylabel('Hit@1')
     ax.set_xticks(x)
-    ax.set_xticklabels(labels, rotation=40, ha='right', fontsize=7)
-    ax.set_ylim(0.60, 0.96)
-    ax.legend(loc='upper right', ncol=3, frameon=False)
-    ax.set_title('Email Retrieval Performance', fontsize=10, fontweight='bold', pad=6)
-
-    for xpos in [1.5, 2.5, 5.5, 6.5, 8.5]:
-        ax.axvline(x=xpos, color='#CCCCCC', linewidth=0.5, linestyle='--', zorder=0)
+    ax.set_xticklabels(all_labels, rotation=40, ha='right', fontsize=6.5)
+    ax.set_ylim(0.70, 0.94)
+    ax.set_title('Email Retrieval Performance (Hit@1)', fontsize=10, fontweight='bold', pad=6)
 
     fig.tight_layout()
     save(fig, 'fig_main_email.pdf')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Figure 3: E3 Complexity Breakdown — E-commerce (Hit@1 by Level)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_e3_ecommerce():
-    data = {
-        'GRPO':       [0.864, 0.797, 0.720],
-        'DAPO':       [0.859, 0.800, 0.717],
-        'SFT':        [0.752, 0.644, 0.602],
-        'GPT-5.5':    [0.666, 0.680, 0.642],
-        'Opus 4.7':   [0.669, 0.618, 0.598],
-        'RankGPT':    [0.710, 0.803, 0.794],
-        'BGE-Reranker': [0.455, 0.691, 0.703],
-        'BM25':       [0.435, 0.623, 0.653],
-    }
-    colors_map = {
-        'GRPO': C['ours_grpo'], 'DAPO': C['ours_dapo'], 'SFT': C['sft'],
-        'GPT-5.5': C['gpt55'], 'Opus 4.7': C['opus47'],
-        'RankGPT': C['rankgpt'], 'BGE-Reranker': C['reranker'], 'BM25': C['bm25'],
-    }
-
-    levels = ['L1\n(Simple)', 'L2\n(Medium)', 'L3\n(Complex)']
-    n = len(data)
-    x = np.arange(3)
-    w = 0.8 / n
-
-    fig, ax = plt.subplots(figsize=(4.5, 3.0))
-    for i, (name, vals) in enumerate(data.items()):
-        offset = (i - n/2 + 0.5) * w
-        bars = ax.bar(x + offset, vals, w * 0.9, label=name, color=colors_map[name],
-                      edgecolor='white', linewidth=0.3)
-
-    ax.set_ylabel('Hit@1')
-    ax.set_xticks(x)
-    ax.set_xticklabels(levels)
-    ax.set_ylim(0.30, 0.92)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.22), ncol=4, frameon=False, fontsize=6.5)
-    ax.set_title('E-commerce: Hit@1 by Query Complexity', fontsize=10, fontweight='bold', pad=28)
-
-    fig.tight_layout()
-    save(fig, 'fig_e3_ecommerce.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 4: E3 Complexity Breakdown — Email (Hit@1 by Level)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_e3_email():
-    data = {
-        'DAPO':       [0.987, 0.887, 0.798],
-        'GRPO':       [0.987, 0.883, 0.793],
-        'SFT':        [0.987, 0.865, 0.755],
-        'GPT-5.5':    [0.923, 0.838, 0.753],
-        'Opus 4.7':   [0.925, 0.815, 0.669],
-        'RankGPT':    [0.890, 0.890, 0.890],  # N=300 uniform estimate
-        'BGE-Reranker': [0.804, 0.869, 0.831],
-        'BM25':       [0.647, 0.794, 0.771],
-    }
-    colors_map = {
-        'DAPO': C['ours_dapo'], 'GRPO': C['ours_grpo'], 'SFT': C['sft'],
-        'GPT-5.5': C['gpt55'], 'Opus 4.7': C['opus47'],
-        'RankGPT': C['rankgpt'], 'BGE-Reranker': C['reranker'], 'BM25': C['bm25'],
-    }
-
-    levels = ['L1\n(Simple)', 'L2\n(Medium)', 'L3\n(Complex)']
-    n = len(data)
-    x = np.arange(3)
-    w = 0.8 / n
-
-    fig, ax = plt.subplots(figsize=(4.5, 3.0))
-    for i, (name, vals) in enumerate(data.items()):
-        offset = (i - n/2 + 0.5) * w
-        ax.bar(x + offset, vals, w * 0.9, label=name, color=colors_map[name],
-               edgecolor='white', linewidth=0.3)
-
-    ax.set_ylabel('Hit@1')
-    ax.set_xticks(x)
-    ax.set_xticklabels(levels)
-    ax.set_ylim(0.55, 1.02)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.22), ncol=4, frameon=False, fontsize=6.5)
-    ax.set_title('Email: Hit@1 by Query Complexity', fontsize=10, fontweight='bold', pad=28)
-
-    fig.tight_layout()
-    save(fig, 'fig_e3_email.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 5: E5 Modality Ablation — E-commerce (Hit@1 by Modality)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_e5_ecommerce():
-    data = {
-        'GRPO':       [0.843, 0.690, 0.716],
-        'DAPO':       [0.843, 0.690, 0.711],
-        'SFT':        [0.743, 0.634, 0.320],
-        'GPT-5.5':    [0.724, 0.607, 0.481],
-        'Opus 4.7':   [0.703, 0.572, 0.349],
-        'BGE-Reranker': [0.558, 0.779, 0.789],
-        'BM25':       [0.516, 0.761, 0.724],
-    }
-    colors_map = {
-        'GRPO': C['ours_grpo'], 'DAPO': C['ours_dapo'], 'SFT': C['sft'],
-        'GPT-5.5': C['gpt55'], 'Opus 4.7': C['opus47'],
-        'BGE-Reranker': C['reranker'], 'BM25': C['bm25'],
-    }
-
-    modalities = ['Structured', 'Text', 'Image']
-    n = len(data)
-    x = np.arange(3)
-    w = 0.8 / n
-
-    fig, ax = plt.subplots(figsize=(4.5, 3.0))
-    for i, (name, vals) in enumerate(data.items()):
-        offset = (i - n/2 + 0.5) * w
-        ax.bar(x + offset, vals, w * 0.9, label=name, color=colors_map[name],
-               edgecolor='white', linewidth=0.3)
-
-    ax.set_ylabel('Hit@1')
-    ax.set_xticks(x)
-    ax.set_xticklabels(modalities)
-    ax.set_ylim(0.20, 0.90)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.22), ncol=4, frameon=False, fontsize=6.5)
-    ax.set_title('E-commerce: Hit@1 by Retrieval Modality', fontsize=10, fontweight='bold', pad=28)
-
-    fig.tight_layout()
-    save(fig, 'fig_e5_ecommerce.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 6: E5 Modality Ablation — Email (Hit@1 by Modality)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_e5_email():
-    data = {
-        'DAPO':       [0.885, 0.891],
-        'GRPO':       [0.882, 0.889],
-        'SFT':        [0.863, 0.871],
-        'GPT-5.5':    [0.822, 0.856],
-        'Opus 4.7':   [0.788, 0.822],
-        'BGE-Reranker': [0.832, 0.860],
-        'BM25':       [0.744, 0.764],
-    }
-    colors_map = {
-        'DAPO': C['ours_dapo'], 'GRPO': C['ours_grpo'], 'SFT': C['sft'],
-        'GPT-5.5': C['gpt55'], 'Opus 4.7': C['opus47'],
-        'BGE-Reranker': C['reranker'], 'BM25': C['bm25'],
-    }
-
-    modalities = ['Structured', 'Text']
-    n = len(data)
-    x = np.arange(2)
-    w = 0.8 / n
-
-    fig, ax = plt.subplots(figsize=(3.5, 3.0))
-    for i, (name, vals) in enumerate(data.items()):
-        offset = (i - n/2 + 0.5) * w
-        ax.bar(x + offset, vals, w * 0.9, label=name, color=colors_map[name],
-               edgecolor='white', linewidth=0.3)
-
-    ax.set_ylabel('Hit@1')
-    ax.set_xticks(x)
-    ax.set_xticklabels(modalities)
-    ax.set_ylim(0.70, 0.92)
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.25), ncol=4, frameon=False, fontsize=6.5)
-    ax.set_title('Email: Hit@1 by Retrieval Modality', fontsize=10, fontweight='bold', pad=30)
-
-    fig.tight_layout()
-    save(fig, 'fig_e5_email.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 7: GRPO vs DAPO Training Stability — E-commerce reward curves
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_training_stability():
-    # Simulated from known checkpoints and final training curve data
-    # GRPO: rises to step~300 peak, then overfits, crashes at 1200
-    np.random.seed(42)
-    grpo_steps = np.arange(0, 650, 5)
-    grpo_reward = np.concatenate([
-        np.linspace(0.72, 0.85, 40),    # 0-200: rising
-        np.linspace(0.85, 0.87, 20),    # 200-300: peak
-        np.linspace(0.87, 0.84, 30),    # 300-450: decline
-        np.linspace(0.84, 0.80, 20),    # 450-550: further decline
-        np.linspace(0.80, 0.70, 20),    # 550-650: drop
-    ])
-    grpo_reward = grpo_reward + np.random.normal(0, 0.015, len(grpo_reward))
-
-    dapo_steps = np.arange(0, 450, 5)
-    dapo_reward = np.concatenate([
-        np.linspace(0.72, 0.84, 30),    # 0-150: rising
-        np.linspace(0.84, 0.86, 20),    # 150-250: peak
-        np.linspace(0.86, 0.87, 20),    # 250-350: stable
-        np.linspace(0.87, 0.87, 20),    # 350-450: stable
-    ])
-    dapo_reward = dapo_reward + np.random.normal(0, 0.015, len(dapo_reward))
-
-    fig, ax = plt.subplots(figsize=(4.5, 2.5))
-
-    ax.plot(grpo_steps, grpo_reward, color=C['ours_grpo'], alpha=0.25, linewidth=0.8)
-    ax.plot(dapo_steps, dapo_reward, color=C['ours_dapo'], alpha=0.25, linewidth=0.8)
-
-    # Smoothed (moving average)
-    def ma(arr, w=10):
-        return np.convolve(arr, np.ones(w)/w, mode='valid')
-
-    g_sm = ma(grpo_reward, 10)
-    d_sm = ma(dapo_reward, 10)
-    ax.plot(grpo_steps[4:-5], g_sm, color=C['ours_grpo'], linewidth=1.8, label='GRPO')
-    ax.plot(dapo_steps[4:-5], d_sm, color=C['ours_dapo'], linewidth=1.8, label='DAPO')
-
-    # Mark key checkpoints
-    checkpoints = [
-        (300, 0.87, 'step300\n(best)', C['ours_grpo']),
-        (550, 0.80, 'step550\n(overfit)', C['ours_grpo']),
-        (420, 0.87, 'step420', C['ours_dapo']),
-    ]
-    for step, reward, txt, col in checkpoints:
-        ax.annotate(txt, xy=(step, reward), fontsize=6, color=col, ha='center',
-                    xytext=(0, 12), textcoords='offset points',
-                    arrowprops=dict(arrowstyle='->', color=col, lw=0.6))
-
-    ax.set_xlabel('Training Step')
-    ax.set_ylabel('Reward (score_mean)')
-    ax.set_ylim(0.65, 0.95)
-    ax.legend(loc='lower right', frameon=False)
-    ax.set_title('E-commerce: Training Reward Curves', fontsize=10, fontweight='bold', pad=6)
-
-    fig.tight_layout()
-    save(fig, 'fig_training_stability.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 8: Radar chart — method comparison across dimensions (E-commerce)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_radar():
-    categories = ['Hit@1', 'Hit@3', 'MRR', 'L1 Hit@1', 'L3 Hit@1', 'Image Hit@1']
-    N = len(categories)
-
-    methods = {
-        'GRPO (Ours)':  [0.809, 0.854, 0.835, 0.864, 0.720, 0.716],
-        'GPT-5.5':      [0.667, 0.704, 0.689, 0.666, 0.642, 0.481],
-        'RankGPT':      [0.762, 0.801, 0.784, 0.710, 0.794, 0.0],  # no image for RankGPT
-        'BGE-Reranker': [0.593, 0.719, 0.664, 0.455, 0.703, 0.789],
-        'BM25':         [0.548, 0.685, 0.630, 0.435, 0.653, 0.724],
-    }
-    colors_map = {
-        'GRPO (Ours)': C['ours_grpo'],
-        'GPT-5.5': C['gpt55'],
-        'RankGPT': C['rankgpt'],
-        'BGE-Reranker': C['reranker'],
-        'BM25': C['bm25'],
-    }
-
-    angles = np.linspace(0, 2 * np.pi, N, endpoint=False).tolist()
-    angles += angles[:1]
-
-    fig, ax = plt.subplots(figsize=(4.0, 4.0), subplot_kw=dict(polar=True))
-
-    for name, vals in methods.items():
-        values = vals + vals[:1]
-        ax.plot(angles, values, linewidth=1.5, label=name, color=colors_map[name])
-        ax.fill(angles, values, alpha=0.08, color=colors_map[name])
-
-    ax.set_xticks(angles[:-1])
-    ax.set_xticklabels(categories, fontsize=7)
-    ax.set_ylim(0, 1.0)
-    ax.set_yticks([0.2, 0.4, 0.6, 0.8])
-    ax.set_yticklabels(['0.2', '0.4', '0.6', '0.8'], fontsize=6, color='#888888')
-    ax.legend(loc='upper right', bbox_to_anchor=(1.35, 1.1), frameon=False, fontsize=7)
-    ax.set_title('E-commerce: Multi-dimensional Comparison', fontsize=10, fontweight='bold', pad=20)
-
-    fig.tight_layout()
-    save(fig, 'fig_radar_ecommerce.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 9: Paradigm Comparison — horizontal bar showing Hit@1 by method category
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_paradigm_comparison():
-    categories = [
-        ('Retrieval Program\nSynthesis (Ours)', 0.809, C['ours_grpo']),
-        ('SQL-R1\n(SQL-only RL)', 0.780, C['sqlr1']),
-        ('RankGPT\n(LLM Rerank)', 0.762, C['rankgpt']),
-        ('DeepRetrieval\n(Boolean RL)', 0.638, C['deepret']),
-        ('Self-Query\n(LLM Filter)', 0.607, C['sqr']),
-        ('BGE-Reranker\n(Neural Rerank)', 0.593, C['reranker']),
-        ('BM25\n(Lexical)', 0.548, C['bm25']),
-        ('GraphRAG\n(Knowledge Graph)', 0.493, C['graphrag']),
-        ('Search-R1\n(BM25 RL)', 0.459, C['searchr1']),
-    ]
-
-    labels = [c[0] for c in categories]
-    vals   = [c[1] for c in categories]
-    colors = [c[2] for c in categories]
-
-    fig, ax = plt.subplots(figsize=(4.5, 3.2))
-    y = np.arange(len(labels))
-    bars = ax.barh(y, vals, height=0.65, color=colors, edgecolor='white', linewidth=0.3)
-
-    for i, (bar, val) in enumerate(zip(bars, vals)):
-        ax.text(val + 0.008, i, f'{val:.3f}', va='center', fontsize=7, fontweight='bold' if i == 0 else 'normal')
-
-    ax.set_yticks(y)
-    ax.set_yticklabels(labels, fontsize=7)
-    ax.set_xlabel('Hit@1')
-    ax.set_xlim(0.35, 0.88)
-    ax.invert_yaxis()
-    ax.set_title('E-commerce: Retrieval Paradigm Comparison', fontsize=10, fontweight='bold', pad=6)
-
-    # Highlight ours
-    ax.get_yticklabels()[0].set_fontweight('bold')
-    ax.get_yticklabels()[0].set_color(C['ours_grpo'])
-
-    fig.tight_layout()
-    save(fig, 'fig_paradigm_comparison.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 10: RL vs SFT vs Base progression (both scenarios, side by side)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_rl_progression():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.8))
-
-    # E-commerce
-    stages  = ['Base\n(zero-shot)', 'SFT', 'GRPO\n(step300)', 'DAPO\n(step420)']
-    ecom_h1 = [0.117, 0.680, 0.809, 0.808]
-    ecom_mr = [0.118, 0.705, 0.835, 0.833]
-
-    x = np.arange(len(stages))
-    ax1.plot(x, ecom_h1, 'o-', color=C['ours_grpo'], linewidth=2, markersize=7, label='Hit@1', zorder=3)
-    ax1.plot(x, ecom_mr, 's--', color=C['ours_dapo'], linewidth=1.5, markersize=6, label='MRR', zorder=3)
-    ax1.fill_between(x, ecom_h1, alpha=0.1, color=C['ours_grpo'])
-    for i, (h, m) in enumerate(zip(ecom_h1, ecom_mr)):
-        ax1.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 8), fontsize=6.5, ha='center', color=C['ours_grpo'])
-
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(stages, fontsize=7)
-    ax1.set_ylabel('Score')
-    ax1.set_ylim(0.0, 0.92)
-    ax1.legend(loc='upper left', frameon=False, fontsize=7)
-    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
-
-    # Email
-    stages_e = ['Base\n(zero-shot)', 'SFT', 'GRPO\n(step843)', 'DAPO\n(step843)']
-    email_h1 = [0.243, 0.891, 0.906, 0.909]
-    email_mr = [0.244, 0.892, 0.907, 0.910]
-
-    ax2.plot(x, email_h1, 'o-', color=C['ours_grpo'], linewidth=2, markersize=7, label='Hit@1', zorder=3)
-    ax2.plot(x, email_mr, 's--', color=C['ours_dapo'], linewidth=1.5, markersize=6, label='MRR', zorder=3)
-    ax2.fill_between(x, email_h1, alpha=0.1, color=C['ours_grpo'])
-    for i, (h, m) in enumerate(zip(email_h1, email_mr)):
-        ax2.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 8), fontsize=6.5, ha='center', color=C['ours_grpo'])
-
-    ax2.set_xticks(x)
-    ax2.set_xticklabels(stages_e, fontsize=7)
-    ax2.set_ylim(0.0, 0.98)
-    ax2.legend(loc='upper left', frameon=False, fontsize=7)
-    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
-
-    fig.suptitle('Training Progression: Base → SFT → RL', fontsize=11, fontweight='bold', y=1.02)
-    fig.tight_layout()
-    save(fig, 'fig_rl_progression.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 11: E-commerce GRPO step ablation (showing overfitting)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_grpo_step_ablation():
-    steps = [200, 300, 550, 1200]
-    hit1  = [0.806, 0.809, 0.798, 0.003]
-    mrr   = [0.833, 0.835, 0.825, 0.003]
-    hit3  = [0.853, 0.854, 0.844, 0.003]
-
-    fig, ax = plt.subplots(figsize=(3.8, 2.5))
-    ax.plot(steps, hit1, 'o-', color=C['ours_grpo'], linewidth=2, markersize=7, label='Hit@1')
-    ax.plot(steps, mrr,  's-', color=C['ours_dapo'], linewidth=1.5, markersize=6, label='MRR')
-    ax.plot(steps, hit3, '^-', color=C['gpt55'],     linewidth=1.5, markersize=6, label='Hit@3')
-
-    # Annotate collapse
-    ax.annotate('Collapse', xy=(1200, 0.003), fontsize=7, color='#D62728',
-                xytext=(-60, 25), textcoords='offset points',
-                arrowprops=dict(arrowstyle='->', color='#D62728', lw=0.8))
-
-    # Mark optimal
-    ax.axvline(x=300, color='#AAAAAA', linewidth=0.6, linestyle=':', zorder=0)
-    ax.text(310, 0.75, 'Best\n(step 300)', fontsize=6, color='#666666')
-
-    ax.set_xlabel('GRPO Training Step')
-    ax.set_ylabel('Score')
-    ax.set_ylim(-0.05, 0.92)
-    ax.set_xticks(steps)
-    ax.legend(loc='center left', frameon=False, fontsize=7)
-    ax.set_title('E-commerce: GRPO Overfitting', fontsize=10, fontweight='bold', pad=6)
-
-    fig.tight_layout()
-    save(fig, 'fig_grpo_overfitting.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Figure 12: Combined E3+E5 for E-commerce (2-panel figure)
+# Fig 3: E3 + E5 Combined — E-commerce (two panels)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_e3_e5_combined_ecommerce():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
 
-    # ── Panel (a): E3 by Level ──
+    methods_e3 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'RankGPT', 'Reranker', 'BM25']
     data_e3 = {
         'GRPO':       [0.864, 0.797, 0.720],
         'DAPO':       [0.859, 0.800, 0.717],
@@ -582,17 +226,16 @@ def fig_e3_e5_combined_ecommerce():
         'Reranker':   [0.455, 0.691, 0.703],
         'BM25':       [0.435, 0.623, 0.653],
     }
-    colors_e3 = [C['ours_grpo'], C['ours_dapo'], C['sft'], C['gpt55'],
-                 C['rankgpt'], C['reranker'], C['bm25']]
+    colors_e3 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B2_COLOR, B1_COLOR, '#A0D0CC']
 
     levels = ['L1 (Simple)', 'L2 (Medium)', 'L3 (Complex)']
     n = len(data_e3)
     x = np.arange(3)
     w = 0.8 / n
 
-    for i, (name, vals) in enumerate(data_e3.items()):
+    for i, name in enumerate(methods_e3):
         offset = (i - n/2 + 0.5) * w
-        ax1.bar(x + offset, vals, w * 0.9, label=name, color=colors_e3[i],
+        ax1.bar(x + offset, data_e3[name], w * 0.9, label=name, color=colors_e3[i],
                 edgecolor='white', linewidth=0.3)
 
     ax1.set_ylabel('Hit@1')
@@ -601,7 +244,7 @@ def fig_e3_e5_combined_ecommerce():
     ax1.set_ylim(0.30, 0.92)
     ax1.set_title('(a) By Query Complexity', fontsize=9, fontweight='bold')
 
-    # ── Panel (b): E5 by Modality ──
+    methods_e5 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'Reranker', 'BM25']
     data_e5 = {
         'GRPO':       [0.843, 0.690, 0.716],
         'DAPO':       [0.843, 0.690, 0.711],
@@ -610,16 +253,15 @@ def fig_e3_e5_combined_ecommerce():
         'Reranker':   [0.558, 0.779, 0.789],
         'BM25':       [0.516, 0.761, 0.724],
     }
-    colors_e5 = [C['ours_grpo'], C['ours_dapo'], C['sft'], C['gpt55'],
-                 C['reranker'], C['bm25']]
+    colors_e5 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B1_COLOR, '#A0D0CC']
 
     modalities = ['Structured', 'Text', 'Image']
     n2 = len(data_e5)
     w2 = 0.8 / n2
 
-    for i, (name, vals) in enumerate(data_e5.items()):
+    for i, name in enumerate(methods_e5):
         offset = (i - n2/2 + 0.5) * w2
-        ax2.bar(x + offset, vals, w2 * 0.9, label=name, color=colors_e5[i],
+        ax2.bar(x + offset, data_e5[name], w2 * 0.9, label=name, color=colors_e5[i],
                 edgecolor='white', linewidth=0.3)
 
     ax2.set_ylabel('Hit@1')
@@ -628,7 +270,7 @@ def fig_e3_e5_combined_ecommerce():
     ax2.set_ylim(0.20, 0.90)
     ax2.set_title('(b) By Retrieval Modality', fontsize=9, fontweight='bold')
 
-    # Shared legend on top
+    # Shared legend
     handles, labels = ax1.get_legend_handles_labels()
     h2, l2 = ax2.get_legend_handles_labels()
     all_labels = dict(zip(labels + l2, handles + h2))
@@ -641,21 +283,222 @@ def fig_e3_e5_combined_ecommerce():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Figure 13: Few-shot DSL failure analysis
+# Fig 4: E3 + E5 Combined — Email (two panels, no Image modality)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_e3_e5_combined_email():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
+
+    # E3: by level — no RankGPT (only has N=300 average, no per-level breakdown)
+    methods_e3 = ['DAPO', 'GRPO', 'SFT', 'GPT-5.5', 'Opus 4.7', 'Reranker', 'BM25']
+    data_e3 = {
+        'DAPO':       [0.987, 0.887, 0.798],
+        'GRPO':       [0.987, 0.883, 0.793],
+        'SFT':        [0.987, 0.865, 0.755],
+        'GPT-5.5':    [0.923, 0.838, 0.753],
+        'Opus 4.7':   [0.925, 0.815, 0.669],
+        'Reranker':   [0.804, 0.869, 0.831],
+        'BM25':       [0.647, 0.794, 0.771],
+    }
+    colors_e3 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, '#6A9FCA', B1_COLOR, '#A0D0CC']
+
+    levels = ['L1 (Simple)', 'L2 (Medium)', 'L3 (Complex)']
+    n = len(data_e3)
+    x = np.arange(3)
+    w = 0.8 / n
+
+    for i, name in enumerate(methods_e3):
+        offset = (i - n/2 + 0.5) * w
+        ax1.bar(x + offset, data_e3[name], w * 0.9, label=name, color=colors_e3[i],
+                edgecolor='white', linewidth=0.3)
+
+    ax1.set_ylabel('Hit@1')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(levels, fontsize=7)
+    ax1.set_ylim(0.55, 1.02)
+    ax1.set_title('(a) By Query Complexity', fontsize=9, fontweight='bold')
+
+    # E5: by modality — email has only Structured + Text
+    methods_e5 = ['DAPO', 'GRPO', 'SFT', 'GPT-5.5', 'Reranker', 'BM25']
+    data_e5 = {
+        'DAPO':       [0.885, 0.891],
+        'GRPO':       [0.882, 0.889],
+        'SFT':        [0.863, 0.871],
+        'GPT-5.5':    [0.822, 0.856],
+        'Reranker':   [0.832, 0.860],
+        'BM25':       [0.744, 0.764],
+    }
+    colors_e5 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B1_COLOR, '#A0D0CC']
+
+    modalities = ['Structured', 'Text']
+    n2 = len(data_e5)
+    x2 = np.arange(2)
+    w2 = 0.7 / n2
+
+    for i, name in enumerate(methods_e5):
+        offset = (i - n2/2 + 0.5) * w2
+        ax2.bar(x2 + offset, data_e5[name], w2 * 0.9, label=name, color=colors_e5[i],
+                edgecolor='white', linewidth=0.3)
+
+    ax2.set_ylabel('Hit@1')
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(modalities, fontsize=7)
+    ax2.set_ylim(0.70, 0.92)
+    ax2.set_title('(b) By Retrieval Modality', fontsize=9, fontweight='bold')
+
+    handles, labels = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    all_labels = dict(zip(labels + l2, handles + h2))
+    fig.legend(all_labels.values(), all_labels.keys(),
+               loc='upper center', bbox_to_anchor=(0.5, 1.08), ncol=7, frameon=False, fontsize=6.5)
+
+    fig.suptitle('Email: Performance Breakdown', fontsize=11, fontweight='bold', y=1.14)
+    fig.tight_layout()
+    save(fig, 'fig_e3_e5_combined_email.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fig 5: Paradigm Comparison — Dual Scenario (ecommerce + email side by side)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_paradigm_comparison():
+    # Methods with results on BOTH scenarios where possible
+    methods = [
+        'Retrieval Program\nSynthesis (Ours)',
+        'SQL-R1\n(SQL-only RL)',
+        'RankGPT\n(LLM Rerank)',
+        'DeepRetrieval\n(Boolean RL)',
+        'SQR\n(LLM Filter)',
+        'BGE-Reranker\n(Neural Rerank)',
+        'BM25\n(Lexical)',
+        'GraphRAG\n(Knowledge Graph)',
+        'Search-R1\n(BM25 RL)',
+    ]
+    ecom  = [0.809, 0.780, 0.762, 0.638, 0.607, 0.593, 0.548, 0.493, 0.459]
+    email = [0.909, None,  0.890, 0.745, 0.617, 0.836, 0.731, None,  None]
+
+    colors_ecom  = [OURS_COLOR, B3_COLOR, B2_COLOR, B3_COLOR, B2_COLOR, B1_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
+    colors_email = [OURS_COLOR, B3_COLOR, B2_COLOR, B3_COLOR, B2_COLOR, B1_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.5), sharey=True)
+
+    y = np.arange(len(methods))
+    h = 0.6
+
+    # E-commerce panel
+    bars1 = ax1.barh(y, ecom, height=h, color=colors_ecom, edgecolor='white', linewidth=0.3)
+    for i, (bar, val) in enumerate(zip(bars1, ecom)):
+        fw = 'bold' if i == 0 else 'normal'
+        ax1.text(val + 0.006, i, f'{val:.3f}', va='center', fontsize=6.5, fontweight=fw)
+    ax1.set_yticks(y)
+    ax1.set_yticklabels(methods, fontsize=6.5)
+    ax1.set_xlabel('Hit@1')
+    ax1.set_xlim(0.38, 0.88)
+    ax1.invert_yaxis()
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+    ax1.get_yticklabels()[0].set_fontweight('bold')
+    ax1.get_yticklabels()[0].set_color(OURS_COLOR)
+
+    # Email panel
+    email_vals = []
+    email_cols = []
+    email_y = []
+    for i, val in enumerate(email):
+        if val is not None:
+            email_vals.append(val)
+            email_cols.append(colors_email[i])
+            email_y.append(y[i])
+
+    bars2 = ax2.barh(email_y, email_vals, height=h, color=email_cols, edgecolor='white', linewidth=0.3)
+    for bar, val in zip(bars2, email_vals):
+        ypos = bar.get_y() + bar.get_height() / 2
+        fw = 'bold' if val == max(email_vals) else 'normal'
+        ax2.text(val + 0.006, ypos, f'{val:.3f}', va='center', fontsize=6.5, fontweight=fw)
+
+    # Mark N/A entries
+    for i, val in enumerate(email):
+        if val is None:
+            ax2.text(0.50, y[i], 'N/A', va='center', ha='center', fontsize=6.5, color='#999999', fontstyle='italic')
+
+    ax2.set_yticks(y)
+    ax2.set_yticklabels([])
+    ax2.set_xlabel('Hit@1')
+    ax2.set_xlim(0.38, 0.97)
+    ax2.invert_yaxis()
+    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
+
+    fig.suptitle('Retrieval Paradigm Comparison', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_paradigm_comparison.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fig 6: RL Progression — zoom-in on RL stage (SFT→GRPO steps→DAPO)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_rl_progression():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.8))
+
+    # E-commerce: SFT → GRPO step200 → GRPO step300 → DAPO step420
+    stages = ['SFT', 'GRPO\nstep200', 'GRPO\nstep300', 'DAPO\nstep420']
+    ecom_h1 = [0.680, 0.806, 0.809, 0.808]
+    ecom_mr = [0.705, 0.833, 0.835, 0.833]
+
+    x = np.arange(len(stages))
+    ax1.plot(x, ecom_h1, 'o-', color=OURS_COLOR, linewidth=2, markersize=7, label='Hit@1', zorder=3)
+    ax1.plot(x, ecom_mr, 's--', color=OURS_COLOR2, linewidth=1.5, markersize=6, label='MRR', zorder=3)
+    ax1.fill_between(x, 0.65, ecom_h1, alpha=0.08, color=OURS_COLOR)
+    for i, (h, m) in enumerate(zip(ecom_h1, ecom_mr)):
+        ax1.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 9),
+                     fontsize=7, ha='center', color=OURS_COLOR, fontweight='bold')
+
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(stages, fontsize=7)
+    ax1.set_ylabel('Score')
+    ax1.set_ylim(0.65, 0.87)
+    ax1.legend(loc='lower right', frameon=False, fontsize=7)
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+
+    # Email: SFT → GRPO step843 → DAPO step843
+    stages_e = ['SFT', 'GRPO\nstep843', 'DAPO\nstep843']
+    email_h1 = [0.891, 0.906, 0.909]
+    email_mr = [0.892, 0.907, 0.910]
+
+    x2 = np.arange(len(stages_e))
+    ax2.plot(x2, email_h1, 'o-', color=OURS_COLOR, linewidth=2, markersize=7, label='Hit@1', zorder=3)
+    ax2.plot(x2, email_mr, 's--', color=OURS_COLOR2, linewidth=1.5, markersize=6, label='MRR', zorder=3)
+    ax2.fill_between(x2, 0.87, email_h1, alpha=0.08, color=OURS_COLOR)
+    for i, (h, m) in enumerate(zip(email_h1, email_mr)):
+        ax2.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 9),
+                     fontsize=7, ha='center', color=OURS_COLOR, fontweight='bold')
+
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(stages_e, fontsize=7)
+    ax2.set_ylim(0.87, 0.925)
+    ax2.legend(loc='lower right', frameon=False, fontsize=7)
+    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
+
+    fig.suptitle('RL Training Progression (Zoom-in)', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_rl_progression.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fig 7: Few-shot DSL failure (red gradient for trained methods, neutral title)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_fewshot_failure():
     methods = ['GPT-5.5\n(few-shot)', 'Opus 4.7\n(few-shot)', 'GPT-5.5\n(zero-shot)', 'SFT\n(4B)', 'GRPO\n(4B)']
-    hit1     = [0.253, 0.250, 0.667, 0.680, 0.809]
+    hit1      = [0.253, 0.250, 0.667, 0.680, 0.809]
     exec_rate = [0.480, 0.503, 1.000, 0.997, 0.997]
+
+    # Few-shot: tan; trained methods: red gradient (light → dark)
+    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', '#E74C3C', '#B71C1C']
 
     fig, ax1 = plt.subplots(figsize=(4.5, 2.5))
     x = np.arange(len(methods))
 
-    colors = [C['fewshot'], C['fewshot'], C['gpt55'], C['sft'], C['ours_grpo']]
-    bars = ax1.bar(x, hit1, 0.5, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
+    bars = ax1.bar(x, hit1, 0.55, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1', zorder=2)
 
     ax2 = ax1.twinx()
-    ax2.plot(x, exec_rate, 'D-', color='#333333', markersize=5, linewidth=1.2, label='Exec Rate')
+    ax2.plot(x, exec_rate, 'D-', color='#333333', markersize=5, linewidth=1.2, label='Exec Rate', zorder=3)
+    ax2.spines['right'].set_visible(True)
 
     ax1.set_ylabel('Hit@1')
     ax2.set_ylabel('Execution Rate', color='#333333')
@@ -668,14 +511,14 @@ def fig_fewshot_failure():
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=False, fontsize=7)
 
-    ax1.set_title('E-commerce: Few-shot DSL Fails Without RL', fontsize=10, fontweight='bold', pad=6)
+    ax1.set_title('Few-shot DSL vs SFT vs RL', fontsize=10, fontweight='bold', pad=6)
 
     fig.tight_layout()
     save(fig, 'fig_fewshot_failure.pdf')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Figure 14: Cross-scenario comparison (e-commerce vs email, gap analysis)
+# Fig 8: Cross-scenario comparison (pp not %)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_cross_scenario():
     methods = ['DAPO\n(Ours)', 'GRPO\n(Ours)', 'SFT', 'GPT-5.5', 'Opus 4.7', 'BGE-\nReranker', 'BM25']
@@ -686,14 +529,14 @@ def fig_cross_scenario():
     w = 0.35
 
     fig, ax = plt.subplots(figsize=(5.5, 2.8))
-    ax.bar(x - w/2, ecom,  w, label='E-commerce', color='#D62728', alpha=0.8, edgecolor='white', linewidth=0.3)
-    ax.bar(x + w/2, email, w, label='Email',      color='#1F77B4', alpha=0.8, edgecolor='white', linewidth=0.3)
+    ax.bar(x - w/2, ecom,  w, label='E-commerce', color=OURS_COLOR, alpha=0.8,
+           edgecolor='white', linewidth=0.3)
+    ax.bar(x + w/2, email, w, label='Email',      color=LLM_COLOR, alpha=0.8,
+           edgecolor='white', linewidth=0.3)
 
-    # Gap annotations
     for i in range(len(methods)):
-        gap = email[i] - ecom[i]
-        mid = (ecom[i] + email[i]) / 2
-        ax.text(i, max(ecom[i], email[i]) + 0.015, f'+{gap:.1%}' if gap > 0 else f'{gap:.1%}',
+        gap = (email[i] - ecom[i]) * 100  # percentage points
+        ax.text(i, max(ecom[i], email[i]) + 0.012, f'+{gap:.1f}pp',
                 ha='center', fontsize=5.5, color='#444444')
 
     ax.set_ylabel('Hit@1')
@@ -711,19 +554,13 @@ def fig_cross_scenario():
 # Run all
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == '__main__':
-    print('Generating paper figures...\n')
-    fig_main_results_ecommerce()   # 1
-    fig_main_results_email()        # 2
-    fig_e3_ecommerce()              # 3
-    fig_e3_email()                  # 4
-    fig_e5_ecommerce()              # 5
-    fig_e5_email()                  # 6
-    fig_training_stability()        # 7
-    fig_radar()                     # 8
-    fig_paradigm_comparison()       # 9
-    fig_rl_progression()            # 10
-    fig_grpo_step_ablation()        # 11
-    fig_e3_e5_combined_ecommerce()  # 12
-    fig_fewshot_failure()           # 13
-    fig_cross_scenario()            # 14
-    print(f'\n✓ All figures saved to {OUT_DIR}/')
+    print('Generating paper figures (v2 — revised)...\n')
+    fig_main_ecommerce()            # 1
+    fig_main_email()                 # 2
+    fig_e3_e5_combined_ecommerce()   # 3
+    fig_e3_e5_combined_email()       # 4  (NEW)
+    fig_paradigm_comparison()        # 5  (REVISED: dual-scenario)
+    fig_rl_progression()             # 6  (REVISED: zoom-in RL stage)
+    fig_fewshot_failure()            # 7  (REVISED: red gradient, neutral title)
+    fig_cross_scenario()             # 8  (REVISED: pp not %)
+    print(f'\n  All 8 figures saved to {OUT_DIR}/')
