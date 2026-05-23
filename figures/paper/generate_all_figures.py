@@ -551,6 +551,182 @@ def fig_cross_scenario():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Fig 9: E6 — Orchestration Behavior Analysis (retrieval action frequencies)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_e6_orchestration():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
+
+    # E-commerce
+    methods_ec = ['Base (4B)', 'SFT (4B)', 'GRPO (4B)', 'DAPO (4B)', 'GPT-5.5', 'Opus 4.7']
+    sql_ec     = [1.000, 1.000, 1.000, 1.000, 1.000, 0.9997]
+    text_ec    = [0.168, 0.434, 0.623, 0.623, 0.553, 0.513]
+    image_ec   = [0.113, 0.310, 0.000, 0.000, 0.191, 0.326]
+    colors_act = ['#4E79A7', '#59A14F', '#E15759']
+
+    x = np.arange(len(methods_ec))
+    w = 0.25
+
+    ax1.bar(x - w, sql_ec,   w, label='SQL Filter', color=colors_act[0], edgecolor='white', linewidth=0.3)
+    ax1.bar(x,     text_ec,  w, label='Text Search', color=colors_act[1], edgecolor='white', linewidth=0.3)
+    ax1.bar(x + w, image_ec, w, label='Image Search', color=colors_act[2], edgecolor='white', linewidth=0.3)
+
+    ax1.set_ylabel('Action Frequency')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(methods_ec, rotation=30, ha='right', fontsize=6.5)
+    ax1.set_ylim(0, 1.15)
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+
+    # Email
+    methods_em = ['Base (4B)', 'SFT (4B)', 'GRPO (4B)', 'DAPO (4B)', 'GPT-5.5', 'Opus 4.7']
+    sql_em     = [1.000, 1.000, 1.000, 1.000, 1.000, 1.000]
+    text_em    = [0.605, 0.736, 0.730, 0.745, 0.723, 0.717]
+
+    x2 = np.arange(len(methods_em))
+
+    ax2.bar(x2 - w/2, sql_em,  w, label='SQL Filter', color=colors_act[0], edgecolor='white', linewidth=0.3)
+    ax2.bar(x2 + w/2, text_em, w, label='Text Search', color=colors_act[1], edgecolor='white', linewidth=0.3)
+
+    ax2.set_ylabel('Action Frequency')
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(methods_em, rotation=30, ha='right', fontsize=6.5)
+    ax2.set_ylim(0, 1.15)
+    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
+
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.06),
+               ncol=3, frameon=False, fontsize=7.5)
+
+    fig.suptitle('Retrieval Action Orchestration by Method', fontsize=11, fontweight='bold', y=1.12)
+    fig.tight_layout()
+    save(fig, 'fig_e6_orchestration.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fig 10: E9 — Error Analysis (format/exec success stacked bar)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_e9_error_analysis():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 2.8))
+
+    c_success = '#59A14F'
+    c_exec_fail = '#E15759'
+    c_format_fail = '#BAB0AC'
+
+    # E-commerce
+    methods_ec = ['Base\n(4B)', 'Few-shot\nGPT-5.5', 'Few-shot\nOpus 4.7', 'SFT\n(4B)', 'GRPO\n(4B)', 'DAPO\n(4B)', 'GPT-5.5', 'Opus 4.7']
+    total_ec      = [3000, 3000, 3000, 3000, 3000, 3000, 1000, 2998]
+    format_ok_ec  = [949,  2885, 2352, 3000, 2999, 2998, 1000, 2998]
+    exec_ok_ec    = [506,  2741, 2200, 2992, 2992, 2989, 1000, 2996]
+
+    success_ec     = [e/t for e, t in zip(exec_ok_ec, total_ec)]
+    exec_fail_ec   = [(f-e)/t for f, e, t in zip(format_ok_ec, exec_ok_ec, total_ec)]
+    format_fail_ec = [(t-f)/t for t, f in zip(total_ec, format_ok_ec)]
+
+    x = np.arange(len(methods_ec))
+    ax1.bar(x, success_ec, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, exec_fail_ec, 0.65, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    bottom2 = [s+e for s, e in zip(success_ec, exec_fail_ec)]
+    ax1.bar(x, format_fail_ec, 0.65, bottom=bottom2, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+
+    for i, s in enumerate(success_ec):
+        ax1.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5.5, fontweight='bold', color='white')
+
+    ax1.set_ylabel('Proportion')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(methods_ec, fontsize=6)
+    ax1.set_ylim(0, 1.05)
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+
+    # Email
+    methods_em = ['Base\n(4B)', 'SFT\n(4B)', 'GRPO\n(4B)', 'DAPO\n(4B)', 'GPT-5.5', 'Opus 4.7']
+    total_em      = [3000, 3000, 3000, 3000, 3000, 3000]
+    format_ok_em  = [744,  2899, 2999, 2999, 2998, 2901]
+    exec_ok_em    = [744,  2878, 2979, 2980, 2998, 2897]
+
+    success_em     = [e/t for e, t in zip(exec_ok_em, total_em)]
+    exec_fail_em   = [(f-e)/t for f, e, t in zip(format_ok_em, exec_ok_em, total_em)]
+    format_fail_em = [(t-f)/t for t, f in zip(total_em, format_ok_em)]
+
+    x2 = np.arange(len(methods_em))
+    ax2.bar(x2, success_em, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, exec_fail_em, 0.65, bottom=success_em, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    bottom2e = [s+e for s, e in zip(success_em, exec_fail_em)]
+    ax2.bar(x2, format_fail_em, 0.65, bottom=bottom2e, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+
+    for i, s in enumerate(success_em):
+        ax2.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5.5, fontweight='bold', color='white')
+
+    ax2.set_ylabel('Proportion')
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(methods_em, fontsize=6)
+    ax2.set_ylim(0, 1.05)
+    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
+
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.06),
+               ncol=3, frameon=False, fontsize=7.5)
+
+    fig.suptitle('DSL Generation Error Analysis', fontsize=11, fontweight='bold', y=1.12)
+    fig.tight_layout()
+    save(fig, 'fig_e9_error_analysis.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Fig 11: E8 — Model Scaling (1.7B vs 4B across training stages)
+# ═══════════════════════════════════════════════════════════════════════════════
+def fig_e8_model_scaling():
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.8))
+
+    # E-commerce
+    stages = ['Base', 'SFT', 'GRPO', 'DAPO']
+    h1_1_7b = [None,  0.680, None,  None]
+    h1_4b   = [0.117, 0.680, 0.809, 0.808]
+
+    x = np.arange(len(stages))
+    w = 0.3
+
+    c_small = '#93BAD9'
+    c_large = OURS_COLOR
+
+    # 1.7B bars (only where data exists)
+    for i, v in enumerate(h1_1_7b):
+        if v is not None:
+            ax1.bar(i - w/2, v, w, color=c_small, edgecolor='white', linewidth=0.3,
+                    label='1.7B' if i == 1 else None)
+            ax1.text(i - w/2, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, color=c_small)
+
+    for i, v in enumerate(h1_4b):
+        ax1.bar(i + w/2, v, w, color=c_large, edgecolor='white', linewidth=0.3,
+                label='4B' if i == 0 else None)
+        ax1.text(i + w/2, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, fontweight='bold' if i >= 2 else 'normal')
+
+    ax1.set_ylabel('Hit@1')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(stages, fontsize=7)
+    ax1.set_ylim(0, 0.90)
+    ax1.legend(loc='upper left', frameon=False, fontsize=7)
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+
+    # Email (no 1.7B data — show training progression)
+    stages_em = ['Base', 'SFT', 'GRPO', 'DAPO']
+    h1_em_4b  = [0.243, 0.891, 0.906, 0.909]
+
+    ax2.bar(np.arange(len(stages_em)), h1_em_4b, 0.5, color=[c_small, SFT_COLOR, OURS_COLOR, OURS_COLOR2],
+            edgecolor='white', linewidth=0.3)
+    for i, v in enumerate(h1_em_4b):
+        ax2.text(i, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, fontweight='bold' if i >= 2 else 'normal')
+
+    ax2.set_ylabel('Hit@1')
+    ax2.set_xticks(np.arange(len(stages_em)))
+    ax2.set_xticklabels(stages_em, fontsize=7)
+    ax2.set_ylim(0, 0.99)
+    ax2.set_title('(b) Email (4B)', fontsize=9, fontweight='bold')
+
+    fig.suptitle('Model Size & Training Stage Comparison', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_e8_model_scaling.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Run all
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == '__main__':
@@ -558,9 +734,12 @@ if __name__ == '__main__':
     fig_main_ecommerce()            # 1
     fig_main_email()                 # 2
     fig_e3_e5_combined_ecommerce()   # 3
-    fig_e3_e5_combined_email()       # 4  (NEW)
-    fig_paradigm_comparison()        # 5  (REVISED: dual-scenario)
-    fig_rl_progression()             # 6  (REVISED: zoom-in RL stage)
-    fig_fewshot_failure()            # 7  (REVISED: red gradient, neutral title)
-    fig_cross_scenario()             # 8  (REVISED: pp not %)
-    print(f'\n  All 8 figures saved to {OUT_DIR}/')
+    fig_e3_e5_combined_email()       # 4
+    fig_paradigm_comparison()        # 5
+    fig_rl_progression()             # 6
+    fig_fewshot_failure()            # 7
+    fig_cross_scenario()             # 8
+    fig_e6_orchestration()           # 9  (NEW: orchestration behavior)
+    fig_e9_error_analysis()          # 10 (NEW: error analysis)
+    fig_e8_model_scaling()           # 11 (NEW: model scaling)
+    print(f'\n  All 11 figures saved to {OUT_DIR}/')
