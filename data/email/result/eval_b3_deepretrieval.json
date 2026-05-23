@@ -1,0 +1,10 @@
+{
+  "method": "DeepRetrieval (Boolean+BM25) step100",
+  "n": 2569,
+  "total": 3000,
+  "non_empty": 2998,
+  "hit1": 0.7454262358894511,
+  "hit3": 0.8524717789022966,
+  "mrr": 0.8069850029409518,
+  "note": "N=2569 (431 queries have no gt_document_ids)"
+}
