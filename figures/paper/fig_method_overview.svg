@@ -209,21 +209,41 @@
   </text>
   <rect x="2540" y="400" width="270" height="360" fill="#fff" stroke="#111" stroke-width="4"/>
   <g transform="translate(2575 425)">
+    <!-- Result 1: Red running shoe -->
     <rect x="0" y="0" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
-    <path d="M12 38 C35 20 60 28 76 34 C58 48 28 50 12 38 Z" fill="#c42a1c" stroke="#8b1a12"/>
+    <g transform="translate(8 8) scale(0.52)">
+      <path d="M5 62 C5 55 12 40 25 38 L35 30 C40 26 50 24 58 26 L72 30 C78 32 82 36 80 42 L78 50 C76 56 70 60 62 62 L48 65 C42 66 30 67 20 66 Z" fill="#c42a1c" stroke="#8b1a12" stroke-width="2"/>
+      <path d="M25 38 L35 30 C40 26 50 24 58 26 L72 30" fill="none" stroke="#fff" stroke-width="2.5" opacity="0.6"/>
+      <ellipse cx="15" cy="60" rx="8" ry="5" fill="#a02018"/>
+    </g>
     <text class="mono micro" x="88" y="18">Red Nike shoe</text>
     <text class="mono tiny" x="95" y="42">score 0.91</text>
+    <!-- Result 2: Dark running shoe -->
     <rect x="0" y="78" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
-    <path d="M12 116 C35 98 60 106 76 112 C58 126 28 128 12 116 Z" fill="#17285f" stroke="#0c1430"/>
+    <g transform="translate(8 86) scale(0.52)">
+      <path d="M5 62 C5 55 12 40 25 38 L35 30 C40 26 50 24 58 26 L72 30 C78 32 82 36 80 42 L78 50 C76 56 70 60 62 62 L48 65 C42 66 30 67 20 66 Z" fill="#2c3e50" stroke="#1a252f" stroke-width="2"/>
+      <path d="M25 38 L35 30 C40 26 50 24 58 26 L72 30" fill="none" stroke="#fff" stroke-width="2.5" opacity="0.5"/>
+      <ellipse cx="15" cy="60" rx="8" ry="5" fill="#1a252f"/>
+    </g>
     <text class="mono micro" x="88" y="96">Running shoe</text>
     <text class="mono tiny" x="95" y="120">score 0.87</text>
+    <!-- Result 3: Classic green sneaker -->
     <rect x="0" y="156" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
-    <path d="M12 194 C35 176 60 184 76 190 C58 204 28 206 12 194 Z" fill="#135137" stroke="#0a2e1f"/>
-    <text class="mono micro" x="88" y="174">Classic shoe</text>
+    <g transform="translate(8 164) scale(0.52)">
+      <path d="M5 62 C5 55 12 40 25 38 L35 30 C40 26 50 24 58 26 L72 30 C78 32 82 36 80 42 L78 50 C76 56 70 60 62 62 L48 65 C42 66 30 67 20 66 Z" fill="#27703a" stroke="#1a4d28" stroke-width="2"/>
+      <path d="M25 38 L35 30 C40 26 50 24 58 26 L72 30" fill="none" stroke="#fff" stroke-width="2.5" opacity="0.5"/>
+      <ellipse cx="15" cy="60" rx="8" ry="5" fill="#1a4d28"/>
+    </g>
+    <text class="mono micro" x="88" y="174">Classic sneaker</text>
     <text class="mono tiny" x="95" y="198">score 0.82</text>
+    <!-- Result 4: Blue sport sneaker -->
     <rect x="0" y="234" width="225" height="58" fill="#fbfbfb" stroke="#ccc"/>
-    <path d="M12 272 C35 254 60 262 76 268 C58 282 28 284 12 272 Z" fill="#7a1717" stroke="#4c0f0f"/>
-    <text class="mono micro" x="88" y="252">Review match</text>
+    <g transform="translate(8 242) scale(0.52)">
+      <path d="M5 62 C5 55 12 40 25 38 L35 30 C40 26 50 24 58 26 L72 30 C78 32 82 36 80 42 L78 50 C76 56 70 60 62 62 L48 65 C42 66 30 67 20 66 Z" fill="#2c5fa1" stroke="#1a3d6e" stroke-width="2"/>
+      <path d="M25 38 L35 30 C40 26 50 24 58 26 L72 30" fill="none" stroke="#fff" stroke-width="2.5" opacity="0.5"/>
+      <ellipse cx="15" cy="60" rx="8" ry="5" fill="#1a3d6e"/>
+    </g>
+    <text class="mono micro" x="88" y="252">Sport sneaker</text>
     <text class="mono tiny" x="95" y="276">score 0.79</text>
   </g>
 
