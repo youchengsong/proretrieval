@@ -225,7 +225,7 @@ def extract_query_entities(client, q):
     qid = q["query_id"]
     prompt = QUERY_EXTRACT_PROMPT.format(query=q["natural_language_query"])
     try:
-        parsed = call_llm(client, prompt, 300)
+        parsed = call_llm(client, prompt, 800)
         query_entities = parsed.get("entities", []) if parsed else []
         constraints = parsed.get("constraints", []) if parsed else []
     except Exception as e:
