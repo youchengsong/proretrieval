@@ -1,0 +1,98 @@
+== SOURCE CONTEXT ==
+
+We propose LocalSearch-R1, a reinforcement learning framework that trains a lightweight language model (Qwen3-4B / Qwen3-8B) to act as a retrieval orchestrator — generating executable DSL programs that dynamically compose multi-modal retrieval paths over heterogeneous data stores.
+
+=== Core Problem ===
+
+Existing RL-based retrieval methods (Search-R1, DeepRetrieval) treat the LLM as a "query generator": the model outputs a text string or boolean expression, which is sent to a single external search engine. The model decides "what to ask" but not "how to search." This works when a unified search backend exists, but fails in local/hybrid retrieval scenarios where data is split across structured databases (metadata), text vector indices (semantic content), and image vector indices (visual features). These heterogeneous retrieval paths require dynamic orchestration with arbitrary logical composition (AND, OR, NOT, nesting) — a capability beyond any single query format.
+
+=== Our Solution: Retrieval Program Synthesis ===
+
+We upgrade the LLM's role from query generator to retrieval orchestrator. Instead of producing a query string, the model generates an executable DSL program that orchestrates three retrieval primitives simultaneously:
+
+1. SQL Structured Filtering — standard SQL WHERE clauses over metadata fields (brand, category, price, average_rating, etc.)
+2. Dense Text Retrieval — semantic similarity search using Qwen3-Embedding-8B (4096-dim embeddings), referenced via <text_0>, <text_1>, ... placeholders in SQL
+3. Dense Image Retrieval — visual similarity search using Qwen3-VL-Embedding-8B (4096-dim embeddings), referenced via <image_0>, <image_1>, ... placeholders in SQL
+
+The key design insight: by embedding vector retrieval results as SQL sub-queries (product_id IN <text_0>), SQL's native logical operators (AND/OR/NOT) serve as the fusion logic. No separate fusion strategy (like RRF score interpolation) is needed — the SQL engine handles all logical composition natively.
+
+=== DSL Format ===
+
+The LLM outputs a JSON object with two fields:
+{
+  "sql": "WHERE brand = 'Nike' AND price < 100 AND product_id IN <text_0> AND product_id IN <image_0>",
+  "retrieval_list": [
+    {"type": "text", "field": "title", "query": "running shoes comfortable daily training"},
+    {"type": "image", "field": "image_url", "query": "red Nike sneaker running shoe"}
+  ]
+}
+
+Structured fields are used directly in SQL (brand, category, price, average_rating, rating_number, in_stock, release_date). Text fields (title, description, review_summary) and image fields (image_url) must be accessed through <text_x> / <image_x> placeholders that reference entries in the retrieval_list.
+
+=== DSL Execution Engine ===
+
+Step 1 — Vector Retrieval: For each entry in retrieval_list, encode the query text into an embedding vector using the corresponding encoder (Qwen3-Embedding-8B for text, Qwen3-VL-Embedding-8B for image). Perform top-K nearest neighbor search against pre-computed product embedding matrices, returning candidate product IDs.
+
+Step 2 — Placeholder Injection: Replace each <text_i> / <image_i> placeholder in the SQL string with the retrieved product ID list, converting it into a standard SQL IN-clause. For example, "product_id IN <text_0>" becomes "product_id IN ('P001', 'P042', 'P187', ...)".
+
+Step 3 — SQL Execution: Prepend "SELECT DISTINCT product_id FROM products" to the WHERE clause and execute on SQLite. The SQL engine natively handles all AND/OR/NOT logic, producing the final ranked result set.
+
+This three-step pipeline means the logical fusion of structured filters and semantic matches happens inside the SQL engine — AND means intersection (must satisfy both structured and semantic conditions), OR means union (recall from either path), NOT means exclusion.
+
+=== Training Pipeline ===
+
+Stage 1 — Supervised Fine-Tuning (SFT): Train on expert-annotated (query, DSL) pairs to bootstrap the model's ability to generate syntactically valid DSL programs. The SFT model achieves ~68% Hit@1 on e-commerce and ~89% on email.
+
+Stage 2 — Reinforcement Learning (GRPO / DAPO): Further optimize with execution-based rewards. The reward function has a hierarchical structure reflecting the layered constraints of executable program generation:
+
+- R_format: Does the output contain valid JSON wrapped in <answer></answer> tags? (binary, -1/+1)
+- R_exec: Can the DSL be parsed and executed without SQL errors? (0 if fails, positive if succeeds)
+- R_result: Does the execution return the correct documents? Computed as: coverage - 0.5 × noise - 0.5 × redundancy, where coverage = |GT ∩ Result| / |GT|, noise = |Result - GT| / |Result|
+- Hierarchical dependency: R_format = 0 → R_exec = 0 → R_result = 0 (each level gates the next)
+
+We use two RL algorithms: GRPO (Group Relative Policy Optimization) and DAPO (Decoupled Clip and Dynamic Sampling Policy Optimization). DAPO achieves slightly better stability.
+
+=== Two Evaluation Scenarios ===
+
+E-commerce (Amazon ESCI + Reviews): Multi-modal retrieval over 3,000 products with structured metadata (brand, price, category, rating), text descriptions, and product images. 3,000 test queries spanning 3 complexity levels (L1 simple / L2 medium / L3 complex) and 3 modalities (structured / text / image).
+
+Email (Enron Email): Structured + text retrieval over enterprise emails with metadata (sender, date, is_read, is_starred, is_archived) and free-text content (subject, message body). 3,000 test queries, no image modality.
+
+=== Key Results ===
+
+E-commerce: GRPO 4B achieves Hit@1 = 0.809, surpassing GPT-5.5 (0.667), Claude Opus 4.7 (0.642), RankGPT (0.762), SQL-R1 (0.780), and all traditional retrieval baselines (BGE-Reranker 0.593, BM25 0.548).
+
+Email: DAPO 4B achieves Hit@1 = 0.909, surpassing GPT-5.5 (0.855), RankGPT (0.890), and BGE-Reranker (0.836).
+
+A 4B parameter local model trained with RL consistently outperforms commercial LLMs 100× its size, demonstrating that retrieval orchestration is a learnable skill that benefits more from RL-based program synthesis than from raw model scale.
+
+=== Paradigm Comparison ===
+
+| Paradigm                         | Model Output         | Retrieval Channels | Logical Composition |
+|----------------------------------|----------------------|--------------------|---------------------|
+| Query Rewriting (Search-R1)      | NL text string       | Single engine      | None                |
+| Boolean Query Gen (DeepRetrieval)| Boolean expression   | Single engine      | Limited AND/OR      |
+| Self-Querying RAG (LangChain)    | Filter + query       | Fixed dual-path    | AND only            |
+| Rank Fusion (RRF)                | Multiple results     | Fixed multi-path   | Weighted merge      |
+| Retrieval Program Synthesis (Ours)| Executable program  | Dynamic multi-modal| Full AND/OR/NOT/nesting |
+
+
+== COMMUNICATIVE INTENT ==
+
+Generate a method overview figure (architecture diagram) for the LocalSearch-R1 framework showing the complete end-to-end pipeline with these key components:
+
+LEFT SIDE — Input: A natural language query box (e.g., "Find red Nike running shoes under $100 with good reviews that look like classic sneakers").
+
+CENTER — RL-trained LLM (Qwen3-4B/8B): Show the model receiving the query and generating a DSL program. Display the DSL output as a compact JSON code block with "sql" (containing WHERE clause with <text_0> and <image_0> placeholders) and "retrieval_list" entries.
+
+RIGHT SIDE — DSL Execution Engine with three parallel retrieval branches:
+  Branch 1: SQL Structured Filtering (brand, price, rating) → SQLite database icon
+  Branch 2: Dense Text Retrieval (<text_0>) → Qwen3-Embedding-8B → text embedding index
+  Branch 3: Dense Image Retrieval (<image_0>) → Qwen3-VL-Embedding-8B → image embedding index
+Show arrows from each branch converging into "Placeholder Injection" where vector results are injected back into SQL as IN-clauses, then final SQL execution on SQLite produces ranked product results.
+
+BOTTOM — Training Loop: Show the two-stage training pipeline:
+  Stage 1: SFT (supervised fine-tuning on expert DSL examples)
+  Stage 2: RL optimization (GRPO/DAPO) with hierarchical reward signal (R_format → R_exec → R_result) flowing back to the LLM as a feedback arrow.
+
+STYLE: Use a clean left-to-right flow. Color-code the three retrieval branches differently (e.g., blue for SQL, green for text, orange for image). Highlight the key insight that SQL serves as the native fusion logic (AND/OR/NOT) with a subtle annotation. Conference-ready quality suitable for EMNLP 2026, readable at single-column width (~3.25 inches).
