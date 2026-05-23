@@ -24,6 +24,8 @@ def compute_metrics(predictions, queries, top_k=20):
     hit1 = hit3 = mrr = n = 0
     for q in queries:
         qid = q["query_id"]
+        if qid not in predictions:
+            continue
         gt = set(q.get("gt_document_ids") or q.get("gold_ids") or [])
         if not gt:
             continue
@@ -45,6 +47,8 @@ def compute_by_group(predictions, queries, group_key, top_k=20):
     groups = defaultdict(lambda: {"hit1":0,"hit3":0,"mrr":0.0,"n":0})
     for q in queries:
         qid = q["query_id"]
+        if qid not in predictions:
+            continue
         gt = set(q.get("gt_document_ids") or q.get("gold_ids") or [])
         if not gt:
             continue
