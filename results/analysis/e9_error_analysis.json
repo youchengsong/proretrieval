@@ -1,0 +1,204 @@
+{
+  "ecommerce": {
+    "GRPO_4B_step300": {
+      "total": 3000,
+      "format_success": 2999,
+      "exec_success": 2992,
+      "exec_rate": 0.9973,
+      "error_types": {
+        "sql_error: near \"s\": syntax error": 7,
+        "null_dsl": 1
+      }
+    },
+    "DAPO_4B_step420": {
+      "total": 3000,
+      "format_success": 2998,
+      "exec_success": 2989,
+      "exec_rate": 0.9963,
+      "error_types": {
+        "sql_error: near \"s\": syntax error": 7,
+        "sql_error: no such column: rating": 1,
+        "null_dsl": 2,
+        "sql_error: no such column: warranty": 1
+      }
+    },
+    "SFT_4B": {
+      "total": 3000,
+      "format_success": 3000,
+      "exec_success": 2992,
+      "exec_rate": 0.9973,
+      "error_types": {
+        "sql_error: near \"s\": syntax error": 7,
+        "sql_error: no such column: release_date": 1
+      }
+    },
+    "SFT_1.7B": {
+      "total": 3000,
+      "format_success": 2997,
+      "exec_success": 2989,
+      "exec_rate": 0.9963,
+      "error_types": {
+        "sql_error: no such column: average_rating_number": 1,
+        "sql_error: near \"s\": syntax error": 6,
+        "sql_error: near \"<\": syntax error": 1,
+        "null_dsl": 3
+      }
+    },
+    "Base_4B": {
+      "total": 3000,
+      "format_success": 949,
+      "exec_success": 506,
+      "exec_rate": 0.1687,
+      "error_types": {
+        "null_dsl": 2051,
+        "sql_error: no such column: rating": 292,
+        "sql_error: no such column: num_reviews": 149,
+        "sql_error: near \"s\": syntax error": 1,
+        "sql_error: no such column: title": 1
+      }
+    },
+    "GPT-5.4": {
+      "total": 2998,
+      "format_success": 2998,
+      "exec_success": 2998,
+      "exec_rate": 1.0,
+      "error_types": {}
+    },
+    "GPT-5.5": {
+      "total": 1000,
+      "format_success": 1000,
+      "exec_success": 1000,
+      "exec_rate": 1.0,
+      "error_types": {}
+    },
+    "Opus_4.7": {
+      "total": 2998,
+      "format_success": 2998,
+      "exec_success": 2996,
+      "exec_rate": 0.9993,
+      "error_types": {
+        "sql_error: near \"OR\": syntax error": 1,
+        "sql_error: near \"<\": syntax error": 1
+      }
+    },
+    "B5_fewshot_GPT55": {
+      "total": 3000,
+      "format_success": 2885,
+      "exec_success": 2741,
+      "exec_rate": 0.9137,
+      "error_types": {
+        "sql_error: no such column: rating": 93,
+        "null_dsl": 115,
+        "sql_error: no such column: num_reviews": 51
+      }
+    },
+    "B5_fewshot_Opus47": {
+      "total": 3000,
+      "format_success": 2352,
+      "exec_success": 2200,
+      "exec_rate": 0.7333,
+      "error_types": {
+        "sql_error: no such column: rating": 96,
+        "sql_error: no such column: num_reviews": 53,
+        "sql_error: near \"<\": syntax error": 1,
+        "sql_error: near \"OR\": syntax error": 2,
+        "null_dsl": 648
+      }
+    }
+  },
+  "email": {
+    "DAPO_4B_step843": {
+      "total": 3000,
+      "format_success": 2999,
+      "exec_success": 2980,
+      "exec_rate": 0.9933,
+      "error_types": {
+        "sql_error: near \"rourke\": syntax error": 2,
+        "null_dsl": 1,
+        "sql_error: near \"neil\": syntax error": 2,
+        "sql_error: near \"day\": syntax error": 2,
+        "sql_error: near \"pp\": syntax error": 1,
+        "sql_error: near \"sharon\": syntax error": 1,
+        "sql_error: near \"neal\": syntax error": 4,
+        "sql_error: near \"barbo\": syntax error": 5,
+        "sql_error: no such column: carol.st.@enron.com, mary.cook@enron.com, angela.davi": 1,
+        "sql_error: near \"s\": syntax error": 1
+      }
+    },
+    "GRPO_4B_step843": {
+      "total": 3000,
+      "format_success": 2999,
+      "exec_success": 2979,
+      "exec_rate": 0.993,
+      "error_types": {
+        "sql_error: near \"neil\": syntax error": 2,
+        "sql_error: near \"day\": syntax error": 2,
+        "sql_error: near \"pp\": syntax error": 1,
+        "sql_error: near \"sharon\": syntax error": 1,
+        "sql_error: near \"neal\": syntax error": 5,
+        "sql_error: near \"barbo\": syntax error": 6,
+        "null_dsl": 1,
+        "sql_error: unrecognized token: \"'jimmy@enron.com>''\"": 1,
+        "sql_error: near \"rourke\": syntax error": 1,
+        "sql_error: near \"s\": syntax error": 1
+      }
+    },
+    "SFT_4B": {
+      "total": 3000,
+      "format_success": 2899,
+      "exec_success": 2878,
+      "exec_rate": 0.9593,
+      "error_types": {
+        "sql_error: near \"neal\": syntax error": 5,
+        "null_dsl": 101,
+        "sql_error: near \"neil\": syntax error": 4,
+        "sql_error: near \"pp\": syntax error": 1,
+        "sql_error: near \"barbo\": syntax error": 6,
+        "sql_error: near \"day\": syntax error": 2,
+        "sql_error: near \".\": syntax error": 1,
+        "sql_error: near \"rourke\": syntax error": 1,
+        "sql_error: near \"s\": syntax error": 1
+      }
+    },
+    "Base_4B": {
+      "total": 3000,
+      "format_success": 744,
+      "exec_success": 744,
+      "exec_rate": 0.248,
+      "error_types": {
+        "null_dsl": 2256
+      }
+    },
+    "GPT-5.4": {
+      "total": 2999,
+      "format_success": 2997,
+      "exec_success": 2997,
+      "exec_rate": 0.9993,
+      "error_types": {
+        "null_dsl": 2
+      }
+    },
+    "GPT-5.5": {
+      "total": 3000,
+      "format_success": 2998,
+      "exec_success": 2998,
+      "exec_rate": 0.9993,
+      "error_types": {
+        "null_dsl": 2
+      }
+    },
+    "Opus_4.7": {
+      "total": 3000,
+      "format_success": 2901,
+      "exec_success": 2897,
+      "exec_rate": 0.9657,
+      "error_types": {
+        "null_dsl": 99,
+        "sql_error: near \"neil\": syntax error": 1,
+        "sql_error: near \"pp\": syntax error": 1,
+        "sql_error: near \"barbo\": syntax error": 1,
+        "sql_error: near \"s\": syntax error": 1
+      }
+    }
+  }
+}
