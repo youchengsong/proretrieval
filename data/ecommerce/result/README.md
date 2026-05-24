@@ -55,6 +55,8 @@ All results evaluated on `queries_product_test_step9_gt_v2.jsonl` (N=3000, unles
 | predictions_grpo8b_step200.json | GRPO 8B step200 | 3000 | 0.819 |
 | predictions_grpo8b_step300.json | GRPO 8B step300 | 3000 | 0.820 |
 | predictions_grpo8b_step400.json | GRPO 8B step400 | 3000 | 0.820 |
+| predictions_dapo8b_step200.json | DAPO 8B step200 | 3000 | 0.807 |
+| predictions_dapo8b_step300.json | DAPO 8B step300 | 3000 | 0.810 |
 
 ### `ours_sft/` — Our Method: SFT baselines
 | File | Method | N | NDCG@1 |
