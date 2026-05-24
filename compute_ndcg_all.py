@@ -143,7 +143,6 @@ def main():
         "GPT-5.5": "data/ecommerce/result/eval_predictions_gpt55_full.json",
         "Opus 4.6": "data/ecommerce/result/eval_claude_opus_gt_v2_nocase.json",
         "Opus 4.7": "data/ecommerce/result/eval_predictions_opus47.json",
-        "SFT 1.7B": "data/ecommerce/result/eval_sft_1.7b.json",
         "4B GRPO step1200": "data/ecommerce/result/eval_rl_step1200_gt_v2.json",
         "Gemini 3.1 Pro": "data/ecommerce/result/eval_gemini_31pro_v2_gt_v2_nocase.json",
         "B5 Few-shot GPT-5.5": "data/ecommerce/result/eval_predictions_fewshot_gpt55.json",

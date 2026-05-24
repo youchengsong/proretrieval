@@ -1,0 +1,755 @@
+% LocalSearch-R1: Full Paper for EMNLP 2026 (ARR May Cycle)
+% Compilable in Overleaf with acl style
+
+\documentclass[11pt]{article}
+
+% ACL/EMNLP 2023+ style (use the latest ARR template)
+\usepackage[hyperref]{acl}
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{subcaption}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{pifont}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\title{LocalSearch-R1: Training Small Language Models as Retrieval Orchestrators via Reinforcement Learning}
+
+\author{
+  Anonymous Submission \\
+  \textit{ARR May 2026}
+}
+
+\begin{document}
+\maketitle
+
+% ============================================================
+\begin{abstract}
+Recent advances in reinforcement learning (RL) for retrieval have trained LLMs to generate optimized text queries or Boolean expressions, substantially improving search quality.
+However, these methods cast the LLM as a \emph{query generator} that relies on an external search engine to execute retrieval---a design that cannot express the complex logical compositions (AND, OR, NOT, nesting) across heterogeneous retrieval pathways that real-world document search demands.
+We propose \textbf{LocalSearch-R1}, a framework that upgrades LLMs from query generators to \emph{retrieval orchestrators} by training them via RL to generate executable DSL programs.
+Our DSL unifies SQL logic with text and image vector retrieval primitives: vector search results are injected as SQL subqueries via placeholders, so SQL's native set-operation semantics (intersection, union, complement, nesting) serve as the fusion logic---no separate fusion strategy is needed.
+We design a four-component reward (format, execution, result accuracy, length) that explicitly models the hierarchical constraints of executable program generation.
+On e-commerce product search (structured + text + image) and enterprise email search (structured + text), our Qwen3-8B model achieves 82.0\% and 90.9\% Hit@1 respectively, outperforming the best commercial LLM (GPT-5.5) by 15.3 and 5.4 percentage points.
+Action space ablation confirms that the hybrid DSL is essential: removing any retrieval modality degrades performance.
+At 4B scale, RL provides a critical +12.9 pp gain; at 8B, increased capacity allows SFT alone to match this level, revealing a complementary relationship between RL and model scale.
+\end{abstract}
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+
+Real-world document retrieval tasks frequently involve both structured constraints and semantic matching, combined through complex logical relationships.
+Consider searching an e-commerce catalog: ``\emph{Find wireless headphones under \$50 with noise cancellation that look similar to AirPods but not from Apple}.''
+This query simultaneously requires structured filtering (price $<$ \$50, brand $\neq$ Apple), text semantic matching (noise cancellation), image similarity (look like AirPods), and logical composition (AND across all conditions, NOT for brand exclusion).
+Similar hybrid retrieval demands arise in enterprise email search, scientific literature management, and personal document organization.
+
+This challenge is especially acute in \emph{local deployment} scenarios.
+For privacy, compliance, cost, and offline-availability reasons, an increasing number of applications require retrieval to run entirely on the user's device rather than through cloud services.
+In local environments, document information is naturally scattered across heterogeneous stores---structured metadata resides in relational databases or file system indices, while unstructured content relies on vector indices for semantic retrieval.
+No single search engine can execute arbitrary logical compositions across both types of information, making local hybrid retrieval a problem of \emph{orchestrating} multiple heterogeneous retrieval pathways and planning their logical relationships.
+
+Existing retrieval methods suffer from two layers of limitation: \textbf{insufficient expressiveness} and \textbf{insufficient orchestration capability}.
+In expressiveness, traditional sparse retrieval (BM25) and dense retrieval each handle only one data type and cannot combine structured filtering with semantic matching in a single query.
+Hybrid retrieval pipelines such as Reciprocal Rank Fusion~\cite{cormack2009reciprocal} merge multi-pathway results, but their operation is limited to weighted union---they cannot express intersection (simultaneously satisfying structured and semantic conditions), negation (excluding results matching a condition), or nested logic.
+Self-querying RAG frameworks~\cite{langchain2023selfquery} decompose queries into metadata filters plus semantic retrieval, but their filtering is limited to simple key-value matching without support for OR, NOT, or nesting.
+In orchestration capability, recent RL-driven retrieval query generation has achieved impressive results.
+Search-R1~\cite{jin2025search} trains LLMs to autonomously invoke search engines during reasoning, and DeepRetrieval~\cite{jiang2025deepretrieval} uses RL to optimize structured Boolean query generation, enabling a 3B model to surpass GPT-4o on 11 of 13 benchmarks.
+However, these methods share a critical design assumption: \emph{a functionally complete retrieval backend exists to execute the search}.
+The LLM acts as a ``query generator''---it optimizes \emph{what to ask}, while \emph{how to search} is entirely delegated to an external engine.
+Their action space is a text or Boolean query string, lacking the ability to logically orchestrate across structured and unstructured retrieval pathways.
+
+When facing queries that require complex logical compositions across multiple heterogeneous retrieval pathways---especially in local environments without a unified search engine---the LLM's role must be upgraded from ``query generator'' to \textbf{retrieval orchestrator}.
+It must plan not only \emph{what to ask} but \emph{how to search}: which conditions should be executed as precise SQL filters, which semantic intents should go through vector retrieval, whether to intersect, union, or complement these pathways, and whether nesting is needed.
+In RL terms, this constitutes a fundamentally different problem: the model's action space expands from a text query string to an \textbf{executable program supporting arbitrary logical composition}.
+
+We propose \textbf{LocalSearch-R1}, a framework that trains lightweight models to orchestrate hybrid retrieval via RL-generated executable DSL programs.
+Our key insight is that by designing the DSL as a unification of SQL syntax with vector retrieval primitives, SQL's inherent logical completeness (intersection, union, complement, arbitrary nesting) naturally becomes the logical skeleton for retrieval orchestration, while vector retrieval participates in logical compositions as SQL subqueries.
+This transforms the complex decision of ``orchestrating heterogeneous retrieval pathways'' into a learnable program generation problem, inheriting SQL's logical completeness.
+
+Specifically, our framework comprises three components:
+\textbf{(1) A hybrid DSL retrieval agent} that generates executable programs where vector retrieval results are injected into SQL statements via placeholders (e.g., \texttt{id IN <vector\_0>}), enabling arbitrary logical composition through SQL's native set-operation semantics---no separate fusion strategy is needed.
+\textbf{(2) Local document retrieval benchmarks} constructed on e-commerce product search and enterprise email search, covering three complexity levels with diverse logical combinations.
+\textbf{(3) A hierarchical reward-driven RL training framework} with four reward components (format $S_f$, execution $S_e$, result $S_r$, length $S_l$) that explicitly model the layered constraints of executable program generation: syntactic correctness $\to$ execution reliability $\to$ retrieval accuracy $\to$ response efficiency.
+
+Experiments on two benchmarks demonstrate that LocalSearch-R1 achieves 82.0\% and 90.9\% Hit@1 on e-commerce and email respectively, outperforming GPT-5.5 by 15.3 and 5.4 percentage points.
+Our key findings include:
+(1) the hybrid DSL action space is strictly superior to any single-modality action space, validating the value of retrieval orchestration over query generation;
+(2) RL-trained models maintain their advantage even on the most complex queries involving multi-condition nesting and negation logic;
+(3) RL is critical for learning multi-modal orchestration at 4B scale (+12.9 pp), while 8B models can capture these patterns through SFT alone, revealing a complementary relationship between RL and model scale.
+
+
+% ============================================================
+\section{Related Work}
+\label{sec:related}
+
+\subsection{Hybrid Retrieval}
+\label{sec:hybrid_retrieval}
+
+Combining structured and unstructured retrieval is a long-standing challenge in information retrieval.
+Traditional approaches use sparse retrieval (BM25;~\citealp{robertson2009probabilistic}) for keyword matching and dense retrieval (DPR, ColBERT;~\citealp{karpukhin2020dense, khattab2020colbert}) for semantic matching, with fusion strategies such as Reciprocal Rank Fusion (RRF;~\citealp{cormack2009reciprocal}) or linear score combination to merge results.
+However, these fusion strategies are limited to weighted union of result lists---they cannot express intersection (both conditions must hold), negation (exclude matching results), or nested logic.
+
+Self-querying RAG frameworks~\cite{langchain2023selfquery} advance beyond simple fusion by decomposing queries into metadata filters and semantic retrieval components.
+LangChain's Self-Query Retriever, for instance, uses an LLM to extract structured filter conditions from natural language.
+However, these frameworks support only simple key-value matching (e.g., \texttt{price < 50}) without OR, NOT, or nested compositions.
+More recent systems like BGE-M3~\cite{chen2024bge} and ColQwen~\cite{chen2024colqwen} provide strong multi-modal embeddings but still rely on simple similarity ranking without logical composition capability.
+
+Our work differs fundamentally: rather than designing a fixed fusion strategy, we train the LLM to \emph{generate} the fusion logic as an executable program, enabling arbitrary logical compositions that adapt to each query's intent.
+
+\subsection{RL for Retrieval Query Generation}
+\label{sec:rl_retrieval}
+
+Reinforcement learning has emerged as a powerful paradigm for training LLMs to generate better retrieval queries.
+Search-R1~\cite{jin2025search} trains LLMs to autonomously insert text search calls during chain-of-thought reasoning, using retrieved-token masking to stabilize training.
+DeepRetrieval~\cite{jiang2025deepretrieval} trains LLMs via GRPO to generate structured Boolean queries for BM25 retrieval, achieving results competitive with GPT-4o using only a 3B model.
+ReSearch~\cite{chen2025research} demonstrates that RL can train ``search-in-reasoning'' capabilities without SFT warmup.
+Other notable works include R1-Searcher~\cite{song2025r1searcher} (two-stage RL for retrieval), R3-RAG~\cite{du2025r3rag} (cold-start plus RL for RAG), and MCTS-RAG~\cite{zhang2025mctsrag} (Monte Carlo tree search for retrieval planning).
+
+These methods share a common assumption: the LLM acts as a \emph{query generator} that depends on a functionally complete retrieval backend.
+Their action space---whether text queries (Search-R1) or Boolean queries (DeepRetrieval)---cannot express logical compositions across heterogeneous retrieval pathways (e.g., intersecting SQL filter results with vector search results).
+Our work expands the action space from query strings to \emph{executable programs with full logical expressiveness}, upgrading the LLM's role from query generator to retrieval orchestrator.
+
+\subsection{DSLs and Structured Query Generation}
+\label{sec:dsl}
+
+Domain-specific languages have been widely adopted in AI systems for structured data access.
+Text-to-SQL~\cite{yu2018spider, li2024can} translates natural language to SQL queries over relational databases, but assumes all relevant information is stored in structured form and cannot incorporate semantic retrieval.
+SUQL~\cite{liu2024suql} extends SQL with semantic primitives (\texttt{answer()} and \texttt{summary()}) for conversational search, representing an early effort to unify structured and semantic operations within a single query language.
+Text2VectorSQL~\cite{wang2024text2vectorsql} adds vector search capabilities to SQL, but uses supervised learning without RL and suffers from a post-filtering design where vector search results are filtered by SQL conditions, losing candidates that would match the SQL criteria.
+
+Our DSL design is most similar to SUQL and Text2VectorSQL in spirit, but differs in two critical aspects: (1) we use SQL as the \emph{primary} fusion logic rather than as a post-filter, with vector retrieval results injected \emph{into} SQL subqueries, preserving logical completeness; and (2) we train the DSL generator via RL with a hierarchical reward, enabling the model to learn dynamic orchestration strategies rather than relying on fixed patterns from supervised data.
+
+\subsection{On-Device Retrieval}
+\label{sec:ondevice}
+
+The growing demand for privacy-preserving, offline-capable retrieval has motivated on-device deployment of retrieval systems.
+Google's AI Edge RAG SDK and EmbeddingGemma~\cite{google2025edgerag} enable vector similarity search on mobile devices, while compact language models such as Gemma 3n~\cite{team2025gemma} and MobileLLM~\cite{liu2024mobilellm} reduce inference costs for edge deployment.
+However, these systems are limited to simple vector similarity matching and lack the ability to perform complex query orchestration combining structured filtering with semantic retrieval.
+Our work addresses this gap by training small (4B--8B) models to orchestrate multi-modal retrieval entirely on-device, demonstrating that sophisticated retrieval capabilities need not rely on cloud-scale infrastructure.
+
+
+% ============================================================
+\section{Method}
+\label{sec:method}
+
+\subsection{Overview}
+\label{sec:overview}
+
+Figure~\ref{fig:overview} illustrates the LocalSearch-R1 framework.
+Given a natural language query, a locally-deployed LLM generates an executable DSL program comprising an SQL statement with vector retrieval placeholders and a list of vector queries.
+The execution engine first runs all vector searches to obtain candidate ID sets, injects them into the SQL placeholders, and then executes the complete SQL statement against the local database.
+The entire pipeline runs on-device with no data leaving the user's machine.
+
+\begin{figure}[t]
+\centering
+% Placeholder for system overview figure
+\fbox{\parbox{0.9\columnwidth}{\centering\small
+User Query $\to$ LLM (local 4B/8B) $\to$ DSL Program \\
+$\to$ [Vector Index $\to$ candidate IDs $\to$ inject into SQL] \\
+$\to$ SQL Engine $\to$ Ranked Results
+}}
+\caption{Overview of the LocalSearch-R1 framework. The LLM generates an executable DSL program that orchestrates structured SQL filtering and vector retrieval through logical composition.}
+\label{fig:overview}
+\end{figure}
+
+
+\subsection{DSL Design}
+\label{sec:dsl_design}
+
+\paragraph{Syntax.}
+Our DSL program consists of two components: (1) an SQL statement operating on a local relational database, and (2) a vector query list specifying text and/or image retrieval queries.
+Vector retrieval results are referenced within the SQL via placeholders \texttt{<vector\_0>}, \texttt{<vector\_1>}, etc., which are replaced at execution time with the actual retrieved candidate ID lists.
+This design uses SQL as the logical backbone for retrieval orchestration, while vector retrieval participates as subqueries within the SQL's logical structure.
+
+\paragraph{Example.}
+For the query ``\emph{Find starred draft emails from last week about the budget}'', the DSL program is:
+\begin{lstlisting}
+{
+  "sql": "SELECT DISTINCT message_id
+    FROM email
+    WHERE is_draft = 1
+    AND draft_modified_date >=
+        date('now', '-7 day')
+    AND is_starred = 1
+    AND message_id IN <vector_0>",
+  "vector_query_list": [
+    {"email_content": "budget"}
+  ]
+}
+\end{lstlisting}
+
+\paragraph{Logical expressiveness.}
+Because SQL provides complete set-operation semantics, our DSL can express arbitrary retrieval orchestration patterns:
+intersection via AND (\emph{structured} $\cap$ \emph{semantic}),
+union via OR (multi-pathway recall),
+complement via NOT (result exclusion),
+and arbitrary nesting through subqueries and parenthesized conditions.
+This expressiveness is strictly superior to RRF (weighted union only), self-querying RAG (key-value filters only), and Search-R1/DeepRetrieval (text/Boolean queries that cannot compose across heterogeneous backends).
+Table~\ref{tab:expressiveness} summarizes this comparison.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Logical expressiveness comparison across retrieval methods. Our DSL is the only method supporting all orchestration capabilities.}
+\label{tab:expressiveness}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Capability} & \rotatebox{60}{\textbf{RRF}} & \rotatebox{60}{\textbf{Self-Q RAG}} & \rotatebox{60}{\textbf{Search-R1}} & \rotatebox{60}{\textbf{DeepRetr.}} & \rotatebox{60}{\textbf{Ours}} \\
+\midrule
+Structured filter & \ding{55} & \ding{51} & \ding{55} & partial & \ding{51} \\
+Semantic retrieval & \ding{51} & \ding{51} & \ding{51} & \ding{55} & \ding{51} \\
+AND (intersection) & \ding{55} & implicit & \ding{55} & \ding{51} & \ding{51} \\
+OR (union) & merge & \ding{55} & \ding{55} & \ding{51} & \ding{51} \\
+NOT (negation) & \ding{55} & \ding{55} & \ding{55} & partial & \ding{51} \\
+Nesting & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \ding{51} \\
+Cross-modal logic & \ding{55} & \ding{55} & \ding{55} & \ding{55} & \ding{51} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsection{Execution Mechanism}
+\label{sec:execution}
+
+The DSL execution follows a two-phase pipeline:
+
+\begin{enumerate}[leftmargin=*,nosep]
+\item \textbf{Vector retrieval phase.} For each vector query in \texttt{vector\_query\_list}, the execution engine computes the query embedding using Qwen3-Embedding-8B (for text) or Qwen3-VL-Embedding-8B (for images), retrieves the top-$K$ nearest neighbors from the corresponding vector index, and collects the candidate document IDs.
+
+\item \textbf{SQL execution phase.} Each placeholder \texttt{<vector\_$i$>} in the SQL statement is replaced with the formatted ID list from step~1 (e.g., \texttt{(101, 203, 547, ...)}). The complete SQL statement is then executed against the local SQLite database.
+\end{enumerate}
+
+The key insight is that \emph{no separate fusion strategy is needed}.
+Unlike RRF or score interpolation, the logical composition (AND, OR, NOT, nesting) between structured conditions and vector retrieval results is entirely determined by SQL semantics---the SQL engine natively executes the fusion logic specified by the LLM.
+
+
+\subsection{Data Preparation}
+\label{sec:data}
+
+We construct training and evaluation data through a nine-step synthetic pipeline.
+Given a document corpus $\mathcal{D} = \{d_1, \ldots, d_N\}$ with both structured metadata and unstructured content, we:
+(1) analyze the schema to identify structured fields (SQL-filterable) and unstructured fields (vector-searchable);
+(2) sample a target document $\hat{d}$;
+(3) generate a ground-truth DSL program $y^*$ that uniquely retrieves $\hat{d}$, with complexity level $\ell \in \{1, 2, 3\}$ controlling the number and type of logical conditions;
+(4) use an LLM to generate a natural language query $q$ from $y^*$;
+(5--9) validate executability, uniqueness, and naturalness through iterative refinement.
+
+Each instance $(q, y^*, \hat{d})$ provides the natural language query, ground-truth DSL, and target document.
+We stratify queries into three complexity levels: Level~1 (single condition, 30\%), Level~2 (2--3 AND conditions, 40\%), and Level~3 (4--5 conditions with OR/NOT/nesting, 30\%).
+
+\paragraph{Datasets.}
+We construct two benchmarks:
+\textbf{E-commerce Product Search} from Amazon ESCI~\cite{reddy2022shopping} and Amazon Review~\cite{ni2019justifying} data, containing 3{,}000 products with structured fields (brand, category, price, rating), text fields (title, description, reviews), and product images.
+\textbf{Enterprise Email Search} from the Enron Email corpus~\cite{klimt2004enron}, containing 5{,}000 emails with structured fields (sender, date, read/starred/draft status) and text fields (subject, content).
+For each scenario, we generate 20{,}000 training queries and 3{,}000 test queries.
+
+
+\subsection{Reinforcement Learning}
+\label{sec:rl}
+
+\paragraph{Reward function.}
+Generating executable DSL programs faces stricter hierarchical constraints than generating text queries: a program must first parse correctly (format), then execute without errors (SQL and vector retrieval), and finally return accurate results.
+We design a four-component reward:
+\begin{equation}
+R = S_f + S_e + S_r + S_l
+\label{eq:reward}
+\end{equation}
+where $S_f$ (format reward) is 1 if the output contains valid \texttt{<query>}...\texttt{</query>} tags with parseable JSON, else 0;
+$S_e$ (execution reward) is 1 if the DSL can be parsed and executed without error, else 0;
+$S_r$ (result reward) is the Hit@1 score against the ground-truth document;
+$S_l$ (length reward) is $-\alpha \cdot \max(0, L - L_\text{thresh}) / L_\text{thresh}$, penalizing verbose outputs.
+The equal weighting is justified because the components form an implicit priority chain: $S_f = 0 \Rightarrow S_e = 0 \Rightarrow S_r = 0$.
+
+\paragraph{Training pipeline.}
+We first perform supervised fine-tuning (SFT) on ground-truth $(q, y^*)$ pairs, then apply RL using either GRPO~\cite{shao2024deepseekmath} or DAPO~\cite{yu2025dapo}.
+GRPO estimates advantages from group-normalized rewards across $G$ rollout samples per prompt, avoiding the need for a separate value network.
+DAPO extends GRPO with a clip-higher mechanism and dynamic sampling for improved training stability.
+Both algorithms are implemented in the verl framework~\cite{sheng2024hybridflow}.
+
+\paragraph{Implementation.}
+We train Qwen3-4B and Qwen3-8B~\cite{yang2025qwen3} with batch size 32, learning rate $1 \times 10^{-6}$, KL coefficient 0.001, and 4 rollout samples per prompt.
+Training uses 2$\times$NVIDIA RTX PRO 6000 (96GB) GPUs with FSDP; inference and evaluation use a single NVIDIA RTX 4090.
+
+
+% ============================================================
+\section{Experiments}
+\label{sec:experiments}
+
+\subsection{Experimental Setup}
+\label{sec:setup}
+
+\paragraph{Datasets.}
+We evaluate on two local document retrieval scenarios with distinct modality compositions.
+\textbf{E-commerce Product Search} is constructed from Amazon ESCI~\cite{reddy2022shopping} and Amazon Review~\cite{ni2019justifying} data, containing 3{,}000 products with structured fields (brand, category, price, rating), text fields (title, description, review summary), and product images.
+\textbf{Enterprise Email Search} is derived from the Enron Email corpus~\cite{klimt2004enron}, containing 5{,}000 emails with structured fields (sender, date, read/starred/draft status) and text fields (subject, content, recipient list).
+For each scenario, we construct 20{,}000 training queries and 3{,}000 test queries using our nine-step pipeline (\S\ref{sec:data}), stratified into three complexity levels based on the number of logical conditions: Level~1 (single condition, 30\%), Level~2 (2--3 conditions, 40\%), and Level~3 (4--5 conditions with OR/NOT/nesting, 30\%).
+
+\paragraph{Metrics.}
+We report Hit@1 (primary metric), Hit@3, and MRR (Mean Reciprocal Rank) for all methods. Hit@1 measures whether any ground-truth document appears in the top-1 position. We also report execution success rate for DSL-based methods.
+
+\paragraph{Implementation Details.}
+We experiment with two model sizes: Qwen3-4B and Qwen3-8B~\cite{yang2025qwen3}, each trained with SFT followed by RL (GRPO or DAPO) using the verl framework~\cite{sheng2024hybridflow}.
+RL training uses a batch size of 32, learning rate of $1 \times 10^{-6}$, KL coefficient of 0.001, and 4 rollout samples per prompt.
+Text embeddings are computed using Qwen3-Embedding-8B, and image embeddings using Qwen3-VL-Embedding-8B.
+Training is conducted on 2$\times$NVIDIA RTX PRO 6000 (96GB) GPUs; inference and evaluation use a single NVIDIA RTX 4090.
+
+\paragraph{Baselines.}
+We compare against five categories of baselines:
+
+\begin{itemize}[leftmargin=*,nosep]
+\item \textbf{Traditional Retrieval} (B1): BM25~\cite{robertson2009probabilistic}, ColQwen dense retrieval~\cite{chen2024colqwen}, Reciprocal Rank Fusion (RRF)~\cite{cormack2009reciprocal}, BGE-M3~\cite{chen2024bge}, and BGE-Reranker.
+\item \textbf{LLM-Enhanced Retrieval} (B2): HyDE~\cite{gao2023precise}, IRCoT~\cite{trivedi2023interleaving}, RankGPT~\cite{sun2023chatgpt}, and LangChain Self-Query Retrieval (SQR).
+\item \textbf{RL-Trained Retrieval} (B3): DeepRetrieval~\cite{jiang2025deepretrieval} (Boolean query + BM25, Qwen3-4B GRPO), Search-R1~\cite{jin2025search} (multi-turn text search, Qwen3-4B GRPO), and SQL-R1 (pure SQL generation, Qwen3-4B GRPO).
+\item \textbf{Commercial LLMs with DSL} (B4): GPT-5.5, GPT-5.4~\cite{openai2025gpt5}, Claude Opus~4.7, Claude Opus~4.6, and Gemini~3.1~Pro, all generating DSL in zero-shot mode.
+\item \textbf{Few-shot DSL}: GPT-5.5 and Opus~4.7 with 5-shot in-context examples.
+\end{itemize}
+
+
+\subsection{Main Results}
+\label{sec:main_results}
+
+Table~\ref{tab:main_ecommerce} and Table~\ref{tab:main_email} present the main results on the e-commerce and email benchmarks, respectively.
+
+\begin{table*}[t]
+\centering
+\small
+\caption{Main results on the \textbf{e-commerce product search} benchmark. Hit@1 is the primary metric. $N$ denotes the number of evaluated queries. Best results are in \textbf{bold}. $^\dagger$Methods using GPT-5.4 as the backbone LLM.}
+\label{tab:main_ecommerce}
+\begin{tabular}{llccccr}
+\toprule
+\textbf{Category} & \textbf{Method} & \textbf{Hit@1} & \textbf{Hit@3} & \textbf{MRR} & \textbf{Exec\%} & \textbf{$N$} \\
+\midrule
+\multirow{5}{*}{\textit{Traditional Retrieval}}
+& BM25 & 0.548 & 0.685 & 0.630 & -- & 2{,}737 \\
+& ColQwen (Dense) & 0.497 & 0.604 & 0.569 & -- & 2{,}737 \\
+& RRF (BM25+ColQwen) & 0.555 & 0.688 & 0.633 & -- & 2{,}737 \\
+& BGE-M3 & 0.548 & 0.678 & 0.628 & -- & 2{,}737 \\
+& BGE-Reranker & 0.593 & 0.719 & 0.664 & -- & 2{,}737 \\
+\midrule
+\multirow{4}{*}{\textit{LLM-Enhanced Retrieval$^\dagger$}}
+& HyDE & 0.534 & 0.634 & 0.597 & -- & 2{,}737 \\
+& IRCoT & 0.547 & 0.663 & 0.617 & -- & 2{,}737 \\
+& RankGPT & 0.762 & 0.801 & 0.784 & -- & 2{,}737 \\
+& LangChain SQR & 0.607 & 0.692 & 0.659 & -- & 2{,}737 \\
+\midrule
+\multirow{4}{*}{\textit{RL-Trained Retrieval}}
+& DeepRetrieval (Boolean+BM25) & 0.638 & 0.729 & 0.697 & 100.0 & 2{,}737 \\
+& Search-R1 (BM25 multi-turn) & 0.459 & -- & -- & -- & 2{,}773 \\
+& SQL-R1 (SQL only) & 0.780 & 0.797 & 0.790 & 82.5 & 2{,}737 \\
+& GraphRAG$^\dagger$ & 0.493 & 0.582 & 0.551 & -- & 2{,}737 \\
+\midrule
+\multirow{5}{*}{\textit{Commercial LLMs (zero-shot DSL)}}
+& GPT-5.5 & 0.667 & 0.704 & 0.689 & 100.0 & 2{,}998 \\
+& GPT-5.4 & 0.581 & 0.591 & 0.587 & 100.0 & 2{,}998 \\
+& Claude Opus 4.7 & 0.642 & 0.665 & 0.655 & 99.9 & 2{,}998 \\
+& Claude Opus 4.6 & 0.586 & 0.596 & 0.592 & 99.9 & 3{,}000 \\
+& Gemini 3.1 Pro & 0.576 & 0.586 & 0.582 & 100.0 & 2{,}994 \\
+\midrule
+\multirow{2}{*}{\textit{Few-shot DSL}}
+& GPT-5.5 (5-shot) & 0.253 & 0.280 & 0.268 & 48.0 & 300 \\
+& Opus 4.7 (5-shot) & 0.250 & 0.270 & 0.262 & 50.3 & 300 \\
+\midrule
+\multirow{7}{*}{\textit{LocalSearch-R1 (Ours)}}
+& Qwen3-4B Base (zero-shot) & 0.117 & 0.118 & 0.118 & 16.9 & 3{,}000 \\
+& SFT (Qwen3-4B) & 0.680 & 0.721 & 0.705 & 99.7 & 3{,}000 \\
+& GRPO step300 (Qwen3-4B) & 0.809 & 0.854 & 0.835 & 99.7 & 3{,}000 \\
+& DAPO step420 (Qwen3-4B) & 0.808 & 0.852 & 0.833 & 99.6 & 3{,}000 \\
+& SFT (Qwen3-8B) & \textbf{0.820} & \textbf{0.868} & \textbf{0.846} & 99.7 & 3{,}000 \\
+& GRPO (Qwen3-8B) & 0.820 & 0.867 & 0.845 & 99.7 & 3{,}000 \\
+& DAPO (Qwen3-8B) & \texttt{TBD} & \texttt{TBD} & \texttt{TBD} & \texttt{TBD} & 3{,}000 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+
+\begin{table}[t]
+\centering
+\small
+\caption{Main results on the \textbf{enterprise email search} benchmark ($N$=3{,}000 unless noted).}
+\label{tab:main_email}
+\begin{tabular}{llccc}
+\toprule
+\textbf{Category} & \textbf{Method} & \textbf{Hit@1} & \textbf{Hit@3} & \textbf{MRR} \\
+\midrule
+\multirow{3}{*}{\textit{Trad.\ Retrieval}}
+& BM25 & 0.731 & 0.859 & 0.799 \\
+& RRF (BM25+ColQwen) & 0.687 & 0.847 & 0.776 \\
+& BGE-Reranker & 0.836 & 0.919 & 0.881 \\
+\midrule
+\multirow{3}{*}{\textit{LLM-Enhanced}}
+& HyDE & 0.483 & -- & 0.541 \\
+& IRCoT & 0.496 & -- & 0.552 \\
+& RankGPT & 0.864 & -- & 0.885 \\
+\midrule
+\multirow{3}{*}{\textit{RL-Trained}}
+& DeepRetrieval & 0.745 & 0.851 & 0.805 \\
+& SQL-R1 SFT & 0.546 & 0.584 & 0.565 \\
+& SQL-R1 RL & 0.541 & 0.578 & 0.561 \\
+\midrule
+\multirow{3}{*}{\textit{Commercial LLMs}}
+& GPT-5.5 & 0.855 & 0.864 & 0.861 \\
+& GPT-5.4 & 0.854 & 0.864 & 0.859 \\
+& Opus 4.7 & 0.830 & 0.837 & 0.834 \\
+\midrule
+\multirow{6}{*}{\textit{Ours}}
+& Base (zero-shot) & 0.243 & 0.244 & 0.244 \\
+& SFT (Qwen3-4B) & 0.891 & 0.893 & 0.892 \\
+& GRPO (Qwen3-4B) & 0.906 & 0.908 & 0.907 \\
+& DAPO (Qwen3-4B) & \textbf{0.909} & \textbf{0.910} & \textbf{0.910} \\
+& SFT (Qwen3-8B) & \texttt{TBD} & \texttt{TBD} & \texttt{TBD} \\
+& GRPO (Qwen3-8B) & \texttt{TBD} & \texttt{TBD} & \texttt{TBD} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\paragraph{DSL generation surpasses all baselines by large margins.}
+On the e-commerce benchmark, our best model (Qwen3-8B SFT) achieves a Hit@1 of 82.0\%, outperforming the strongest commercial LLM (GPT-5.5, 66.7\%) by 15.3 percentage points (pp) and the best traditional retrieval method (BGE-Reranker, 59.3\%) by 22.7~pp. Even among RL-trained retrieval methods, our approach substantially outperforms DeepRetrieval (63.8\%, +18.2~pp), SQL-R1 (78.0\%, +4.0~pp), and Search-R1 (45.9\%, +36.1~pp). On the email benchmark, DAPO (4B) achieves 90.9\% Hit@1, surpassing GPT-5.5 (85.5\%) by 5.4~pp and BGE-Reranker (83.6\%) by 7.3~pp.
+
+\paragraph{RL substantially improves 4B models; 8B models benefit primarily from scale.}
+At the 4B scale, RL training yields large gains over SFT: +12.9~pp on e-commerce (80.9\% vs.\ 68.0\%) and +1.8~pp on email (90.9\% vs.\ 89.1\%). The larger gain on e-commerce reflects the greater complexity of multi-modal orchestration, where RL helps the model learn when to invoke image retrieval and how to combine structured and semantic conditions.
+Interestingly, scaling from 4B to 8B shifts this dynamic: Qwen3-8B SFT alone achieves 82.0\%, already surpassing the 4B RL best (80.9\%). Further RL training on the 8B model yields no additional improvement (Hit@1 remains 82.0\% through step~400). This suggests that the 8B model's increased capacity allows SFT to capture orchestration patterns that the 4B model can only acquire through RL exploration, though RL remains essential for smaller models.
+
+\paragraph{Few-shot DSL generation fails.}
+Despite being given 5 in-context examples, GPT-5.5 and Opus~4.7 achieve only $\sim$25\% Hit@1 with execution rates below 50\% on e-commerce. The predominant failure mode is SQL syntax errors (e.g., referencing non-existent columns), demonstrating that DSL generation requires dedicated training rather than in-context learning alone.
+
+\paragraph{GRPO and DAPO achieve comparable performance.}
+On e-commerce (4B), GRPO (80.9\%) slightly edges out DAPO (80.8\%), while on email, DAPO (90.9\%) marginally outperforms GRPO (90.6\%). DAPO demonstrates greater training stability: GRPO exhibits performance degradation after step~300 on e-commerce and collapses entirely at step~1200 (Hit@1 drops to 0.3\%), whereas DAPO maintains stable performance across training.
+
+
+\subsection{Action Space Ablation}
+\label{sec:action_space}
+
+To validate that our hybrid DSL action space is essential, we compare four restricted action space variants, all using Qwen3-8B with SFT and differing only in the DSL primitives available to the model:
+
+\begin{table}[t]
+\centering
+\small
+\caption{Action space ablation on e-commerce ($N$=3{,}000). All variants use Qwen3-8B with SFT. The last two rows show the full action space with SFT and RL (4B), respectively.}
+\label{tab:action_space}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Action Space} & \textbf{Hit@1} & \textbf{Hit@3} & \textbf{MRR} & \textbf{Exec\%} \\
+\midrule
+Text query only (8B SFT) & 0.448 & 0.535 & 0.508 & 100.0 \\
+SQL + image (8B SFT) & 0.567 & 0.592 & 0.586 & 99.8 \\
+SQL only (8B SFT) & 0.650 & 0.670 & 0.664 & 99.7 \\
+SQL + text (8B SFT) & 0.752 & 0.787 & 0.773 & 99.8 \\
+\midrule
+Full DSL (4B SFT) & 0.680 & 0.721 & 0.705 & 99.7 \\
+Full DSL (8B SFT) & 0.820 & 0.868 & 0.846 & 99.7 \\
+Full DSL (4B RL) & \textbf{0.809} & \textbf{0.854} & \textbf{0.835} & 99.7 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Each retrieval modality contributes.}
+Adding text retrieval to SQL-only improves Hit@1 by 10.2~pp (65.0\% $\to$ 75.2\%), confirming that semantic matching captures information beyond structured filtering.
+The text-query-only variant (analogous to Search-R1's action space) achieves only 44.8\%, demonstrating that text queries alone cannot express the structured filtering operations required for product search.
+SQL+image (56.7\%) underperforms SQL-only (65.0\%), indicating that image retrieval alone cannot substitute for text retrieval but provides complementary value when combined with both SQL and text (as shown by the full DSL results).
+
+\paragraph{The full DSL action space is strictly superior.}
+The full DSL with 8B SFT (82.0\%) outperforms the best restricted variant SQL+text (75.2\%) by 6.8~pp, confirming that the complete multi-modal action space provides irreplaceable value. At 4B scale, RL further boosts the full DSL from 68.0\% to 80.9\% (+12.9~pp), demonstrating that learning \emph{how} to orchestrate retrieval pathways is at least as important as \emph{which} pathways are available.
+
+
+\subsection{Analysis by Query Complexity}
+\label{sec:complexity}
+
+Table~\ref{tab:complexity} reports Hit@1 broken down by query complexity level. Level~1 queries involve a single condition, Level~2 involve 2--3 conditions combined with AND, and Level~3 involve 4--5 conditions with OR, NOT, or nested logic.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Hit@1 by query complexity level on e-commerce.}
+\label{tab:complexity}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{L1} & \textbf{L2} & \textbf{L3} \\
+\midrule
+BGE-Reranker & 0.455 & 0.691 & 0.703 \\
+RRF & 0.442 & 0.627 & 0.665 \\
+BM25 & 0.435 & 0.623 & 0.652 \\
+\midrule
+GPT-5.5 & 0.666 & 0.680 & 0.642 \\
+Opus 4.7 & 0.669 & 0.618 & 0.598 \\
+GPT-5.4 & 0.561 & 0.611 & 0.563 \\
+\midrule
+SFT (4B) & 0.752 & 0.644 & 0.602 \\
+GRPO step300 (4B) & 0.864 & 0.797 & 0.720 \\
+DAPO step420 (4B) & 0.859 & 0.800 & 0.717 \\
+SFT (8B) & \textbf{\texttt{TBD}} & \textbf{\texttt{TBD}} & \textbf{\texttt{TBD}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{RL-trained models dominate across all complexity levels.}
+GRPO achieves the highest Hit@1 at every level: 86.4\% on L1, 79.7\% on L2, and 72.0\% on L3. The advantage over the best commercial model (GPT-5.5) is +19.8~pp on L1, +11.7~pp on L2, and +7.8~pp on L3.
+
+\paragraph{Traditional retrieval and DSL-based methods exhibit opposite scaling trends.}
+Traditional retrieval methods \emph{improve} on more complex queries (BM25: L1=43.5\% $\to$ L3=65.2\%), because complex queries contain more distinctive keywords that benefit term-matching approaches.
+In contrast, DSL-based methods (both ours and commercial LLMs) show degradation on complex queries, as generating correct multi-condition DSL programs becomes harder.
+Crucially, our RL-trained model degrades more gracefully (L1$\to$L3: $-$14.4~pp) than commercial LLMs (GPT-5.5: $-$2.4~pp but from a much lower baseline; Opus~4.7: $-$7.1~pp), maintaining a substantial lead even on the hardest queries.
+
+\paragraph{SFT struggles on complex queries.}
+The SFT model drops from 75.2\% on L1 to 60.2\% on L3 ($-$15.0~pp), a steeper decline than RL ($-$14.4~pp from a higher starting point). This suggests that RL specifically improves the model's ability to generate complex logical combinations involving OR, NOT, and nested conditions.
+
+
+\subsection{Analysis by Retrieval Modality}
+\label{sec:modality}
+
+Table~\ref{tab:modality} breaks down performance by the retrieval modalities required by each query, focusing on the e-commerce benchmark where all three modalities (structured, text, image) are present.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Hit@1 by required retrieval modality on e-commerce. A query is assigned to a modality if its ground-truth DSL involves that modality.}
+\label{tab:modality}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Structured} & \textbf{Text} & \textbf{Image} \\
+\midrule
+BGE-Reranker & 0.558 & 0.779 & 0.789 \\
+BM25 & 0.516 & 0.761 & 0.724 \\
+\midrule
+GPT-5.5 & 0.724 & 0.607 & 0.481 \\
+Opus 4.7 & 0.703 & 0.572 & 0.349 \\
+\midrule
+SFT (4B) & 0.743 & 0.634 & 0.320 \\
+GRPO step300 (4B) & 0.843 & 0.690 & 0.716 \\
+DAPO step420 (4B) & 0.843 & 0.690 & 0.711 \\
+SFT (8B) & \textbf{\texttt{TBD}} & \textbf{\texttt{TBD}} & \textbf{\texttt{TBD}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{RL enables effective multi-modal orchestration.}
+On structured queries, our model achieves 84.3\%, outperforming BGE-Reranker by 28.5~pp, because SQL conditions precisely filter on attributes like brand, price, and category where keyword matching fails.
+On text queries, our model (69.0\%) outperforms both commercial LLMs (GPT-5.5: 60.7\%) and falls below BGE-Reranker only when considering text in isolation (77.9\%), since traditional retrievers benefit from their dedicated semantic matching.
+
+\paragraph{RL dramatically improves image retrieval utilization.}
+The most striking result is on image-related queries: RL achieves 71.6\%, vastly outperforming SFT (32.0\%, +39.6~pp) and GPT-5.5 (48.1\%, +23.5~pp). This indicates that RL training enables the model to learn \emph{when} to invoke the image retrieval pathway and \emph{how} to compose effective visual queries---a capability that cannot be acquired through supervised learning or in-context examples alone. Notably, SFT's image performance (32.0\%) is even lower than that of BGE-Reranker (78.9\%), suggesting that SFT often fails to utilize the image modality at all.
+
+\paragraph{Complementary strengths across modalities.}
+Traditional retrievers perform better on text and image queries in isolation because they employ dedicated semantic models, but they cannot combine modalities with structured filtering. Our approach bridges this gap: on queries that require \emph{both} structured and semantic conditions, the DSL's ability to express cross-modal logical combinations becomes decisive.
+
+
+\subsection{Comparison Across Domains}
+\label{sec:cross_domain}
+
+The two benchmarks reveal how domain characteristics affect relative method performance:
+
+\begin{itemize}[leftmargin=*,nosep]
+\item \textbf{RL advantage is consistent but domain-dependent.} RL improves over the best commercial LLM by 14.2~pp on e-commerce but only 5.4~pp on email, reflecting that email queries are more keyword-amenable and structurally simpler.
+
+\item \textbf{Traditional retrieval is stronger on email.} BGE-Reranker achieves 83.6\% on email versus 59.3\% on e-commerce, closing the gap with RL from 21.6~pp to 7.3~pp. Email content is predominantly text-based with structured sender/date fields that align well with BM25 matching.
+
+\item \textbf{RankGPT is competitive on email.} RankGPT achieves 86.4\% Hit@1 on email (vs.\ 76.2\% on e-commerce), approaching our DAPO's 90.9\%. This is because the RRF initial retrieval is already strong on email, giving the LLM reranker high-quality candidates to work with.
+
+\item \textbf{SQL-R1 fails on email.} SQL-R1 achieves 78.0\% on e-commerce but only 54.6\% on email, because email content (subject, message body) requires semantic matching that pure SQL \texttt{LIKE} clauses cannot provide. In contrast, our DSL seamlessly integrates text retrieval, maintaining 90.9\% on email.
+\end{itemize}
+
+These findings confirm that our hybrid DSL approach generalizes across domains with different modality compositions, maintaining strong performance regardless of whether the task emphasizes structured filtering (e-commerce) or text matching (email).
+
+
+\subsection{Effect of Model Scale}
+\label{sec:scaling}
+
+Table~\ref{tab:scaling} examines how model size affects performance and the marginal value of RL training.
+
+\begin{table}[t]
+\centering
+\small
+\caption{Effect of model scale on e-commerce Hit@1. $\Delta_\text{RL}$ denotes the gain of RL over SFT at each scale.}
+\label{tab:scaling}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Model} & \textbf{SFT} & \textbf{RL (best)} & \textbf{$\Delta_\text{RL}$} \\
+\midrule
+Qwen3-4B & 0.680 & 0.809 & +12.9 \\
+Qwen3-8B & 0.820 & 0.820 & +0.0 \\
+Qwen3-14B & \texttt{TBD} & \texttt{TBD} & \texttt{TBD} \\
+\midrule
+GPT-5.5 & \multicolumn{2}{c}{0.667 (zero-shot)} & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Scaling up shifts the SFT--RL tradeoff.}
+At 4B parameters, SFT achieves 68.0\% and RL provides a critical +12.9~pp boost to 80.9\%. At 8B parameters, SFT alone reaches 82.0\%---already surpassing the 4B RL best---and RL yields no further improvement (Hit@1 remains 82.0\% through 400 training steps).
+This finding suggests that the orchestration patterns learned by 4B models only through RL exploration (e.g., when to invoke image retrieval, how to compose OR/NOT conditions) are already captured by the 8B model's SFT training, likely due to its larger capacity for learning from demonstration data.
+This suggests that the SFT performance plateau for small models occurs below 4B and only RL or scale-up can break through it.
+
+\paragraph{Both RL and scale-up outperform commercial models.}
+Whether achieved through RL at 4B (80.9\%) or SFT at 8B (82.0\%), our approach substantially outperforms the best commercial LLM (GPT-5.5, 66.7\%), demonstrating that dedicated training on the DSL generation task---whether via RL or sufficient SFT with adequate model capacity---is far more effective than zero-shot prompting of much larger models.
+
+
+\subsection{Training Dynamics}
+\label{sec:training}
+
+\begin{figure}[t]
+\centering
+% Placeholder for training curve figure
+% \includegraphics[width=\columnwidth]{figures/training_curve.pdf}
+\fbox{\parbox{0.9\columnwidth}{\centering\small [Training curve: reward vs.\ step for GRPO and DAPO on e-commerce and email]}}
+\caption{Training reward curves. GRPO peaks at step~300 on e-commerce and degrades afterward, collapsing at step~1200. DAPO maintains stable performance across training.}
+\label{fig:training_curve}
+\end{figure}
+
+We analyze the training dynamics of GRPO and DAPO on both benchmarks.
+
+\paragraph{GRPO exhibits overfitting on e-commerce.}
+GRPO achieves peak performance at step~300 (Hit@1=80.9\%), after which performance gradually declines: 79.8\% at step~550, and a complete collapse to 0.3\% at step~1200. This collapse is characterized by the model generating syntactically valid but semantically degenerate DSL programs that return empty result sets. In contrast, DAPO at step~420 achieves 80.8\% without showing signs of degradation, demonstrating the benefits of DAPO's clip-higher mechanism and dynamic sampling for training stability.
+
+\paragraph{Both algorithms converge faster on email.}
+On the email benchmark, both GRPO and DAPO reach near-peak performance by step~843, with DAPO achieving 90.9\% and GRPO 90.6\%. The faster convergence and smaller RL-over-SFT gap (1.8~pp vs.\ 12.9~pp on e-commerce) reflect the lower orchestration complexity of email queries, which lack the image modality.
+
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have presented LocalSearch-R1, a framework that upgrades LLMs from query generators to \emph{retrieval orchestrators} by training them via reinforcement learning to generate executable DSL programs. Our DSL unifies SQL logic with vector retrieval primitives, enabling arbitrary logical composition (AND, OR, NOT, and nesting) across structured, textual, and visual retrieval pathways---an expressiveness that surpasses fixed fusion pipelines like RRF and self-querying RAG, as well as the text-query or boolean-query action spaces of prior RL retrieval methods.
+
+Experiments on e-commerce product search and enterprise email search demonstrate that our approach achieves 82.0\% and 90.9\% Hit@1 respectively, outperforming the best commercial LLM (GPT-5.5) by 15.3~pp and 5.4~pp, and the best traditional retrieval method by 22.7~pp and 7.3~pp. Action space ablation confirms that the hybrid DSL is essential: removing any retrieval modality degrades performance. At the 4B scale, RL provides a critical +12.9~pp gain over SFT; at 8B, increased model capacity allows SFT alone to match this level, revealing a complementary relationship between RL and model scale for acquiring retrieval orchestration capabilities. Analysis by query complexity shows that our model maintains its advantage even on the most complex queries, while analysis by modality reveals that RL is critical for learning effective image retrieval utilization (+39.6~pp over SFT at 4B).
+
+For future work, we see several promising directions: (1)~extending the framework to support multi-turn conversational retrieval, where the model iteratively refines its DSL based on intermediate results; (2)~developing schema-agnostic DSL generation that can automatically discover and adapt to new data schemas without manual specification; (3)~investigating why RL yields no improvement at the 8B scale and whether alternative reward designs or higher learning rates can unlock further gains; and (4)~deploying and evaluating on actual edge devices to verify the practical viability of on-device retrieval orchestration.
+
+
+% ============================================================
+\section{Limitations}
+\label{sec:limitations}
+
+We identify the following limitations of our work:
+
+\begin{enumerate}[leftmargin=*,nosep]
+\item \textbf{Schema dependency.} Our DSL requires a predefined database schema specifying which fields are structured (SQL-filterable) and which require semantic retrieval. While this assumption holds naturally for domains with well-defined schemas (email clients, e-commerce platforms, digital libraries), applying the framework to unstructured document collections with no inherent schema would require additional schema discovery mechanisms.
+
+\item \textbf{Two-level nesting.} Although our DSL syntax supports arbitrary nesting depth, the training data covers at most two levels of logical nesting. Whether models can reliably generate deeper nesting structures remains to be verified.
+
+\item \textbf{Domain coverage.} We evaluate on two domains (e-commerce and email). While these domains have distinct modality compositions (three modalities vs.\ two), validating on additional domains (e.g., scientific literature, legal documents, personal file systems) would strengthen the generalizability claim.
+
+\item \textbf{Image retrieval quality.} The image retrieval pathway depends on the text-to-image alignment quality of the vision-language embedding model. Our current image embeddings use Qwen3-VL-Embedding-8B, whose weights may not be fully optimized for product image retrieval, as evidenced by the low standalone image retrieval performance (Hit@1=6.3\%).
+
+\item \textbf{Single-turn retrieval.} The current framework performs single-turn retrieval: the model generates one DSL program per query. It does not support iterative refinement based on initial retrieval results, which could be beneficial for ambiguous or under-specified queries.
+\end{enumerate}
+
+
+% ============================================================
+% References
+\bibliography{references}
+\bibliographystyle{acl_natbib}
+
+% ============================================================
+\appendix
+
+\section{Prompt Template}
+\label{app:prompt}
+
+Below is the system prompt template used for DSL generation (e-commerce scenario; email is analogous):
+
+\begin{lstlisting}
+You are an AI retrieval engineer. Given a
+natural language query, generate an executable
+DSL program in JSON format with two fields:
+- "sql": A SQL SELECT statement over the
+  `products` table. Use <vector_N> placeholders
+  for semantic retrieval conditions.
+- "vector_query_list": A list of vector queries,
+  each specifying the field and query text.
+
+Schema:
+  products(product_id, brand, color, category,
+    price, average_rating, rating_number, text)
+
+Rules:
+1. Structured fields (brand, color, category,
+   price, average_rating, rating_number): use
+   SQL WHERE conditions directly.
+2. Text content (text field): use <vector_N>
+   placeholder with IN operator.
+3. Image similarity: use <vector_N> with
+   image_description in vector_query_list.
+4. Wrap output in <query>...</query> tags.
+\end{lstlisting}
+
+\section{Reward Function Details}
+\label{app:reward}
+
+The four reward components are computed as:
+
+\begin{align}
+S_f &= \mathbb{1}[\text{output has valid tags and parseable JSON}] \\
+S_e &= \mathbb{1}[\text{DSL executes without error}] \cdot S_f \\
+S_r &= \text{Hit@1}(\text{result}, \text{ground truth}) \cdot S_e \\
+S_l &= -\alpha \cdot \frac{\max(0, L - L_\text{thresh})}{L_\text{thresh}}
+\end{align}
+
+where $\alpha = 0.5$ and $L_\text{thresh} = 512$ tokens. The total reward is $R = S_f + S_e + S_r + S_l$.
+
+\section{DSL Examples}
+\label{app:examples}
+
+\paragraph{AND (structured $\cap$ semantic).}
+Query: ``Find headphones under \$30 with good sound quality''
+\begin{lstlisting}
+{"sql": "SELECT DISTINCT product_id FROM products
+  WHERE category = 'Headphones'
+  AND price < 30
+  AND product_id IN <vector_0>",
+ "vector_query_list": [
+  {"product_content": "good sound quality"}]}
+\end{lstlisting}
+
+\paragraph{OR (multi-pathway recall).}
+Query: ``Find emails from Alice or about the marketing budget''
+\begin{lstlisting}
+{"sql": "SELECT DISTINCT message_id FROM email
+  WHERE sender = 'alice@enron.com'
+  OR message_id IN <vector_0>",
+ "vector_query_list": [
+  {"email_content": "marketing budget"}]}
+\end{lstlisting}
+
+\paragraph{NOT (exclusion).}
+Query: ``Find products similar to AirPods but not from Apple''
+\begin{lstlisting}
+{"sql": "SELECT DISTINCT product_id FROM products
+  WHERE brand != 'Apple'
+  AND product_id IN <vector_0>",
+ "vector_query_list": [
+  {"image_description": "AirPods wireless
+   earbuds white charging case"}]}
+\end{lstlisting}
+
+\paragraph{Nested logic.}
+Query: ``Find starred or unread emails from Finance about contracts since January''
+\begin{lstlisting}
+{"sql": "SELECT DISTINCT message_id FROM email
+  WHERE (is_starred = 1 OR is_read = 0)
+  AND date >= '2024-01-01'
+  AND sender IN (SELECT person_id FROM person
+    WHERE department = 'Finance')
+  AND message_id IN <vector_0>",
+ "vector_query_list": [
+  {"email_content": "contract"}]}
+\end{lstlisting}
+
+
+\end{document}

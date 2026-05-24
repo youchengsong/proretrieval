@@ -149,7 +149,6 @@ LocalSearch-R1/
 │   │   ├── b5_fewshot_api.py  # B5 Few-shot DSL
 │   │   ├── deepretrieval/     # DeepRetrieval 完整训练流程
 │   │   ├── deepretrieval_faithful/  # DeepRetrieval 忠实复现版
-│   │   ├── sft_1.7b/          # SFT 1.7B 训练脚本
 │   │   ├── sft_4b/            # SFT 4B 训练脚本
 │   │   ├── pipeline_product.py  # DSL 执行引擎
 │   │   └── gen_*.py           # 数据生成脚本

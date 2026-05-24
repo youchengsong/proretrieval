@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocalSearch-R1 — 实验报告</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'SF Pro Display', -apple-system, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif;
+    background: #0a0e1a;
+    color: #e0e4ef;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+  ::selection { background: rgba(99,140,255,.35); }
+
+  /* ── Nav ── */
+  nav {
+    position: sticky; top:0; z-index:100;
+    background: rgba(10,14,26,.82);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    display: flex; align-items: center; gap: 6px;
+    padding: 0 32px; height: 54px;
+    overflow-x: auto;
+  }
+  nav .logo {
+    font-size: 17px; font-weight: 700; color: #7ba4ff;
+    margin-right: 18px; white-space: nowrap;
+    letter-spacing: -.3px;
+  }
+  nav a {
+    font-size: 15px; color: #8a90a8; text-decoration: none;
+    padding: 8px 14px; border-radius: 8px; white-space: nowrap;
+    transition: .15s;
+  }
+  nav a:hover, nav a.active { color:#fff; background:rgba(255,255,255,.07); }
+
+  /* ── Sections ── */
+  section { max-width: 1200px; margin: 0 auto; padding: 56px 32px 32px; }
+  h1 {
+    font-size: 38px; font-weight: 800; letter-spacing: -.5px;
+    background: linear-gradient(135deg,#7ba4ff,#a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: 26px; font-weight: 700; color: #c5cbdf;
+    margin: 48px 0 20px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  h3 { font-size: 19px; font-weight: 600; color:#9ba4c0; margin: 28px 0 12px; }
+  p, li { font-size: 15.5px; color: #b0b6cd; }
+  p { margin-bottom: 14px; }
+
+  /* ── Glass card ── */
+  .card {
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px; padding: 28px 30px; margin-bottom: 24px;
+    backdrop-filter: blur(12px);
+  }
+  .card-title {
+    font-size: 17px; font-weight: 700; color: #dce0f0; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .badge {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 6px; letter-spacing: .3px;
+  }
+  .badge-done   { background: rgba(52,211,153,.15); color: #34d399; }
+  .badge-run    { background: rgba(251,191,36,.15); color: #fbbf24; }
+  .badge-plan   { background: rgba(148,163,184,.12); color: #94a3b8; }
+
+  /* ── Tables ── */
+  table {
+    width: 100%; border-collapse: collapse; font-size: 14.5px;
+    margin: 8px 0 6px;
+  }
+  thead th {
+    text-align: left; font-weight: 600; color: #8a90a8;
+    padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,.08);
+    font-size: 13px; text-transform: uppercase; letter-spacing: .5px;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,.04);
+    color: #c5cbdf;
+  }
+  tbody tr:hover { background: rgba(255,255,255,.03); }
+  .num { font-variant-numeric: tabular-nums; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 14px; }
+  .best { color: #34d399; font-weight: 700; }
+  .ours { background: rgba(99,140,255,.06); }
+  .ours td:first-child { border-left: 3px solid #7ba4ff; padding-left: 9px; }
+
+  /* ── DSL example ── */
+  .dsl-box {
+    background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.08);
+    border-radius: 10px; padding: 20px 24px; font-family: 'SF Mono','Fira Code',monospace;
+    font-size: 13.5px; line-height: 1.8; color: #a5b4fc; overflow-x: auto;
+    margin: 12px 0 18px;
+  }
+  .dsl-box .kw { color: #f472b6; font-weight: 600; }
+  .dsl-box .fn { color: #34d399; }
+  .dsl-box .str { color: #fbbf24; }
+  .dsl-box .cmt { color: #64748b; font-style: italic; }
+
+  /* ── Pipeline SVG ── */
+  .pipeline-wrap { margin: 24px 0 32px; }
+  .pipeline-wrap svg { width: 100%; height: auto; }
+
+  /* ── Highlight row ── */
+  .gap-row td { color: #64748b; font-style: italic; }
+
+  /* ── Key findings ── */
+  .finding {
+    display: flex; gap: 16px; margin-bottom: 16px;
+    padding: 16px 20px; border-radius: 10px;
+    background: rgba(99,140,255,.05); border-left: 3px solid #7ba4ff;
+  }
+  .finding-num {
+    font-size: 22px; font-weight: 800; color: #7ba4ff;
+    min-width: 32px;
+  }
+  .finding p { margin: 0; }
+
+  /* ── Comparison bar ── */
+  .bar-wrap { margin: 4px 0; }
+  .bar-bg {
+    height: 22px; background: rgba(255,255,255,.04); border-radius: 4px;
+    position: relative; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width .6s ease;
+  }
+  .bar-label {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    font-size: 12px; font-weight: 600; color: #e0e4ef;
+  }
+
+  /* responsive */
+  @media (max-width:768px) {
+    section { padding: 32px 16px; }
+    h1 { font-size: 26px; }
+    nav { padding: 0 12px; }
+    table { font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav>
+  <span class="logo">LocalSearch-R1</span>
+  <a href="#idea" class="active">研究思路</a>
+  <a href="#method">方法</a>
+  <a href="#main-results">主要结果</a>
+  <a href="#baselines">基线对比</a>
+  <a href="#analysis">分析实验</a>
+  <a href="#email">邮件场景</a>
+  <a href="#status">实验进度</a>
+</nav>
+
+<!-- ═══════════ SECTION 1: IDEA ═══════════ -->
+<section id="idea">
+  <h1>LocalSearch-R1：通过强化学习实现检索程序合成</h1>
+  <p style="font-size:17px;color:#94a3b8;margin-bottom:32px;">
+    训练轻量级 LLM，通过强化学习和可执行 DSL 程序，实现对本地异构数据的混合检索编排。
+  </p>
+
+  <div class="card">
+    <div class="card-title">核心洞察</div>
+    <p>
+      现有的 RL 检索方法（Search-R1、DeepRetrieval）将 LLM 定位为 <strong>查询生成器</strong> — 模型只优化"问什么"，而"怎么找"完全交给外部搜索引擎。当面对本地环境中<strong>结构化元数据 + 非结构化文本 + 图像</strong>三种异构数据源的复杂逻辑组合需求时（交集、并集、否定、嵌套），纯文本查询或 boolean 查询的表达能力远远不够。
+    </p>
+    <p>
+      <strong>LocalSearch-R1</strong> 将 LLM 的角色从查询生成器升级为 <strong style="color:#7ba4ff;">检索编排器</strong> — 模型生成的不是一个查询字符串，而是一个<strong>可执行的 DSL 程序</strong>，融合 SQL 逻辑表达能力与向量检索语义匹配能力，实现对多条异构检索路径的任意逻辑组合。
+    </p>
+  </div>
+
+  <!-- Pipeline SVG -->
+  <div class="pipeline-wrap">
+    <svg viewBox="0 0 1000 260" xmlns="http://www.w3.org/2000/svg">
+      <!-- Background -->
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7ba4ff" stop-opacity=".15"/><stop offset="100%" stop-color="#a78bfa" stop-opacity=".08"/></linearGradient>
+        <linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#34d399" stop-opacity=".12"/><stop offset="100%" stop-color="#34d399" stop-opacity=".04"/></linearGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="2" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+
+      <!-- Step boxes -->
+      <!-- 1. User Query -->
+      <rect x="20" y="80" width="150" height="100" rx="12" fill="url(#g1)" stroke="rgba(123,164,255,.3)" stroke-width="1"/>
+      <text x="95" y="118" text-anchor="middle" fill="#7ba4ff" font-size="11" font-weight="700" letter-spacing=".5">用户查询</text>
+      <text x="95" y="142" text-anchor="middle" fill="#b0b6cd" font-size="10.5">"找上周市场部发的</text>
+      <text x="95" y="158" text-anchor="middle" fill="#b0b6cd" font-size="10.5">关于Q3预算的邮件"</text>
+
+      <!-- Arrow 1 -->
+      <path d="M175 130 L220 130" stroke="#7ba4ff" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+      <defs><marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6" fill="#7ba4ff"/></marker></defs>
+
+      <!-- 2. LLM Agent -->
+      <rect x="225" y="60" width="180" height="140" rx="12" fill="url(#g1)" stroke="rgba(123,164,255,.4)" stroke-width="1.5"/>
+      <text x="315" y="95" text-anchor="middle" fill="#7ba4ff" font-size="12" font-weight="700">LLM 智能体</text>
+      <text x="315" y="115" text-anchor="middle" fill="#94a3b8" font-size="10">(Qwen3-4B, RL 训练)</text>
+      <rect x="248" y="128" width="134" height="56" rx="8" fill="rgba(0,0,0,.3)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <text x="315" y="148" text-anchor="middle" fill="#a5b4fc" font-size="10" font-family="monospace">SELECT ... WHERE</text>
+      <text x="315" y="163" text-anchor="middle" fill="#a5b4fc" font-size="10" font-family="monospace">id IN &lt;vector_0&gt;</text>
+      <text x="315" y="178" text-anchor="middle" fill="#a5b4fc" font-size="10" font-family="monospace">AND date >= ...</text>
+
+      <!-- Arrow 2 -->
+      <path d="M410 130 L455 130" stroke="#7ba4ff" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+
+      <!-- 3. DSL Executor -->
+      <rect x="460" y="30" width="210" height="200" rx="12" fill="rgba(255,255,255,.025)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      <text x="565" y="58" text-anchor="middle" fill="#c5cbdf" font-size="12" font-weight="700">DSL 执行引擎</text>
+
+      <!-- Sub: Vector Index -->
+      <rect x="480" y="72" width="170" height="52" rx="8" fill="rgba(52,211,153,.06)" stroke="rgba(52,211,153,.2)" stroke-width="1"/>
+      <text x="565" y="94" text-anchor="middle" fill="#34d399" font-size="10.5" font-weight="600">向量索引</text>
+      <text x="565" y="110" text-anchor="middle" fill="#94a3b8" font-size="9.5">文本 Embedding + 图像 Embedding</text>
+
+      <!-- Sub: SQL Engine -->
+      <rect x="480" y="136" width="170" height="52" rx="8" fill="rgba(251,191,36,.06)" stroke="rgba(251,191,36,.2)" stroke-width="1"/>
+      <text x="565" y="158" text-anchor="middle" fill="#fbbf24" font-size="10.5" font-weight="600">SQL 引擎</text>
+      <text x="565" y="174" text-anchor="middle" fill="#94a3b8" font-size="9.5">结构化过滤 + 逻辑组合</text>
+
+      <!-- Internal arrow -->
+      <path d="M565 124 L565 136" stroke="rgba(255,255,255,.15)" stroke-width="1" fill="none" marker-end="url(#arr2)"/>
+      <defs><marker id="arr2" markerWidth="6" markerHeight="5" refX="5" refY="2.5" orient="auto"><path d="M0 0 L6 2.5 L0 5" fill="rgba(255,255,255,.3)"/></marker></defs>
+      <text x="580" y="133" fill="#64748b" font-size="8">注入 ID</text>
+
+      <!-- Arrow 3 -->
+      <path d="M675 130 L720 130" stroke="#34d399" stroke-width="1.5" fill="none" marker-end="url(#arr3)"/>
+      <defs><marker id="arr3" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6" fill="#34d399"/></marker></defs>
+
+      <!-- 4. Results -->
+      <rect x="725" y="80" width="150" height="100" rx="12" fill="url(#g2)" stroke="rgba(52,211,153,.25)" stroke-width="1"/>
+      <text x="800" y="118" text-anchor="middle" fill="#34d399" font-size="11" font-weight="700" letter-spacing=".5">检索结果</text>
+      <text x="800" y="142" text-anchor="middle" fill="#b0b6cd" font-size="10.5">满足所有约束条件的</text>
+      <text x="800" y="158" text-anchor="middle" fill="#b0b6cd" font-size="10.5">排序文档列表</text>
+
+      <!-- RL Reward loop -->
+      <path d="M800 185 L800 240 L315 240 L315 205" stroke="rgba(248,113,113,.3)" stroke-width="1" stroke-dasharray="6 3" fill="none" marker-end="url(#arr4)"/>
+      <defs><marker id="arr4" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6" fill="rgba(248,113,113,.5)"/></marker></defs>
+      <text x="560" y="235" text-anchor="middle" fill="rgba(248,113,113,.6)" font-size="10" font-weight="600">RL 奖励：格式 + 执行 + 结果 + 长度</text>
+    </svg>
+  </div>
+
+  <!-- DSL Example -->
+  <h3>DSL 示例 — 电商多模态查询</h3>
+  <p>用户查询: <em>"找一双红色的跑步鞋，价格在 50-100 美元之间，评分 4 星以上，材质要透气的"</em></p>
+  <div class="dsl-box">
+    <span class="cmt">-- 由 RL 训练的 Qwen3-4B 生成</span><br>
+    {<br>
+    &nbsp;&nbsp;<span class="str">"sql"</span>: <span class="str">"SELECT product_id FROM products<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;WHERE price BETWEEN 50 AND 100<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND average_rating >= 4.0<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND product_id IN &lt;vector_0&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;AND product_id IN &lt;vector_1&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ORDER BY average_rating DESC LIMIT 20"</span>,<br>
+    &nbsp;&nbsp;<span class="str">"vector_query_list"</span>: [<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"red running shoes breathable material"</span>, &nbsp;<span class="cmt">// &lt;vector_0&gt; → 文本 embedding 检索</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="str">"red athletic sneakers"</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cmt">// &lt;vector_1&gt; → 图像 embedding 检索</span><br>
+    &nbsp;&nbsp;]<br>
+    }
+  </div>
+  <p style="color:#94a3b8;font-size:13.5px;">
+    执行流程：vector_0/1 先经向量索引召回候选 ID → 注入 SQL 占位符 → SQL 引擎执行结构化过滤 + 逻辑组合 → 返回结果。SQL 的完备逻辑运算（AND/OR/NOT/嵌套）自然成为多路检索的编排骨架。
+  </p>
+
+  <!-- Expressiveness comparison -->
+  <h3>表达能力对比</h3>
+  <div class="card" style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>能力维度</th><th>RRF</th><th>Self-Query RAG</th><th>Search-R1</th><th>DeepRetrieval</th><th style="color:#7ba4ff">我们 (DSL)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>结构化过滤</td><td style="color:#64748b">✗</td><td>仅键值对</td><td style="color:#64748b">✗</td><td>有限</td><td class="best">完整 SQL</td></tr>
+        <tr><td>语义检索</td><td class="best">✓</td><td class="best">✓</td><td class="best">✓</td><td style="color:#64748b">✗</td><td class="best">✓</td></tr>
+        <tr><td>AND（交集）</td><td style="color:#64748b">✗</td><td>隐式</td><td style="color:#64748b">✗</td><td class="best">✓</td><td class="best">✓</td></tr>
+        <tr><td>OR（并集）</td><td>仅合并</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td class="best">✓</td><td class="best">✓</td></tr>
+        <tr><td>NOT（否定）</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td>有限</td><td class="best">✓</td></tr>
+        <tr><td>嵌套逻辑</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td class="best">✓</td></tr>
+        <tr><td>结构化+语义组合</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td class="best">✓</td></tr>
+        <tr><td>多向量组合</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td class="best">✓</td></tr>
+        <tr><td>动态路径选择</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td style="color:#64748b">✗</td><td class="best">RL 学习</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 2: METHOD ═══════════ -->
+<section id="method">
+  <h2>方法概述</h2>
+
+  <div class="card">
+    <div class="card-title">训练流程</div>
+    <p><strong>第一阶段 — SFT 热身：</strong> 在 18K+ 条 (query → DSL) 标注数据上微调 Qwen3-4B，使模型学会 DSL 基础格式。SFT loss 降至 0.053，格式通过率 100%。</p>
+    <p><strong>第二阶段 — RL（GRPO / DAPO）：</strong> 使用复合奖励函数进行强化学习优化。模型在本地执行环境中生成 DSL → 执行 → 获得奖励反馈，学会生成更精准的检索编排程序。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">复合奖励函数</div>
+    <table>
+      <thead><tr><th>组件</th><th>信号</th><th>权重</th><th>目的</th></tr></thead>
+      <tbody>
+        <tr><td><strong>S<sub>f</sub></strong> 格式</td><td>JSON 可解析、SQL 语法正确</td><td>0.1</td><td>语法正确性</td></tr>
+        <tr><td><strong>S<sub>e</sub></strong> 执行</td><td>SQL + 向量检索执行成功</td><td>0.3</td><td>执行可靠性</td></tr>
+        <tr><td><strong>S<sub>r</sub></strong> 结果</td><td>Hit@1 / Hit@3 匹配</td><td>1.0</td><td>检索精度</td></tr>
+        <tr><td><strong>S<sub>l</sub></strong> 长度</td><td>惩罚冗长输出</td><td>0.05</td><td>响应效率</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px;color:#94a3b8;font-size:13.5px;">
+      层次化设计：可解析 → 可执行 → 结果正确 → 响应高效。相比 Search-R1 和 DeepRetrieval 的单一结果匹配奖励，为可执行程序生成提供更丰富的学习信号。
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">两个评测场景</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div style="padding:16px;background:rgba(123,164,255,.04);border-radius:10px;border:1px solid rgba(123,164,255,.1)">
+        <div style="font-weight:700;color:#7ba4ff;margin-bottom:8px;">电商场景（Amazon）</div>
+        <p style="font-size:13.5px;margin:0;">结构化字段 (price, rating, brand, category) + 文本描述 + 产品图像。3000 条测试查询，3 个复杂度级别，3 种模态。</p>
+      </div>
+      <div style="padding:16px;background:rgba(52,211,153,.04);border-radius:10px;border:1px solid rgba(52,211,153,.1)">
+        <div style="font-weight:700;color:#34d399;margin-bottom:8px;">邮件场景（Enron）</div>
+        <p style="font-size:13.5px;margin:0;">结构化字段 (sender, date, labels, read status) + 邮件正文。3000 条测试查询，3 个复杂度级别。典型的隐私敏感本地检索场景。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 3: MAIN RESULTS ═══════════ -->
+<section id="main-results">
+  <h2>主要结果 — 电商场景 (N=3000)</h2>
+
+  <div class="card" style="overflow-x:auto;">
+    <div class="card-title">我们的方法 vs 商业大模型（零样本 DSL 生成）</div>
+    <table>
+      <thead>
+        <tr><th>方法</th><th>模型规模</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>执行率</th></tr>
+      </thead>
+      <tbody>
+        <tr class="ours"><td><strong>GRPO step300</strong></td><td>4B</td><td class="num best">0.809</td><td class="num best">0.854</td><td class="num best">0.835</td><td class="num">99.7%</td></tr>
+        <tr class="ours"><td><strong>DAPO step420</strong></td><td>4B</td><td class="num">0.808</td><td class="num">0.852</td><td class="num">0.833</td><td class="num">99.6%</td></tr>
+        <tr class="ours"><td>SFT</td><td>4B</td><td class="num">0.680</td><td class="num">0.721</td><td class="num">0.705</td><td class="num">99.7%</td></tr>
+        <tr><td colspan="6" style="height:8px;border:none;"></td></tr>
+        <tr><td>GPT-5.5</td><td>—</td><td class="num">0.667</td><td class="num">0.704</td><td class="num">0.689</td><td class="num">100%</td></tr>
+        <tr><td>Claude Opus 4.7</td><td>—</td><td class="num">0.642</td><td class="num">0.665</td><td class="num">0.655</td><td class="num">100%</td></tr>
+        <tr><td>Gemini 3.1 Pro</td><td>—</td><td class="num">0.587</td><td class="num">0.597</td><td class="num">0.593</td><td class="num">100%</td></tr>
+        <tr><td>GPT-5.4</td><td>—</td><td class="num">0.581</td><td class="num">0.591</td><td class="num">0.587</td><td class="num">100%</td></tr>
+        <tr><td>Claude Opus 4.6</td><td>—</td><td class="num">0.586</td><td class="num">0.596</td><td class="num">0.592</td><td class="num">99.9%</td></tr>
+        <tr><td colspan="6" style="height:8px;border:none;"></td></tr>
+        <tr style="color:#64748b"><td>Qwen3-4B Base（零样本）</td><td>4B</td><td class="num">0.117</td><td class="num">0.118</td><td class="num">0.118</td><td class="num">16.9%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Visual bar comparison -->
+  <div class="card">
+    <div class="card-title">Hit@1 可视化对比</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div><span style="display:inline-block;width:180px;font-size:13px;color:#7ba4ff;font-weight:600;">GRPO step300（我们）</span><div class="bar-bg"><div class="bar-fill" style="width:80.9%;background:linear-gradient(90deg,#7ba4ff,#a78bfa);"></div><span class="bar-label">0.809</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;color:#7ba4ff;font-weight:600;">DAPO step420（我们）</span><div class="bar-bg"><div class="bar-fill" style="width:80.8%;background:linear-gradient(90deg,#7ba4ff,#a78bfa);"></div><span class="bar-label">0.808</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">RankGPT (B2)</span><div class="bar-bg"><div class="bar-fill" style="width:74.2%;background:#94a3b8;"></div><span class="bar-label">0.742</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;color:#7ba4ff;">SFT 4B（我们）</span><div class="bar-bg"><div class="bar-fill" style="width:68.0%;background:rgba(123,164,255,.5);"></div><span class="bar-label">0.680</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">GPT-5.5</span><div class="bar-bg"><div class="bar-fill" style="width:66.7%;background:#64748b;"></div><span class="bar-label">0.667</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">Claude Opus 4.7</span><div class="bar-bg"><div class="bar-fill" style="width:64.2%;background:#64748b;"></div><span class="bar-label">0.642</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">DeepRetrieval (B3)</span><div class="bar-bg"><div class="bar-fill" style="width:63.8%;background:#475569;"></div><span class="bar-label">0.638</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">BGE-Reranker (B1)</span><div class="bar-bg"><div class="bar-fill" style="width:59.3%;background:#475569;"></div><span class="bar-label">0.593</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">Gemini 3.1 Pro</span><div class="bar-bg"><div class="bar-fill" style="width:58.7%;background:#475569;"></div><span class="bar-label">0.587</span></div></div>
+      <div><span style="display:inline-block;width:180px;font-size:13px;">BM25</span><div class="bar-bg"><div class="bar-fill" style="width:54.8%;background:#334155;"></div><span class="bar-label">0.548</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 4: BASELINES ═══════════ -->
+<section id="baselines">
+  <h2>基线对比</h2>
+
+  <!-- B1 -->
+  <div class="card">
+    <div class="card-title">B1 — 传统检索（纯检索，无 LLM 生成） <span class="badge badge-done">6/6 已完成</span></div>
+    <table>
+      <thead><tr><th>方法</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>Recall</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>BGE-Reranker（基于 RRF）</td><td class="num">0.593</td><td class="num">0.719</td><td class="num">0.664</td><td class="num">0.410</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>RRF (BM25+ColQwen)</td><td class="num">0.555</td><td class="num">0.688</td><td class="num">0.633</td><td class="num">—</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>BM25</td><td class="num">0.548</td><td class="num">0.685</td><td class="num">0.630</td><td class="num">0.397</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>BGE-M3</td><td class="num">0.548</td><td class="num">0.678</td><td class="num">0.628</td><td class="num">0.402</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>ColQwen（稠密文本检索）</td><td class="num">0.497</td><td class="num">0.604</td><td class="num">0.569</td><td class="num">0.360</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr style="color:#64748b"><td>稠密图像检索 (Qwen3-VL)</td><td class="num">0.063</td><td class="num">0.128</td><td class="num">0.113</td><td class="num">0.009</td><td><span class="badge badge-done">已完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      电商 N=2737。我们的 GRPO (0.809) 超越最佳检索基线 <strong style="color:#34d399">+21.6pp</strong> Hit@1。B1 全部完成。
+    </p>
+  </div>
+
+  <!-- B2 -->
+  <div class="card">
+    <div class="card-title">B2 — LLM 增强检索（LLM 输出自然语言 / 列表，非结构化查询）</div>
+    <table>
+      <thead><tr><th>方法</th><th>子形式</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>N</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>RankGPT (BM25 + GPT-5.4 重排)</td><td>LLM 重排</td><td class="num">0.742</td><td class="num">0.772</td><td class="num">0.759</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>SQR (LangChain Self-Query)</td><td>结构化过滤</td><td class="num">0.590</td><td class="num">0.690</td><td class="num">0.650</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>IRCoT（2 轮检索）</td><td>多轮交互</td><td class="num">0.563</td><td class="num">0.675</td><td class="num">0.631</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>HyDE</td><td>查询改写</td><td class="num">0.511</td><td class="num">0.646</td><td class="num">0.588</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr style="color:#64748b"><td>Self-RAG</td><td>多轮 SFT</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>RankVicuna</td><td>开源 LLM 重排</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      核心 B2 基线（4/6）已完成，覆盖查询改写、多轮交互、结构化过滤、LLM 重排四种子形式。
+      RankGPT 是最强的 B2 基线，但仍比我们的 GRPO <strong style="color:#34d399">低 6.7pp</strong>（0.809 vs 0.742）。
+    </p>
+  </div>
+
+  <!-- B3 -->
+  <div class="card">
+    <div class="card-title">B3 — 受限结构化查询（LLM 生成结构化查询：Boolean / SQL）</div>
+    <table>
+      <thead><tr><th>方法</th><th>查询类型</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>N</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>DeepRetrieval ep2 step_96 (Qwen3-4B GRPO)</td><td>BM25 Boolean</td><td class="num">0.638</td><td class="num">0.729</td><td class="num">0.697</td><td class="num">2737</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>DeepRetrieval ep1 step_96</td><td>BM25 Boolean</td><td class="num">0.635</td><td class="num">0.725</td><td class="num">0.696</td><td class="num">2737</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>SQL-R1（零样本）</td><td>纯 SQL</td><td class="num">0.617</td><td class="num">0.637</td><td class="num">0.628</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>Search-R1（在线 BM25 检索，GRPO n=4）</td><td>文本查询 + 多轮 RL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-run">训练中</span></td></tr>
+        <tr style="color:#64748b"><td>SQL-R1（RL 复现）</td><td>纯 SQL RL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      DeepRetrieval 使用相同 base model (Qwen3-4B) + GRPO 训练，但动作空间仅限 BM25 Boolean 查询。
+      我们的 DSL 动作空间优势：<strong style="color:#34d399">+17.1pp</strong> Hit@1 (0.809 vs 0.638)。
+      说明多模态 DSL 的编排能力显著优于单一 boolean 查询。Search-R1 正在训练中。
+    </p>
+  </div>
+
+  <!-- B4 -->
+  <div class="card">
+    <div class="card-title">B4 — 知识图谱检索（与 B5 互补的正交范式）</div>
+    <table>
+      <thead><tr><th>方法</th><th>范式</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr style="color:#64748b"><td>GraphRAG (Microsoft)</td><td>KG 路径 + 向量混合</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      B4 与 B5 是"图边结构化 vs 字段结构化"的互补关系。预期：B5 在结构化字段密集场景胜出，B4 在实体关系密集场景胜出。
+    </p>
+  </div>
+
+  <!-- Commercial LLMs -->
+  <div class="card">
+    <div class="card-title">商业大模型 — 零样本 DSL 生成</div>
+    <table>
+      <thead><tr><th>方法</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>N</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td>GPT-5.5 (Azure)</td><td class="num">0.667</td><td class="num">0.704</td><td class="num">0.689</td><td class="num">3000</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>GPT-5.4（思维链，medium）</td><td class="num">0.680</td><td class="num">0.723</td><td class="num">0.704</td><td class="num">300</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>Claude Opus 4.7</td><td class="num">0.642</td><td class="num">0.665</td><td class="num">0.655</td><td class="num">3000</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>Gemini 3.1 Pro</td><td class="num">0.587</td><td class="num">0.597</td><td class="num">0.593</td><td class="num">3000</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>Claude Opus 4.6</td><td class="num">0.586</td><td class="num">0.596</td><td class="num">0.592</td><td class="num">3000</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td>GPT-5.4 (Azure)</td><td class="num">0.581</td><td class="num">0.591</td><td class="num">0.587</td><td class="num">3000</td><td><span class="badge badge-done">已完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      我们的 4B 模型超越最佳商业大模型 (GPT-5.5) <strong style="color:#34d399">+14.2pp</strong> Hit@1。
+      RL 训练使一个轻量本地模型超越了 100 倍以上规模的前沿模型。
+    </p>
+  </div>
+
+  <!-- B5 Few-shot DSL -->
+  <div class="card">
+    <div class="card-title">B5 — 少样本 DSL 生成（训练方式副轴对比）</div>
+    <table>
+      <thead><tr><th>方法</th><th>训练方式</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>GRPO step300 (4B)</strong></td><td>RL</td><td class="num best">0.809</td><td class="num best">0.854</td><td class="num best">0.835</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr class="ours"><td><strong>DAPO step420 (4B)</strong></td><td>RL</td><td class="num">0.808</td><td class="num">0.852</td><td class="num">0.833</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr class="ours"><td>SFT 4B</td><td>SFT</td><td class="num">0.680</td><td class="num">0.721</td><td class="num">0.705</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr class="ours"><td>Qwen3-4B Base（零样本）</td><td>零样本</td><td class="num">0.117</td><td class="num">0.118</td><td class="num">0.118</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr style="color:#64748b"><td>GPT-5.5 少样本 DSL</td><td>少样本 ICL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>Opus 4.7 少样本 DSL</td><td>少样本 ICL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>Qwen3-4B 少样本 ICL</td><td>少样本 ICL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>Qwen3-8B GRPO / DAPO</td><td>RL</td><td class="num">—</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      训练方式副轴验证 RL 必要性：零样本 (0.117) → SFT (0.680) → RL (0.809)，逐步递增。
+      少样本 ICL 和 8B 规模实验将进一步补充训练方式与模型规模的完整对比。
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 5: ANALYSIS ═══════════ -->
+<section id="analysis">
+  <h2>分析实验</h2>
+
+  <!-- E3: Complexity -->
+  <div class="card">
+    <div class="card-title">E3 — 复杂度分层分析（按查询级别） <span class="badge badge-done">已完成</span></div>
+    <table>
+      <thead><tr><th>方法</th><th>L1 Hit@1</th><th>L1 MRR</th><th>L2 Hit@1</th><th>L2 MRR</th><th>L3 Hit@1</th><th>L3 MRR</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>GRPO step300</strong></td><td class="num best">0.864</td><td class="num best">0.888</td><td class="num">0.797</td><td class="num">0.821</td><td class="num best">0.720</td><td class="num best">0.752</td></tr>
+        <tr class="ours"><td><strong>DAPO step420</strong></td><td class="num">0.859</td><td class="num">0.885</td><td class="num best">0.800</td><td class="num best">0.823</td><td class="num">0.717</td><td class="num">0.749</td></tr>
+        <tr class="ours"><td>SFT 4B</td><td class="num">0.752</td><td class="num">0.765</td><td class="num">0.644</td><td class="num">0.673</td><td class="num">0.602</td><td class="num">0.641</td></tr>
+        <tr><td>GPT-5.5</td><td class="num">0.666</td><td class="num">0.678</td><td class="num">0.680</td><td class="num">0.706</td><td class="num">0.642</td><td class="num">0.676</td></tr>
+        <tr><td>Opus 4.7</td><td class="num">0.669</td><td class="num">0.678</td><td class="num">0.618</td><td class="num">0.643</td><td class="num">0.598</td><td class="num">0.632</td></tr>
+        <tr><td colspan="7" style="height:4px;border:none;"></td></tr>
+        <tr style="color:#94a3b8"><td>BGE-Reranker</td><td class="num">0.455</td><td class="num">0.549</td><td class="num">0.691</td><td class="num">0.741</td><td class="num">0.703</td><td class="num">0.767</td></tr>
+        <tr style="color:#94a3b8"><td>BM25</td><td class="num">0.435</td><td class="num">0.538</td><td class="num">0.623</td><td class="num">0.687</td><td class="num">0.652</td><td class="num">0.723</td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      RL 在所有复杂度级别全面领先。B1 纯检索呈反向趋势 (L3 > L1)，因为复杂查询包含更多特征词。
+      RL 在简单查询上优势最大 (L1: 0.864 vs 0.455 = <strong style="color:#34d399">+40.9pp</strong>)，说明 SQL 精确过滤在简单条件下远胜模糊匹配。
+    </p>
+  </div>
+
+  <!-- E5: Modality -->
+  <div class="card">
+    <div class="card-title">E5 — 模态消融实验 <span class="badge badge-done">已完成</span></div>
+    <table>
+      <thead><tr><th>方法</th><th>结构化</th><th>文本</th><th>图像</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>GRPO step300</strong></td><td class="num best">0.843</td><td class="num best">0.690</td><td class="num best">0.716</td></tr>
+        <tr class="ours"><td><strong>DAPO step420</strong></td><td class="num">0.843</td><td class="num">0.690</td><td class="num">0.711</td></tr>
+        <tr class="ours"><td>SFT 4B</td><td class="num">0.743</td><td class="num">0.634</td><td class="num">0.320</td></tr>
+        <tr><td>GPT-5.5</td><td class="num">0.724</td><td class="num">0.607</td><td class="num">0.481</td></tr>
+        <tr><td>Opus 4.7</td><td class="num">0.703</td><td class="num">0.572</td><td class="num">0.349</td></tr>
+        <tr><td colspan="4" style="height:4px;border:none;"></td></tr>
+        <tr style="color:#94a3b8"><td>BGE-Reranker</td><td class="num">0.558</td><td class="num">0.779</td><td class="num">0.789</td></tr>
+        <tr style="color:#94a3b8"><td>BM25</td><td class="num">0.516</td><td class="num">0.761</td><td class="num">0.724</td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      RL 在结构化查询上优势最大 (0.843 vs Reranker 0.558 = <strong style="color:#34d399">+28.5pp</strong>)，因为 SQL 条件可精确过滤结构化字段。
+      RL 训练使图像模态大幅提升 (SFT 0.320 → GRPO 0.716 = <strong style="color:#34d399">+39.6pp</strong>)，证明 RL 学会了有效编排图像向量检索路径。
+    </p>
+  </div>
+
+  <!-- E2: Action Space Ablation -->
+  <div class="card">
+    <div class="card-title">E2 — 动作空间消融 <span class="badge badge-plan">待完成</span></div>
+    <table>
+      <thead><tr><th>变体</th><th>动作空间描述</th><th>Hit@1</th><th>MRR</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>完整 DSL（我们）</strong></td><td>SQL + 文本向量 + 图像向量</td><td class="num best">0.809</td><td class="num best">0.835</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr style="color:#64748b"><td>sql_only</td><td>仅 SQL 结构化过滤</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>sql_text</td><td>SQL + 文本向量</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>text_only</td><td>仅文本向量查询</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+        <tr style="color:#64748b"><td>sql_image</td><td>SQL + 图像向量</td><td class="num">—</td><td class="num">—</td><td><span class="badge badge-plan">待完成</span></td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      通过逐步去除 DSL 中的检索通道，验证各组件（SQL 过滤、文本向量、图像向量）对最终性能的贡献。
+    </p>
+  </div>
+
+  <!-- Key Findings -->
+  <h3>核心发现</h3>
+  <div class="finding">
+    <div class="finding-num">1</div>
+    <div><p><strong>RL 远超商业大模型（双场景验证）</strong>：电商 GRPO=0.809 vs GPT-5.5=0.667 (+14.2pp)；邮件 DAPO=0.909 vs GPT-5.5=0.855 (+5.4pp)。4B 本地模型全面超越前沿大模型。</p></div>
+  </div>
+  <div class="finding">
+    <div class="finding-num">2</div>
+    <div><p><strong>DSL 动作空间 >> 文本/布尔查询</strong>：我们的 RL (0.809) vs 相同基座模型的 DeepRetrieval RL (0.638) = +17.1pp。多模态 DSL 的表达能力是关键差异化因素。</p></div>
+  </div>
+  <div class="finding">
+    <div class="finding-num">3</div>
+    <div><p><strong>RL 超越所有检索范式</strong>：我们的 RL (0.809) > RankGPT (0.742) > DeepRetrieval (0.638) > BGE-Reranker (0.593) > BM25 (0.548)。检索编排器范式一致性地优于查询生成器和固定流水线。</p></div>
+  </div>
+  <div class="finding">
+    <div class="finding-num">4</div>
+    <div><p><strong>RL 学会了动态编排</strong>：图像模态从 SFT→RL 提升 +39.6pp，表明模型学会了有效组合图像向量检索路径，这是仅靠 SFT 无法掌握的能力。</p></div>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 6: EMAIL ═══════════ -->
+<section id="email">
+  <h2>邮件场景 (N=3000)</h2>
+
+  <div class="card" style="overflow-x:auto;">
+    <div class="card-title">邮件检索结果</div>
+    <table>
+      <thead><tr><th>方法</th><th>Hit@1</th><th>Hit@3</th><th>MRR</th><th>执行率</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>DAPO step843</strong></td><td class="num best">0.909</td><td class="num best">0.910</td><td class="num best">0.910</td><td class="num">99.3%</td></tr>
+        <tr class="ours"><td><strong>GRPO step843</strong></td><td class="num">0.906</td><td class="num">0.908</td><td class="num">0.907</td><td class="num">99.3%</td></tr>
+        <tr class="ours"><td>SFT</td><td class="num">0.891</td><td class="num">0.893</td><td class="num">0.892</td><td class="num">95.9%</td></tr>
+        <tr><td colspan="5" style="height:8px;border:none;"></td></tr>
+        <tr><td>GPT-5.5</td><td class="num">0.855</td><td class="num">0.864</td><td class="num">0.861</td><td class="num">99.9%</td></tr>
+        <tr><td>GPT-5.4</td><td class="num">0.854</td><td class="num">0.864</td><td class="num">0.859</td><td class="num">99.9%</td></tr>
+        <tr><td>Claude Opus 4.7</td><td class="num">0.830</td><td class="num">0.837</td><td class="num">0.834</td><td class="num">96.7%</td></tr>
+        <tr><td colspan="5" style="height:8px;border:none;"></td></tr>
+        <tr style="color:#64748b"><td>Qwen3-4B Base</td><td class="num">0.243</td><td class="num">0.244</td><td class="num">0.244</td><td class="num">24.8%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">邮件 — 按复杂度级别 Hit@1</div>
+    <table>
+      <thead><tr><th>方法</th><th>L1</th><th>L2</th><th>L3</th></tr></thead>
+      <tbody>
+        <tr class="ours"><td><strong>DAPO step843</strong></td><td class="num best">—</td><td class="num best">—</td><td class="num best">—</td></tr>
+        <tr><td>GPT-5.5</td><td class="num">0.923</td><td class="num">0.838</td><td class="num">0.753</td></tr>
+        <tr><td>GPT-5.4</td><td class="num">0.923</td><td class="num">0.839</td><td class="num">0.746</td></tr>
+        <tr><td>Claude Opus 4.7</td><td class="num">0.925</td><td class="num">0.815</td><td class="num">0.669</td></tr>
+      </tbody>
+    </table>
+    <p style="color:#94a3b8;font-size:13px;margin-top:10px;">
+      邮件场景验证了方法的泛化性：DAPO (0.909) > GPT-5.5 (0.855) > Opus 4.7 (0.830)。
+      DAPO 在邮件场景略优于 GRPO，表明其在该场景下具有更好的稳定性。
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ SECTION 7: STATUS ═══════════ -->
+<section id="status">
+  <h2>实验进度总览</h2>
+
+  <div class="card">
+    <div class="card-title">各类别完成情况</div>
+    <table>
+      <thead><tr><th>类别</th><th>说明</th><th>已完成</th><th>待完成</th><th>总体进度</th></tr></thead>
+      <tbody>
+        <tr><td><strong>主实验</strong></td><td>Base / SFT / GRPO / DAPO + 商业大模型</td><td>电商+邮件全部完成</td><td>—</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td><strong>B1 传统检索</strong></td><td>纯检索，无 LLM 生成</td><td>BM25, ColQwen, RRF, BGE-M3, Reranker, Dense Image</td><td>—</td><td><span class="badge badge-done">6/6</span></td></tr>
+        <tr><td><strong>B2 LLM增强</strong></td><td>LLM 输出自然语言/列表</td><td>HyDE, IRCoT, RankGPT, SQR</td><td>Self-RAG, RankVicuna</td><td><span class="badge badge-run">4/6</span></td></tr>
+        <tr><td><strong>B3 结构化查询</strong></td><td>LLM 生成 Boolean/SQL</td><td>DeepRetrieval (2ep), SQL-R1 零样本</td><td>Search-R1（训练中）, SQL-R1 RL</td><td><span class="badge badge-run">3/5</span></td></tr>
+        <tr><td><strong>B4 知识图谱</strong></td><td>KG 路径 + 向量混合</td><td>—</td><td>GraphRAG</td><td><span class="badge badge-plan">0/1</span></td></tr>
+        <tr><td><strong>B5 训练副轴</strong></td><td>零样本 / 少样本 / SFT / RL</td><td>零样本, SFT, RL (4B)</td><td>少样本 ICL, 8B 系列</td><td><span class="badge badge-run">5/9</span></td></tr>
+        <tr><td><strong>E3 复杂度分层</strong></td><td>按 L1/L2/L3 分层</td><td>电商 13 种方法</td><td>邮件场景</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td><strong>E5 模态消融</strong></td><td>结构化 / 文本 / 图像</td><td>电商 13 种方法</td><td>—</td><td><span class="badge badge-done">已完成</span></td></tr>
+        <tr><td><strong>E2 动作空间</strong></td><td>DSL 组件消融</td><td>—</td><td>sql_only, sql_text, text_only, sql_image</td><td><span class="badge badge-plan">0/4</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">进行中</div>
+    <table>
+      <thead><tr><th>实验</th><th>场景</th><th>进度</th><th>预计完成</th></tr></thead>
+      <tbody>
+        <tr><td>Search-R1 RL（在线 BM25 检索，GRPO n=4）</td><td>电商</td><td>Step ~70/1000</td><td><span class="badge badge-run">约 12 小时</span></td></tr>
+        <tr><td>Search-R1 RL</td><td>邮件</td><td>等待电商完成后启动</td><td><span class="badge badge-plan">下一个</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">待完成实验清单</div>
+    <table>
+      <thead><tr><th>类别</th><th>实验</th><th>优先级</th><th>备注</th></tr></thead>
+      <tbody>
+        <tr><td>B5</td><td>少样本 DSL (GPT-5.5 / Opus 4.7)</td><td><span style="color:#f87171;font-weight:600;">高</span></td><td>此前结果因 prompt schema 问题失效，待重新运行</td></tr>
+        <tr><td>B5</td><td>Qwen3-4B/8B 少样本 ICL</td><td><span style="color:#f87171;font-weight:600;">高</span></td><td>开源同尺寸 ICL 公平对比</td></tr>
+        <tr><td>B3</td><td>SQL-R1 RL 复现</td><td><span style="color:#fbbf24;font-weight:600;">中</span></td><td>已有零样本结果 (0.617)，RL 复现进一步补充</td></tr>
+        <tr><td>B4</td><td>GraphRAG</td><td><span style="color:#fbbf24;font-weight:600;">中</span></td><td>知识图谱构建 + 基于 API 的检索</td></tr>
+        <tr><td>B2</td><td>Self-RAG / RankVicuna</td><td><span style="color:#fbbf24;font-weight:600;">中</span></td><td>多轮 SFT / 开源 LLM 重排代表</td></tr>
+        <tr><td>E2</td><td>动作空间消融（4 个变体）</td><td><span style="color:#fbbf24;font-weight:600;">中</span></td><td>sql_only / sql_text / text_only / sql_image</td></tr>
+        <tr><td>B5</td><td>Qwen3-8B 全系列 (SFT + GRPO + DAPO)</td><td><span style="color:#94a3b8;font-weight:600;">标准</span></td><td>在两个场景上进行规模实验</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div style="height:80px;"></div>
+
+<!-- ═══════════ NAV JS ═══════════ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const links = document.querySelectorAll('nav a');
+  const sections = [...links].map(a => document.querySelector(a.getAttribute('href')));
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const id = e.target.id;
+        const active = document.querySelector(`nav a[href="#${id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+
+  sections.forEach(s => { if(s) obs.observe(s); });
+});
+</script>
+
+</body>
+</html>

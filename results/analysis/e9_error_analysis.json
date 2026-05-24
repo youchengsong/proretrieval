@@ -32,18 +32,6 @@
         "sql_error: no such column: release_date": 1
       }
     },
-    "SFT_1.7B": {
-      "total": 3000,
-      "format_success": 2997,
-      "exec_success": 2989,
-      "exec_rate": 0.9963,
-      "error_types": {
-        "sql_error: no such column: average_rating_number": 1,
-        "sql_error: near \"s\": syntax error": 6,
-        "sql_error: near \"<\": syntax error": 1,
-        "null_dsl": 3
-      }
-    },
     "Base_4B": {
       "total": 3000,
       "format_success": 949,

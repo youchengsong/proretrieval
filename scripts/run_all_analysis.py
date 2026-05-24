@@ -133,7 +133,6 @@ ECOM_METHODS = {
     "Opus_4.7": {"eval": f"{ECOM_RESULT}/commercial_llm/eval_opus47.json"},
     "Opus_4.6": {"eval": f"{ECOM_RESULT}/commercial_llm/eval_opus46.json"},
     "Gemini_3.1Pro": {"eval": f"{ECOM_RESULT}/commercial_llm/eval_gemini31pro.json"},
-    "SFT_1.7B": {"eval": f"{ECOM_RESULT}/ours_sft/eval_sft_1.7b.json"},
     "SFT_4B": {"eval": f"{ECOM_RESULT}/ours_sft/eval_sft4b.json"},
     "SFT_8B": {"eval": f"{ECOM_RESULT}/ours_sft/eval_sft8b.json"},
     "Base_4B": {"eval": f"{ECOM_RESULT}/ours_sft/eval_base4b.json"},
@@ -400,7 +399,6 @@ print(f"E7 saved")
 
 e8 = {"ecommerce": {}, "email": {}}
 for label, path in [
-    ("SFT_1.7B", f"{ECOM_RESULT}/ours_sft/eval_sft_1.7b.json"),
     ("SFT_4B", f"{ECOM_RESULT}/ours_sft/eval_sft4b.json"),
     ("SFT_8B", f"{ECOM_RESULT}/ours_sft/eval_sft8b.json"),
     ("Base_4B", f"{ECOM_RESULT}/ours_sft/eval_base4b.json"),
@@ -456,7 +454,6 @@ for label, path in {
     "GRPO_4B_step300": f"{ECOM_RESULT}/ours_rl/eval_grpo4b_step300.json",
     "DAPO_4B_step420": f"{ECOM_RESULT}/ours_rl/eval_dapo4b_step420.json",
     "SFT_4B": f"{ECOM_RESULT}/ours_sft/eval_sft4b.json",
-    "SFT_1.7B": f"{ECOM_RESULT}/ours_sft/eval_sft_1.7b.json",
     "Base_4B": f"{ECOM_RESULT}/ours_sft/eval_base4b.json",
     "GPT-5.4": f"{ECOM_RESULT}/commercial_llm/eval_gpt54.json",
     "GPT-5.5": f"{ECOM_RESULT}/commercial_llm/eval_gpt55.json",

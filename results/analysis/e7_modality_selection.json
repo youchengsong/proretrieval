@@ -101,39 +101,6 @@
         }
       }
     },
-    "base_1.7b": {
-      "total": 186,
-      "accuracy": 0.6022,
-      "confusion": {
-        "image": {
-          "image+structured": 51,
-          "structured+text": 3
-        },
-        "structured": {
-          "structured": 106,
-          "structured+text": 5,
-          "text": 1
-        },
-        "structured+text": {
-          "structured+text": 4,
-          "image+structured": 1
-        },
-        "text": {
-          "structured+text": 5,
-          "image+structured+text": 1,
-          "image+structured": 1
-        },
-        "image+structured+text": {
-          "structured+text": 1,
-          "image+structured": 1
-        },
-        "image+structured": {
-          "image+structured+text": 2,
-          "structured+text": 2,
-          "image+structured": 2
-        }
-      }
-    },
     "claude_opus": {
       "total": 3000,
       "accuracy": 0.6843,
@@ -974,46 +941,6 @@
         "image+text": {
           "image+structured+text": 36,
           "structured+text": 3
-        }
-      }
-    },
-    "sft_1.7b": {
-      "total": 2997,
-      "accuracy": 0.7931,
-      "confusion": {
-        "image+structured": {
-          "image+structured": 329,
-          "structured+text": 39,
-          "image+structured+text": 8
-        },
-        "text": {
-          "structured+text": 271,
-          "image+structured": 2,
-          "image+structured+text": 1
-        },
-        "structured+text": {
-          "structured+text": 617,
-          "image+structured": 30,
-          "image+structured+text": 11
-        },
-        "structured": {
-          "structured": 1130,
-          "image+structured": 1
-        },
-        "image+structured+text": {
-          "image+structured+text": 301,
-          "structured+text": 20,
-          "image+structured": 10
-        },
-        "image": {
-          "image+structured": 175,
-          "structured+text": 11,
-          "image+structured+text": 2
-        },
-        "image+text": {
-          "image+structured+text": 33,
-          "structured+text": 4,
-          "image+structured": 2
         }
       }
     },

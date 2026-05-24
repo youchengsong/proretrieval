@@ -42,20 +42,6 @@
       },
       "avg_actions": 1.18
     },
-    "base_1.7b": {
-      "n_total": 3000,
-      "n_dsl": 186,
-      "action_freq": {
-        "sql_filter": 0.9946,
-        "image_search": 0.3172,
-        "text_search": 0.129
-      },
-      "retrieval_types": {
-        "image": 0.3172,
-        "text": 0.2043
-      },
-      "avg_actions": 1.44
-    },
     "claude_opus": {
       "n_total": 3000,
       "n_dsl": 3000,
@@ -379,20 +365,6 @@
         "image": 0.2709
       },
       "avg_actions": 1.73
-    },
-    "sft_1.7b": {
-      "n_total": 3000,
-      "n_dsl": 2997,
-      "action_freq": {
-        "sql_filter": 1.0,
-        "text_search": 0.4398,
-        "image_search": 0.302
-      },
-      "retrieval_types": {
-        "text": 0.4645,
-        "image": 0.3123
-      },
-      "avg_actions": 1.74
     },
     "sft_4b": {
       "n_total": 3000,

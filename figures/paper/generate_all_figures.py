@@ -673,14 +673,12 @@ def fig_e9_error_analysis():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Fig 11: E8 — Model Scaling (1.7B vs 4B across training stages)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_e8_model_scaling():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.8))
 
     # E-commerce
     stages = ['Base', 'SFT', 'GRPO', 'DAPO']
-    h1_1_7b = [None,  0.680, None,  None]
     h1_4b   = [0.117, 0.680, 0.809, 0.808]
 
     x = np.arange(len(stages))
@@ -689,11 +687,8 @@ def fig_e8_model_scaling():
     c_small = '#93BAD9'
     c_large = OURS_COLOR
 
-    # 1.7B bars (only where data exists)
-    for i, v in enumerate(h1_1_7b):
         if v is not None:
             ax1.bar(i - w/2, v, w, color=c_small, edgecolor='white', linewidth=0.3,
-                    label='1.7B' if i == 1 else None)
             ax1.text(i - w/2, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, color=c_small)
 
     for i, v in enumerate(h1_4b):
@@ -708,7 +703,6 @@ def fig_e8_model_scaling():
     ax1.legend(loc='upper left', frameon=False, fontsize=7)
     ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
 
-    # Email (no 1.7B data — show training progression)
     stages_em = ['Base', 'SFT', 'GRPO', 'DAPO']
     h1_em_4b  = [0.243, 0.891, 0.906, 0.909]
 

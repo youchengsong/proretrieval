@@ -62,7 +62,6 @@ All results evaluated on `queries_product_test_step9_gt_v2.jsonl` (N=3000, unles
 | File | Method | N | NDCG@1 |
 |------|--------|---|--------|
 | predictions_sft_4b.json | SFT 4B | 3000 | 0.787 |
-| predictions_sft_1.7b.json | SFT 1.7B | 3000 | — |
 | predictions_sft8b_2.0ep.json | SFT 8B (2.0ep) | 3000 | 0.820 |
 | predictions_base4b.json | Base 4B (zero-shot) | 3000 | — |
 | predictions_base8b.json | Base 8B (zero-shot) | 3000 | — |
