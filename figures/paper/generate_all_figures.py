@@ -80,25 +80,26 @@ def fig_main_ecommerce():
         ]),
         ('Commercial LLMs', [
             ('GPT-5.5',   0.667, LLM_COLOR),
-            ('Opus 4.7',  0.642, '#6A9FCA'),
+            ('Opus 4.7',  0.635, '#6A9FCA'),
             ('GPT-5.4',   0.581, '#93BAD9'),
-            ('Gemini 3.1', 0.576, '#BBCFE8'),
+            ('Gemini 3.1', 0.587, '#BBCFE8'),
         ]),
         ('LLM-Enhanced', [
-            ('RankGPT',   0.762, B2_COLOR),
-            ('IRCoT',     0.547, '#82C47B'),
-            ('SQR',       0.607, '#ABD9A5'),
-            ('HyDE',      0.534, '#C8E6C2'),
+            ('RankGPT',   0.768, B2_COLOR),
+            ('IRCoT',     0.565, '#82C47B'),
+            ('SQR',       0.606, '#ABD9A5'),
+            ('HyDE',      0.549, '#C8E6C2'),
         ]),
         ('RL-Retrieval', [
-            ('SQL-R1',    0.780, B3_COLOR),
+            ('SQL-R1',    0.620, B3_COLOR),
             ('DeepRetrieval', 0.638, '#CCBDD1'),
-            ('Search-R1', 0.459, '#E0D5E3'),
+            ('Search-R1', 0.407, '#E0D5E3'),
         ]),
         ('Traditional', [
-            ('Reranker',  0.593, B1_COLOR),
-            ('BM25',      0.548, '#A0D0CC'),
-            ('GraphRAG',  0.493, B4_COLOR),
+            ('Reranker',  0.618, B1_COLOR),
+            ('LightRAG',  0.588, '#C8C0B8'),
+            ('BM25',      0.571, '#A0D0CC'),
+            ('GraphRAG',  0.500, B4_COLOR),
         ]),
     ]
 
@@ -124,7 +125,7 @@ def fig_main_ecommerce():
     bg_fills = ['#FFF2F2', '#FFF8F0', '#F0F4FA', '#F0FAF0', '#F5F0F7', '#F0FAFA']
     for i, (gname, s, e) in enumerate(bg_regions):
         ax.axvspan(s - 0.5, e - 0.5, color=bg_fills[i], zorder=0)
-        ax.text((s + e - 1) / 2, 0.39, gname, ha='center', fontsize=6, color='#666666',
+        ax.text((s + e - 1) / 2, 0.38, gname, ha='center', fontsize=6, color='#666666',
                 fontstyle='italic', zorder=1)
 
     bars = ax.bar(x, all_vals, 0.7, color=all_colors, edgecolor='white', linewidth=0.4, zorder=2)
@@ -163,7 +164,7 @@ def fig_main_email():
             ('Opus 4.7',  0.830, '#93BAD9'),
         ]),
         ('LLM-Enhanced', [
-            ('RankGPT',   0.890, B2_COLOR),
+            ('RankGPT',   0.888, B2_COLOR),
         ]),
         ('Traditional + RL', [
             ('Reranker',  0.836, B1_COLOR),
@@ -220,12 +221,12 @@ def fig_e3_e5_combined_ecommerce():
     methods_e3 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'RankGPT', 'Reranker', 'BM25']
     data_e3 = {
         'GRPO':       [0.864, 0.797, 0.720],
-        'DAPO':       [0.859, 0.800, 0.717],
-        'SFT':        [0.752, 0.644, 0.602],
+        'DAPO':       [0.860, 0.800, 0.717],
+        'SFT':        [0.752, 0.646, 0.598],
         'GPT-5.5':    [0.666, 0.680, 0.642],
-        'RankGPT':    [0.710, 0.803, 0.794],
-        'Reranker':   [0.455, 0.691, 0.703],
-        'BM25':       [0.435, 0.623, 0.653],
+        'RankGPT':    [0.717, 0.803, 0.802],
+        'Reranker':   [0.473, 0.706, 0.741],
+        'BM25':       [0.453, 0.632, 0.690],
     }
     colors_e3 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B2_COLOR, B1_COLOR, '#A0D0CC']
 
@@ -249,10 +250,10 @@ def fig_e3_e5_combined_ecommerce():
     data_e5 = {
         'GRPO':       [0.843, 0.690, 0.716],
         'DAPO':       [0.843, 0.690, 0.711],
-        'SFT':        [0.743, 0.634, 0.320],
+        'SFT':        [0.743, 0.632, 0.323],
         'GPT-5.5':    [0.724, 0.607, 0.481],
-        'Reranker':   [0.558, 0.779, 0.789],
-        'BM25':       [0.516, 0.761, 0.724],
+        'Reranker':   [0.585, 0.806, 0.803],
+        'BM25':       [0.538, 0.782, 0.735],
     }
     colors_e5 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B1_COLOR, '#A0D0CC']
 
@@ -364,22 +365,23 @@ def fig_paradigm_comparison():
     # Methods with results on BOTH scenarios where possible
     methods = [
         'Retrieval Program\nSynthesis (Ours)',
-        'SQL-R1\n(SQL-only RL)',
         'RankGPT\n(LLM Rerank)',
         'DeepRetrieval\n(Boolean RL)',
-        'SQR\n(LLM Filter)',
+        'SQL-R1\n(SQL-only RL)',
         'BGE-Reranker\n(Neural Rerank)',
+        'SQR\n(LLM Filter)',
         'BM25\n(Lexical)',
         'GraphRAG\n(Knowledge Graph)',
         'Search-R1\n(BM25 RL)',
     ]
-    ecom  = [0.809, 0.780, 0.762, 0.638, 0.607, 0.593, 0.548, 0.493, 0.459]
-    email = [0.909, None,  0.890, 0.745, 0.617, 0.836, 0.731, None,  None]
+    ecom  = [0.809, 0.768, 0.638, 0.620, 0.618, 0.606, 0.571, 0.500, 0.407]
+    email = [0.909, 0.888, 0.745, None,  0.836, 0.617, 0.731, None,  None]
 
-    colors_ecom  = [OURS_COLOR, B3_COLOR, B2_COLOR, B3_COLOR, B2_COLOR, B1_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
-    colors_email = [OURS_COLOR, B3_COLOR, B2_COLOR, B3_COLOR, B2_COLOR, B1_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
+    colors_ecom  = [OURS_COLOR, B2_COLOR, B3_COLOR, B3_COLOR, B1_COLOR, B2_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
+    colors_email = [OURS_COLOR, B2_COLOR, B3_COLOR, B3_COLOR, B1_COLOR, B2_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.5), sharey=True)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.5, 3.8),
+                                     gridspec_kw={'width_ratios': [1.3, 1], 'wspace': 0.08})
 
     y = np.arange(len(methods))
     h = 0.6
@@ -414,7 +416,6 @@ def fig_paradigm_comparison():
         fw = 'bold' if val == max(email_vals) else 'normal'
         ax2.text(val + 0.006, ypos, f'{val:.3f}', va='center', fontsize=6.5, fontweight=fw)
 
-    # Mark N/A entries
     for i, val in enumerate(email):
         if val is None:
             ax2.text(0.50, y[i], 'N/A', va='center', ha='center', fontsize=6.5, color='#999999', fontstyle='italic')
@@ -423,7 +424,7 @@ def fig_paradigm_comparison():
     ax2.set_yticklabels([])
     ax2.set_xlabel('Hit@1')
     ax2.set_xlim(0.38, 0.97)
-    ax2.invert_yaxis()
+    ax2.set_ylim(len(methods) - 0.5, -0.5)
     ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
 
     fig.suptitle('Retrieval Paradigm Comparison', fontsize=11, fontweight='bold', y=1.02)
@@ -486,8 +487,8 @@ def fig_rl_progression():
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_fewshot_failure():
     methods = ['GPT-5.5\n(few-shot)', 'Opus 4.7\n(few-shot)', 'GPT-5.5\n(zero-shot)', 'SFT\n(4B)', 'GRPO\n(4B)']
-    hit1      = [0.253, 0.250, 0.667, 0.680, 0.809]
-    exec_rate = [0.480, 0.503, 1.000, 0.997, 0.997]
+    hit1      = [0.534, 0.420, 0.667, 0.680, 0.809]
+    exec_rate = [0.914, 0.733, 1.000, 0.997, 0.997]
 
     # Few-shot: tan; trained methods: red gradient (light → dark)
     colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', '#E74C3C', '#B71C1C']
@@ -506,7 +507,7 @@ def fig_fewshot_failure():
     ax1.set_xticks(x)
     ax1.set_xticklabels(methods, fontsize=7)
     ax1.set_ylim(0, 0.90)
-    ax2.set_ylim(0.3, 1.05)
+    ax2.set_ylim(0.6, 1.05)
 
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
@@ -523,7 +524,7 @@ def fig_fewshot_failure():
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_cross_scenario():
     methods = ['DAPO\n(Ours)', 'GRPO\n(Ours)', 'SFT', 'GPT-5.5', 'Opus 4.7', 'BGE-\nReranker', 'BM25']
-    ecom    = [0.808, 0.809, 0.680, 0.667, 0.642, 0.593, 0.548]
+    ecom    = [0.808, 0.809, 0.680, 0.667, 0.635, 0.618, 0.571]
     email   = [0.909, 0.906, 0.891, 0.855, 0.830, 0.836, 0.731]
 
     x = np.arange(len(methods))
@@ -614,9 +615,9 @@ def fig_e9_error_analysis():
 
     # E-commerce
     methods_ec = ['Base\n(4B)', 'Few-shot\nGPT-5.5', 'Few-shot\nOpus 4.7', 'SFT\n(4B)', 'GRPO\n(4B)', 'DAPO\n(4B)', 'GPT-5.5', 'Opus 4.7']
-    total_ec      = [3000, 3000, 3000, 3000, 3000, 3000, 1000, 2998]
-    format_ok_ec  = [949,  2885, 2352, 3000, 2999, 2998, 1000, 2998]
-    exec_ok_ec    = [506,  2741, 2200, 2992, 2992, 2989, 1000, 2996]
+    total_ec      = [3000, 3000, 3000, 3000, 3000, 3000, 2998, 2998]
+    format_ok_ec  = [949,  2885, 2352, 3000, 2999, 2998, 2998, 2998]
+    exec_ok_ec    = [506,  2741, 2200, 2992, 2992, 2989, 2998, 2996]
 
     success_ec     = [e/t for e, t in zip(exec_ok_ec, total_ec)]
     exec_fail_ec   = [(f-e)/t for f, e, t in zip(format_ok_ec, exec_ok_ec, total_ec)]
@@ -633,7 +634,7 @@ def fig_e9_error_analysis():
 
     ax1.set_ylabel('Proportion')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(methods_ec, fontsize=6)
+    ax1.set_xticklabels(methods_ec, fontsize=5.5, rotation=25, ha='right')
     ax1.set_ylim(0, 1.05)
     ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
 
