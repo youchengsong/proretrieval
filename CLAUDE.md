@@ -88,9 +88,9 @@ ssh sunzhen@10.60.200.102
 | GPT-5.4 (Azure) | 0.581 | 0.591 | 0.587 | 100% | model=gpt-5.4-2026-03-05 |
 | GPT-5.4 thinking | 0.680 | 0.723 | 0.704 | 100% | 仅 300 条，reasoning_effort=medium |
 | Claude Opus 4.6 | 0.586 | 0.596 | 0.592 | 99.9% | 通过 GCP Vertex AI |
-| Claude Opus 4.7 | 0.642 | 0.665 | 0.655 | 100% | 通过代理，N=2998；L1=0.669, L2=0.618, L3=0.598; image=0.349 |
+| Claude Opus 4.7 | 0.654 | 0.684 | 0.674 | 99.9% | nocase统一评估；L1=0.697, L2=0.638, L3=0.598 |
 | Gemini 3.1 Pro | 0.587 | 0.597 | 0.593 | 100% | |
-| GPT-5.5 (Azure) | 0.667 | 0.704 | 0.689 | 100% | N=2998；L1=0.666, L2=0.680, L3=0.642; image=0.481 |
+| GPT-5.5 (Azure) | 0.693 | 0.731 | 0.715 | 100% | nocase统一评估；L1=0.708, L2=0.688, L3=0.661 |
 
 ### B3 SQL-R1 Baseline (电商, N=2737)
 
@@ -151,14 +151,14 @@ ssh sunzhen@10.60.200.102
 | SQL-R1 (zero-shot) | 0.617 | 0.637 | 0.628 | 300 | GPT-5.4 纯 SQL, exec=69.3% |
 | Search-R1 (BM25 multi-turn) | 0.459 (post-EM) | — | — | 2773 | verl GRPO step800 |
 
-### B5 Few-shot DSL (电商, N=300)
+### B5 Few-shot DSL (电商, N=3000, nocase)
 
 | 方法 | Hit@1 | Hit@3 | MRR | Exec Rate | 备注 |
 |------|-------|-------|-----|-----------|------|
-| GPT-5.5 few-shot | 0.253 | 0.280 | 0.268 | 48.0% | format=288/300 |
-| Opus 4.7 few-shot | 0.250 | 0.270 | 0.262 | 50.3% | format=300/300 |
+| GPT-5.5 few-shot | 0.647 | 0.684 | 0.669 | 95.1% | 全量评估，schema修复+max_tokens=4096 |
+| Opus 4.7 few-shot | 0.615 | 0.647 | 0.636 | 94.9% | 全量评估，schema修复+补全648条缺失 |
 
-注：Few-shot DSL exec rate 极低（~50%），大量 SQL 语法错误，说明 few-shot 不足以学会 DSL。
+注：修复了schema字段名错误(rating→average_rating等)、max_tokens截断(512→4096)、Opus脚本中断(648条未跑)后的干净结果。Few-shot比zero-shot低~4pp（GPT-5.5: 0.647 vs 0.693, Opus: 0.615 vs 0.654），exec rate从~100%降至~95%，说明few-shot DSL不如zero-shot，进一步支持RL训练的必要性。
 
 ### 邮件商业模型 (N=3000)
 
@@ -172,16 +172,16 @@ ssh sunzhen@10.60.200.102
 
 ### 关键结论
 
-1. RL 显著优于所有商业大模型：DAPO 电商 Hit@1=0.808 vs GPT-5.5=0.667 vs Opus 4.7=0.642
+1. RL 显著优于所有商业大模型：DAPO 电商 Hit@1=0.808 vs GPT-5.5=0.693 vs Opus 4.7=0.654
 2. RL > SFT：电商 +12.8pp，邮件 +1.8pp
 3. RL >> 纯检索 baselines：GRPO Hit@1=0.809 vs BGE-Reranker=0.593 vs BM25=0.548
 4. RL >> B2 LLM 增强：GRPO 0.809 vs RankGPT=0.743 vs IRCoT=0.563
 5. RL >> B3 受限结构化：GRPO 0.809 vs DeepRetrieval=0.638 vs SQR=0.590
-6. Few-shot DSL 完全失败：exec rate ~50%，Hit@1 ~0.25，说明 DSL 需要 RL 训练
+6. Few-shot DSL 反而更差：few-shot比zero-shot低~4pp（GPT-5.5: 0.647 vs 0.693），exec rate从100%降至~95%，说明in-context learning不足以掌握DSL
 7. GRPO 在电商上 step300 后开始过拟合，step1200 完全崩溃
 8. DAPO 比 GRPO 稍好（邮件场景更明显）
-9. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
-10. 邮件场景商业模型远好于电商（GPT-5.5: 0.855 vs 0.667），但 RL 差距仍显著
+9. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro（nocase统一评估）
+10. 邮件场景商业模型远好于电商（GPT-5.5: 0.855 vs 0.693），但 RL 差距仍显著
 11. 8B SFT 直接达到 0.820，已超越 4B GRPO best（0.809），说明模型容量提升让 SFT 学到了 4B 需要 RL 才能学到的能力
 12. 8B GRPO（lr=1e-6）训练 400 步无提升（Hit@1 始终 0.820），可能原因：学习率过低、reward 信号区分度不足
 13. 8B DAPO（lr=1e-5, 无KL）训练 300 步反而略微下降（Hit@1=0.807–0.810），更高学习率+无KL约束导致偏离SFT最优点，确认8B SFT是电商任务天花板
@@ -203,7 +203,7 @@ ssh sunzhen@10.60.200.102
 | 方法 | Hit@1 | Hit@3 | MRR | 备注 |
 |------|-------|-------|-----|------|
 | RankGPT | 0.890 | 0.910 | 0.903 | RRF + GPT-5.4 listwise rerank |
-| SQR (LangChain) | 0.617 | 0.713 | 0.671 | GPT-5.4 结构化过滤 + Qwen3-Embedding |
+| SQR (LangChain) | 0.630 | 0.707 | 0.678 | GPT-5.4 结构化过滤 + Qwen3-Embedding, N=3000 全量 |
 | IRCoT | 0.523 | 0.610 | 0.579 | 2-round retrieval + GPT-5.4 refine |
 | HyDE | 0.523 | 0.590 | 0.567 | GPT-5.4 hypothetical email + Qwen3-Embedding |
 
@@ -215,11 +215,16 @@ ssh sunzhen@10.60.200.102
 - ✅ B1: BM25, ColQwen, RRF, BGE-M3, BGE-Reranker, Dense Image (2026-05-12)
 - ✅ B2: HyDE, IRCoT, RankGPT (2026-05-13, N=268)
 - ✅ B3: DeepRetrieval 电商+邮件, LangChain SQR, SQL-R1, Search-R1 电商 (2026-05-13~20)
-- ✅ B5 Few-shot: GPT-5.5, Opus 4.7 (2026-05-13, N=300)
+- ✅ B5 Few-shot: GPT-5.5, Opus 4.7 (2026-05-23, N=3000, schema修复+patched)
 - ✅ 邮件商业模型: GPT-5.4, GPT-5.5, Opus 4.7 (2026-05-16~18)
 - ✅ 分析实验: E3 Complexity Breakdown, E5 Modality Ablation (2026-05-20)
+- ✅ E2 Action Space Ablation SFT: sql_only/sql_text/text_only/sql_image (2026-05-23, 102服务器)
+- ✅ 邮件 SQR 全量: N=3000 (2026-05-23, Hit@1=0.630)
+- ✅ B4 GraphRAG: Hit@1=0.493, N=2737，低于 BM25
+- ✅ 商业模型nocase统一评估: GPT-5.5=0.693, Opus4.7=0.654 (2026-05-23)
 
 **进行中：**
+- 🔄 Qwen3-8B GRPO 电商：训练中（Blackwell 2×RTX PRO 6000）
 - 🔄 Search-R1 邮件 RL：从 step 200 恢复训练中（→1000）
 
 **已完成（8B 电商）：**
@@ -230,12 +235,9 @@ ssh sunzhen@10.60.200.102
 - ✅ Qwen3-8B DAPO 电商：lr=1e-5, 无KL, 训练至step300，Hit@1=0.810，低于SFT(0.820)，RL对8B无效
 
 **待完成：**
-- Qwen3-8B GRPO/DAPO 邮件
-- B4 GraphRAG：✅ 已完成 (Hit@1=0.493, N=2737)，低于 BM25(0.548)，图谱方法不适合产品检索
-- B2 全量评估：当前 N=268，需扩展到 N=3000
-- B3 SQR/SQL-R1 全量评估：当前 N=268/300
+- Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
+- E2 RL: 看 SFT 结果 (sql_text=0.752 > full=0.680) 再决定是否值得跑
 - B5 Few-shot Gemini：代码完成，API 调用失败
-- Action Space Ablation (E2)：数据准备好，未跑训练
 
 ### 数据格式说明
 
