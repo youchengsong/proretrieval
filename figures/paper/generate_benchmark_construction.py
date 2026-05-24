@@ -160,10 +160,10 @@ def generate():
     domain_w = 0.052
     domain_h = 0.034
     domain_gap = 0.008
-    domain_start = xs[0] + 0.103 - (3 * domain_w + 2 * domain_gap) / 2
-    domain_offsets = [0.0, -0.008, 0.0]
+    domain_start = xs[0] + 0.103 - (2 * domain_w + domain_gap) / 2
+    domain_offsets = [0.0, -0.008]
     for i, (label, color) in enumerate([
-        ("product", BLUE), ("email", GREEN), ("document", ORANGE),
+        ("product", BLUE), ("email", GREEN),
     ]):
         small_chip(ax, (domain_start + i * (domain_w + domain_gap),
                         0.249 + domain_offsets[i]),

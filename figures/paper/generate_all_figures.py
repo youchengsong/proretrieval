@@ -92,8 +92,8 @@ def fig_main_ecommerce():
         ]),
         ('RL-Retrieval', [
             ('SQL-R1',    0.620, B3_COLOR),
-            ('DeepRetrieval', 0.638, '#CCBDD1'),
-            ('Search-R1', 0.407, '#E0D5E3'),
+            ('DeepRetrieval', 0.625, '#CCBDD1'),
+            ('Search-R1', 0.435, '#E0D5E3'),
         ]),
         ('Traditional', [
             ('Reranker',  0.618, B1_COLOR),
@@ -166,9 +166,10 @@ def fig_main_email():
         ('LLM-Enhanced', [
             ('RankGPT',   0.888, B2_COLOR),
         ]),
-        ('Traditional + RL', [
+        ('Traditional + Structured Query', [
             ('Reranker',  0.836, B1_COLOR),
-            ('DeepRetrieval', 0.745, '#CCBDD1'),
+            ('SQR',       0.630, B2_COLOR),
+            ('Search-R1', 0.377, '#CCBDD1'),
             ('BM25',      0.731, '#A0D0CC'),
         ]),
     ]
@@ -218,7 +219,7 @@ def fig_main_email():
 def fig_e3_e5_combined_ecommerce():
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
 
-    methods_e3 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'RankGPT', 'Reranker', 'BM25']
+    methods_e3 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'RankGPT', 'Reranker']
     data_e3 = {
         'GRPO':       [0.864, 0.797, 0.720],
         'DAPO':       [0.860, 0.800, 0.717],
@@ -226,9 +227,8 @@ def fig_e3_e5_combined_ecommerce():
         'GPT-5.5':    [0.666, 0.680, 0.642],
         'RankGPT':    [0.717, 0.803, 0.802],
         'Reranker':   [0.473, 0.706, 0.741],
-        'BM25':       [0.453, 0.632, 0.690],
     }
-    colors_e3 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B2_COLOR, B1_COLOR, '#A0D0CC']
+    colors_e3 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B2_COLOR, B1_COLOR]
 
     levels = ['L1 (Simple)', 'L2 (Medium)', 'L3 (Complex)']
     n = len(data_e3)
@@ -246,16 +246,15 @@ def fig_e3_e5_combined_ecommerce():
     ax1.set_ylim(0.30, 0.92)
     ax1.set_title('(a) By Query Complexity', fontsize=9, fontweight='bold')
 
-    methods_e5 = ['GRPO', 'DAPO', 'SFT', 'GPT-5.5', 'Reranker', 'BM25']
+    methods_e5 = ['GRPO', 'DAPO', 'SFT', 'SQL-R1', 'Reranker']
     data_e5 = {
         'GRPO':       [0.843, 0.690, 0.716],
         'DAPO':       [0.843, 0.690, 0.711],
         'SFT':        [0.743, 0.632, 0.323],
-        'GPT-5.5':    [0.724, 0.607, 0.481],
-        'Reranker':   [0.585, 0.806, 0.803],
-        'BM25':       [0.538, 0.782, 0.735],
+        'SQL-R1':     [0.866, 0.303, 0.048],
+        'Reranker':   [0.310, 0.759, 0.819],
     }
-    colors_e5 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, LLM_COLOR, B1_COLOR, '#A0D0CC']
+    colors_e5 = [OURS_COLOR, OURS_COLOR2, SFT_COLOR, B3_COLOR, B1_COLOR]
 
     modalities = ['Structured', 'Text', 'Image']
     n2 = len(data_e5)
@@ -277,7 +276,7 @@ def fig_e3_e5_combined_ecommerce():
     h2, l2 = ax2.get_legend_handles_labels()
     all_labels = dict(zip(labels + l2, handles + h2))
     fig.legend(all_labels.values(), all_labels.keys(),
-               loc='upper center', bbox_to_anchor=(0.5, 1.08), ncol=7, frameon=False, fontsize=6.5)
+               loc='upper center', bbox_to_anchor=(0.5, 1.08), ncol=6, frameon=False, fontsize=6.5)
 
     fig.suptitle('E-commerce: Performance Breakdown', fontsize=11, fontweight='bold', y=1.14)
     fig.tight_layout()
@@ -362,20 +361,41 @@ def fig_e3_e5_combined_email():
 # Fig 5: Paradigm Comparison — Dual Scenario (ecommerce + email side by side)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_paradigm_comparison():
+    e1 = _load_json('results/analysis/e1_main_results.json')
     # Methods with results on BOTH scenarios where possible
     methods = [
         'Retrieval Program\nSynthesis (Ours)',
         'RankGPT\n(LLM Rerank)',
         'DeepRetrieval\n(Boolean RL)',
-        'SQL-R1\n(SQL-only RL)',
+        'SQL-R1\n(SQL-only)',
         'BGE-Reranker\n(Neural Rerank)',
         'SQR\n(LLM Filter)',
         'BM25\n(Lexical)',
         'GraphRAG\n(Knowledge Graph)',
         'Search-R1\n(BM25 RL)',
     ]
-    ecom  = [0.809, 0.768, 0.638, 0.620, 0.618, 0.606, 0.571, 0.500, 0.407]
-    email = [0.909, 0.888, 0.745, None,  0.836, 0.617, 0.731, None,  None]
+    ecom  = [
+        _m(e1, 'ecommerce', 'SFT_8B'),
+        _m(e1, 'ecommerce', 'B2_RankGPT'),
+        _m(e1, 'ecommerce', 'B3_DeepRetrieval'),
+        _m(e1, 'ecommerce', 'B3_SQL-R1'),
+        _m(e1, 'ecommerce', 'B1_Reranker'),
+        _m(e1, 'ecommerce', 'B3_SQR'),
+        _m(e1, 'ecommerce', 'B1_BM25'),
+        _m(e1, 'ecommerce', 'B4_GraphRAG'),
+        _m(e1, 'ecommerce', 'B3_Search-R1_step400'),
+    ]
+    email = [
+        _m(e1, 'email', 'DAPO_4B_step843'),
+        _m(e1, 'email', 'B2_RankGPT'),
+        None,
+        _m(e1, 'email', 'B3_SQL-R1'),
+        _m(e1, 'email', 'B1_Reranker'),
+        _m(e1, 'email', 'B3_SQR'),
+        _m(e1, 'email', 'B1_BM25'),
+        None,
+        _m(e1, 'email', 'B3_Search-R1'),
+    ]
 
     colors_ecom  = [OURS_COLOR, B2_COLOR, B3_COLOR, B3_COLOR, B1_COLOR, B2_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
     colors_email = [OURS_COLOR, B2_COLOR, B3_COLOR, B3_COLOR, B1_COLOR, B2_COLOR, B1_COLOR, B4_COLOR, B3_COLOR]
@@ -448,8 +468,10 @@ def fig_rl_progression():
     ax1.plot(x, ecom_mr, 's--', color=OURS_COLOR2, linewidth=1.5, markersize=6, label='MRR', zorder=3)
     ax1.fill_between(x, 0.65, ecom_h1, alpha=0.08, color=OURS_COLOR)
     for i, (h, m) in enumerate(zip(ecom_h1, ecom_mr)):
-        ax1.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 9),
+        ax1.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, -15),
                      fontsize=7, ha='center', color=OURS_COLOR, fontweight='bold')
+        ax1.annotate(f'{m:.3f}', (i, m), textcoords='offset points', xytext=(0, 9),
+                     fontsize=6.2, ha='center', color=OURS_COLOR2)
 
     ax1.set_xticks(x)
     ax1.set_xticklabels(stages, fontsize=7)
@@ -468,8 +490,10 @@ def fig_rl_progression():
     ax2.plot(x2, email_mr, 's--', color=OURS_COLOR2, linewidth=1.5, markersize=6, label='MRR', zorder=3)
     ax2.fill_between(x2, 0.87, email_h1, alpha=0.08, color=OURS_COLOR)
     for i, (h, m) in enumerate(zip(email_h1, email_mr)):
-        ax2.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, 9),
+        ax2.annotate(f'{h:.3f}', (i, h), textcoords='offset points', xytext=(0, -15),
                      fontsize=7, ha='center', color=OURS_COLOR, fontweight='bold')
+        ax2.annotate(f'{m:.3f}', (i, m), textcoords='offset points', xytext=(0, 9),
+                     fontsize=6.2, ha='center', color=OURS_COLOR2)
 
     ax2.set_xticks(x2)
     ax2.set_xticklabels(stages_e, fontsize=7)
@@ -673,51 +697,56 @@ def fig_e9_error_analysis():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Fig 11: E8 — Model Scaling (report-aligned 4B vs 8B comparison)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_e8_model_scaling():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.5, 2.8))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(6.8, 2.9))
 
-    # E-commerce
-    stages = ['Base', 'SFT', 'GRPO', 'DAPO']
-    h1_4b   = [0.117, 0.680, 0.809, 0.808]
+    stages = ['Base', 'SFT', 'GRPO\nbest', 'DAPO\nbest']
+    h1_4b = [0.117, 0.680, 0.809, 0.808]
+    h1_8b = [0.132, 0.820, 0.820, 0.810]
 
     x = np.arange(len(stages))
-    w = 0.3
+    w = 0.34
+    c_4b = OURS_COLOR
+    c_8b = '#4E79A7'
 
-    c_small = '#93BAD9'
-    c_large = OURS_COLOR
-
-        if v is not None:
-            ax1.bar(i - w/2, v, w, color=c_small, edgecolor='white', linewidth=0.3,
-            ax1.text(i - w/2, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, color=c_small)
-
-    for i, v in enumerate(h1_4b):
-        ax1.bar(i + w/2, v, w, color=c_large, edgecolor='white', linewidth=0.3,
-                label='4B' if i == 0 else None)
-        ax1.text(i + w/2, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, fontweight='bold' if i >= 2 else 'normal')
-
+    bars4 = ax1.bar(x - w/2, h1_4b, w, color=c_4b, edgecolor='white',
+                    linewidth=0.3, label='4B')
+    bars8 = ax1.bar(x + w/2, h1_8b, w, color=c_8b, edgecolor='white',
+                    linewidth=0.3, label='8B')
+    for bars, vals, color in [(bars4, h1_4b, c_4b), (bars8, h1_8b, c_8b)]:
+        for bar, v in zip(bars, vals):
+            ax1.text(bar.get_x() + bar.get_width()/2, v + 0.010, f'{v:.3f}',
+                     ha='center', fontsize=5.8, color=color,
+                     fontweight='bold' if v >= 0.80 else 'normal')
     ax1.set_ylabel('Hit@1')
     ax1.set_xticks(x)
     ax1.set_xticklabels(stages, fontsize=7)
     ax1.set_ylim(0, 0.90)
     ax1.legend(loc='upper left', frameon=False, fontsize=7)
-    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+    ax1.set_title('(a) E-commerce: 4B vs 8B', fontsize=9, fontweight='bold')
+    ax1.annotate('8B SFT > 4B GRPO',
+                 xy=(1 + w/2, h1_8b[1]), xytext=(1.55, 0.61),
+                 arrowprops=dict(arrowstyle='->', color='#555555', lw=0.7),
+                 fontsize=6.5, color='#333333')
 
-    stages_em = ['Base', 'SFT', 'GRPO', 'DAPO']
-    h1_em_4b  = [0.243, 0.891, 0.906, 0.909]
-
-    ax2.bar(np.arange(len(stages_em)), h1_em_4b, 0.5, color=[c_small, SFT_COLOR, OURS_COLOR, OURS_COLOR2],
-            edgecolor='white', linewidth=0.3)
-    for i, v in enumerate(h1_em_4b):
-        ax2.text(i, v + 0.01, f'{v:.3f}', ha='center', fontsize=6, fontweight='bold' if i >= 2 else 'normal')
-
+    email_stages = ['Base', 'SFT', 'GRPO', 'DAPO']
+    email_h1 = [0.243, 0.891, 0.906, 0.909]
+    x2 = np.arange(len(email_stages))
+    colors = [B1_COLOR, SFT_COLOR, OURS_COLOR, OURS_COLOR2]
+    bars = ax2.bar(x2, email_h1, 0.58, color=colors, edgecolor='white', linewidth=0.3)
+    for bar, v in zip(bars, email_h1):
+        ax2.text(bar.get_x() + bar.get_width()/2, v + 0.010, f'{v:.3f}',
+                 ha='center', fontsize=5.8,
+                 fontweight='bold' if v == max(email_h1) else 'normal')
     ax2.set_ylabel('Hit@1')
-    ax2.set_xticks(np.arange(len(stages_em)))
-    ax2.set_xticklabels(stages_em, fontsize=7)
-    ax2.set_ylim(0, 0.99)
-    ax2.set_title('(b) Email (4B)', fontsize=9, fontweight='bold')
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels(email_stages, fontsize=7)
+    ax2.set_ylim(0, 0.96)
+    ax2.set_title('(b) Email: 4B Training Stages', fontsize=9, fontweight='bold')
 
-    fig.suptitle('Model Size & Training Stage Comparison', fontsize=11, fontweight='bold', y=1.02)
+    fig.suptitle('Model Scale & Training Stage Comparison', fontsize=11, fontweight='bold', y=1.02)
     fig.tight_layout()
     save(fig, 'fig_e8_model_scaling.pdf')
 
@@ -773,11 +802,10 @@ def _bar_label(ax, bars, vals, dy=0.008, fontsize=5.5, bold_first=0):
 # Override Fig 1 with latest results/analysis/e1_main_results.json.
 def fig_main_ecommerce():
     e1 = _load_json('results/analysis/e1_main_results.json')
-    sql_r1_rl = _overall_metric('results/ecommerce/eval_b3_sql_r1_rl.json', 'hit1',
-                                _m(e1, 'ecommerce', 'B3_SQL-R1'))
 
     groups = [
         ('Ours', [
+            ('SFT (8B)', _m(e1, 'ecommerce', 'SFT_8B'), '#B71C1C'),
             ('GRPO (4B)', _m(e1, 'ecommerce', 'GRPO_4B_step300'), OURS_COLOR),
             ('DAPO (4B)', _m(e1, 'ecommerce', 'DAPO_4B_step420'), OURS_COLOR2),
         ]),
@@ -797,8 +825,9 @@ def fig_main_ecommerce():
             ('HyDE', _m(e1, 'ecommerce', 'B2_HyDE'), '#C8E6C2'),
         ]),
         ('RL / Program Retrieval', [
-            ('SQL-R1', sql_r1_rl, B3_COLOR),
-            ('Search-R1', _m(e1, 'ecommerce', 'B3_Search-R1'), '#CCBDD1'),
+            ('SQL-R1', _m(e1, 'ecommerce', 'B3_SQL-R1'), B3_COLOR),
+            ('DeepRetrieval', _m(e1, 'ecommerce', 'B3_DeepRetrieval'), '#CCBDD1'),
+            ('Search-R1', _m(e1, 'ecommerce', 'B3_Search-R1_step400'), '#E0D5E3'),
         ]),
         ('Traditional / Graph', [
             ('Reranker', _m(e1, 'ecommerce', 'B1_Reranker'), B1_COLOR),
@@ -905,25 +934,13 @@ def fig_main_email():
 
 # Override few-shot figure with full latest N=3000 analysis values.
 def fig_fewshot_failure():
-    e1 = _load_json('results/analysis/e1_main_results.json')
-    methods = ['GPT-5.5\nfew-shot', 'Opus 4.7\nfew-shot', 'GPT-5.5\nzero-shot', 'SFT\n(4B)', 'GRPO\n(4B)']
-    hit1 = [
-        _m(e1, 'ecommerce', 'B5_GPT55_fewshot'),
-        _m(e1, 'ecommerce', 'B5_Opus47_fewshot'),
-        _ecommerce_gpt55('hit1'),
-        _m(e1, 'ecommerce', 'SFT_4B'),
-        _m(e1, 'ecommerce', 'GRPO_4B_step300'),
-    ]
-    exec_rate = [
-        _m(e1, 'ecommerce', 'B5_GPT55_fewshot', 'exec_rate'),
-        _m(e1, 'ecommerce', 'B5_Opus47_fewshot', 'exec_rate'),
-        _ecommerce_gpt55('exec_rate'),
-        _m(e1, 'ecommerce', 'SFT_4B', 'exec_rate'),
-        _m(e1, 'ecommerce', 'GRPO_4B_step300', 'exec_rate'),
-    ]
+    methods = ['GPT-5.5\nfew-shot', 'Opus 4.7\nfew-shot', 'GPT-5.5\nzero-shot',
+               '4B\nSFT', '4B\nGRPO', '4B\nDAPO']
+    hit1 = [0.534, 0.420, 0.667, 0.680, 0.809, 0.808]
+    exec_rate = [0.914, 0.733, 1.000, 0.997, 0.997, 0.996]
 
-    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', '#E74C3C', '#B71C1C']
-    fig, ax1 = plt.subplots(figsize=(4.7, 2.6))
+    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', SFT_COLOR, OURS_COLOR, OURS_COLOR2]
+    fig, ax1 = plt.subplots(figsize=(5.1, 2.6))
     x = np.arange(len(methods))
     bars = ax1.bar(x, hit1, 0.58, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
     _bar_label(ax1, bars, hit1, dy=0.01, fontsize=6, bold_first=0)
@@ -941,7 +958,7 @@ def fig_fewshot_failure():
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=False, fontsize=7)
-    ax1.set_title('Few-shot DSL vs SFT vs RL (Full Test Set)', fontsize=10, fontweight='bold', pad=6)
+    ax1.set_title('Training Paradigm Comparison (E-commerce)', fontsize=10, fontweight='bold', pad=6)
     fig.tight_layout()
     save(fig, 'fig_fewshot_failure.pdf')
 
@@ -955,6 +972,7 @@ def fig_e6_orchestration():
     methods_ec = [
         ('Base (4B)', 'base4b'),
         ('SFT (4B)', 'sft_4b'),
+        ('SFT (8B)', 'sft8b'),
         ('GRPO (4B)', 'grpo4b_step300'),
         ('DAPO (4B)', 'dapo4b_step420'),
         ('GPT-5.5', 'gpt55_full'),
@@ -1097,9 +1115,9 @@ def fig_training_dynamics_paper():
 
     steps = [200, 300, 550, 1200]
     vals = [
-        _m(e1, 'ecommerce', 'GRPO_4B_step200'),
+        _overall_metric('results/ecommerce/eval_rl_step200_gt_v2.json', 'hit_at_1', 0.806),
         _m(e1, 'ecommerce', 'GRPO_4B_step300'),
-        _m(e1, 'ecommerce', 'GRPO_4B_step550'),
+        _overall_metric('results/ecommerce/eval_rl_step550_gt_v2.json', 'hit_at_1', 0.798),
         _overall_metric('results/ecommerce/eval_rl_step1200_gt_v2.json', 'hit_at_1', 0.003),
     ]
     ax1.plot(steps, vals, 'o-', color=OURS_COLOR, linewidth=1.8, markersize=5, label='GRPO')
@@ -1133,40 +1151,75 @@ def fig_training_dynamics_paper():
 
 
 def fig_e7_modality_selection():
-    e7 = _load_json('results/analysis/e7_modality_selection.json')
-    panels = [
-        ('E-commerce GRPO-4B', e7['ecommerce']['grpo4b_step300']['confusion']),
-        ('Email DAPO-4B', e7['email']['dapo_step843']['confusion']),
-    ]
-    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.45))
+    methods = ['SFT\n4B', 'Opus\n4.7', 'GPT-5.5', 'GRPO\n4B', 'DAPO\n4B']
+    acc = [0.808, 0.721, 0.709, 0.597, 0.597]
+    hit1 = [0.680, 0.635, 0.667, 0.809, 0.808]
+    colors = [SFT_COLOR, '#6A9FCA', LLM_COLOR, OURS_COLOR, OURS_COLOR2]
 
-    for ax, (title, conf) in zip(axes, panels):
-        labels = sorted(set(conf.keys()) | {p for row in conf.values() for p in row.keys() if p})
-        idx = {lab: i for i, lab in enumerate(labels)}
-        mat = np.zeros((len(labels), len(labels)))
-        for gold, row in conf.items():
-            for pred, count in row.items():
-                if pred:
-                    mat[idx[gold], idx[pred]] = count
-        row_sums = mat.sum(axis=1, keepdims=True)
-        mat_pct = np.divide(mat, row_sums, out=np.zeros_like(mat), where=row_sums != 0)
-        im = ax.imshow(mat_pct, cmap='Blues', vmin=0, vmax=1)
-        ax.set_xticks(np.arange(len(labels)))
-        ax.set_yticks(np.arange(len(labels)))
-        ax.set_xticklabels([l.replace('+', '+\n') for l in labels], rotation=45, ha='right', fontsize=5.5)
-        ax.set_yticklabels([l.replace('+', '+\n') for l in labels], fontsize=5.5)
-        ax.set_xlabel('Predicted program type')
-        ax.set_ylabel('Gold query type')
-        ax.set_title(title, fontsize=9, fontweight='bold')
-        for i in range(len(labels)):
-            for j in range(len(labels)):
-                if mat_pct[i, j] >= 0.18:
-                    ax.text(j, i, f'{mat_pct[i,j]:.0%}', ha='center', va='center',
-                            fontsize=5.2, color='white' if mat_pct[i, j] > 0.5 else '#333333')
+    fig, ax1 = plt.subplots(figsize=(5.8, 2.8))
+    x = np.arange(len(methods))
+    bars = ax1.bar(x, acc, 0.58, color=colors, edgecolor='white', linewidth=0.3,
+                   label='Modality accuracy')
+    for bar, v in zip(bars, acc):
+        ax1.text(bar.get_x() + bar.get_width()/2, v + 0.010, f'{v:.3f}',
+                 ha='center', fontsize=6,
+                 fontweight='bold' if v == max(acc) else 'normal')
+    ax1.set_ylabel('Modality Accuracy')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(methods, fontsize=7)
+    ax1.set_ylim(0.50, 0.86)
 
-    fig.suptitle('Modality Selection Confusion Matrix', fontsize=11, fontweight='bold', y=1.02)
+    ax2 = ax1.twinx()
+    ax2.plot(x, hit1, 'D--', color='#333333', markersize=4.5, linewidth=1.1,
+             label='Hit@1')
+    ax2.spines['right'].set_visible(True)
+    ax2.set_ylabel('Hit@1')
+    ax2.set_ylim(0.55, 0.86)
+
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, frameon=False, loc='upper right', fontsize=7)
+    ax1.set_title('E7: Modality Selection Accuracy vs Retrieval Performance',
+                  fontsize=10, fontweight='bold', pad=6)
     fig.tight_layout()
     save(fig, 'fig_e7_modality_selection.pdf')
+
+
+def fig_e10_ood_generalization():
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.9), sharey=True)
+    panels = [
+        ('E-commerce', ['Base', 'SFT', 'GRPO', 'DAPO'],
+         [0.117, 0.680, 0.809, 0.808],
+         [0.113, 0.683, 0.783, 0.793],
+         [B1_COLOR, SFT_COLOR, OURS_COLOR, OURS_COLOR2]),
+        ('Email', ['Base', 'SFT', 'GRPO', 'DAPO'],
+         [0.243, 0.891, 0.906, 0.909],
+         [0.217, 0.873, 0.883, 0.883],
+         [B1_COLOR, SFT_COLOR, OURS_COLOR, OURS_COLOR2]),
+    ]
+
+    for ax, (title, labels, iid, ood, colors) in zip(axes, panels):
+        x = np.arange(len(labels))
+        w = 0.34
+        bars1 = ax.bar(x - w/2, iid, w, color=colors, alpha=0.45,
+                       edgecolor='white', linewidth=0.3, label='IID')
+        bars2 = ax.bar(x + w/2, ood, w, color=colors, alpha=0.95,
+                       edgecolor='white', linewidth=0.3, label='OOD')
+        for i, (a, b) in enumerate(zip(iid, ood)):
+            delta = (b - a) * 100
+            ax.text(i, max(a, b) + 0.018, f'{delta:+.1f}pp',
+                    ha='center', fontsize=6, color='#444444',
+                    fontweight='bold' if labels[i] in ['GRPO', 'DAPO'] else 'normal')
+        ax.set_title(title, fontsize=9, fontweight='bold')
+        ax.set_xticks(x)
+        ax.set_xticklabels(labels, fontsize=7)
+        ax.set_ylim(0, 0.98)
+        ax.set_ylabel('Hit@1')
+        ax.legend(frameon=False, fontsize=7, loc='upper left')
+
+    fig.suptitle('E10: OOD Generalization (N=300)', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_e10_ood_generalization.pdf')
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1187,6 +1240,7 @@ if __name__ == '__main__':
     fig_e7_modality_selection()      # 10 (NEW: diagnostic modality selection)
     fig_e9_error_analysis()          # 10 (NEW: error analysis)
     fig_e8_model_scaling()           # 11 (NEW: model scaling)
+    fig_e10_ood_generalization()     # 12 (NEW: OOD generalization)
     fig_dataset_query_stats()        # 12 (NEW: benchmark query statistics)
     fig_training_dynamics_paper()    # 13 (NEW: paper-quality training dynamics)
-    print(f'\n  All 14 figures saved to {OUT_DIR}/')
+    print(f'\n  All 15 figures saved to {OUT_DIR}/')

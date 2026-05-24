@@ -165,7 +165,7 @@ def generate():
     rows = [
         ("brand='Nike'", "P001.brand = Nike", "pass", BLUE),
         ("price<100", "P001.price = $89", "pass", BLUE),
-        ("rating>=4.0", "P001.rating = 4.5", "pass", BLUE),
+        ("average_\nrating>=4.0", "P001.average_rating=4.5", "pass", BLUE),
         ("<text_0>", "P001 in text cand.", "pass", GREEN),
         ("<image_0>", "P001 in image cand.", "pass", ORANGE),
         ("Final\nSQL", "P001\nRed Nike shoe", "correct", RED),
