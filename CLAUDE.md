@@ -79,7 +79,10 @@ ssh sunzhen@10.60.200.102
 | GRPO step550 (4B) | 0.798 | 0.844 | 0.825 | 99.8% | 开始过拟合 |
 | GRPO step1200 (4B) | 0.003 | 0.003 | 0.003 | 99.6% | 崩溃 |
 | DAPO step420 (4B) | 0.808 | 0.852 | 0.833 | 99.6% | |
-| **GRPO step100 (8B)** | — | — | — | — | 训练中，score_mean=0.83 (step83)，预计超越4B |
+| SFT 8B (2.0ep) | 0.820 | 0.868 | 0.846 | 99.7% | 已超越4B GRPO最佳 |
+| GRPO step200 (8B) | 0.819 | 0.867 | 0.845 | 99.7% | RL无提升 |
+| GRPO step300 (8B) | 0.820 | 0.867 | 0.845 | 99.7% | RL无提升 |
+| GRPO step400 (8B) | 0.820 | 0.867 | 0.845 | 99.7% | RL无提升 |
 | GPT-5.4 (Azure) | 0.581 | 0.591 | 0.587 | 100% | model=gpt-5.4-2026-03-05 |
 | GPT-5.4 thinking | 0.680 | 0.723 | 0.704 | 100% | 仅 300 条，reasoning_effort=medium |
 | Claude Opus 4.6 | 0.586 | 0.596 | 0.592 | 99.9% | 通过 GCP Vertex AI |
@@ -177,6 +180,8 @@ ssh sunzhen@10.60.200.102
 8. DAPO 比 GRPO 稍好（邮件场景更明显）
 9. GPT-5.5 > Opus 4.7 > Opus 4.6 ≈ GPT-5.4 ≈ Gemini 3.1 Pro
 10. 邮件场景商业模型远好于电商（GPT-5.5: 0.855 vs 0.667），但 RL 差距仍显著
+11. 8B SFT 直接达到 0.820，已超越 4B GRPO best（0.809），说明模型容量提升让 SFT 学到了 4B 需要 RL 才能学到的能力
+12. 8B GRPO（lr=1e-6）训练 400 步无提升（Hit@1 始终 0.820），可能原因：学习率过低、reward 信号区分度不足
 
 ### B1 纯检索 Baselines (邮件, N=3000)
 
@@ -212,11 +217,15 @@ ssh sunzhen@10.60.200.102
 - ✅ 分析实验: E3 Complexity Breakdown, E5 Modality Ablation (2026-05-20)
 
 **进行中：**
-- 🔄 Qwen3-8B GRPO 电商：训练中（step 100/625，score_mean 峰值 0.83，Blackwell 2×RTX PRO 6000）
 - 🔄 Search-R1 邮件 RL：从 step 200 恢复训练中（→1000）
 
+**已完成（8B 电商）：**
+- ✅ Qwen3-8B SFT 电商：2.0ep最佳，Hit@1=0.820（已超越4B GRPO best=0.809）
+- ✅ Qwen3-8B GRPO 电商：训练至step400，Hit@1=0.820，RL无提升（lr=1e-6过低或reward信号不足）
+
 **待完成：**
-- Qwen3-8B GRPO 邮件 / DAPO 电商+邮件：待 8B GRPO 电商完成后顺序训练
+- Qwen3-8B GRPO 电商调参重跑：需提高学习率或改进 reward 设计
+- Qwen3-8B GRPO 邮件 / DAPO 电商+邮件
 - B4 GraphRAG：✅ 已完成 (Hit@1=0.493, N=2737)，低于 BM25(0.548)，图谱方法不适合产品检索
 - B2 全量评估：当前 N=268，需扩展到 N=3000
 - B3 SQR/SQL-R1 全量评估：当前 N=268/300

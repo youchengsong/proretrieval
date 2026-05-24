@@ -52,15 +52,16 @@ All results evaluated on `queries_product_test_step9_gt_v2.jsonl` (N=3000, unles
 | predictions_grpo4b_step550.json | GRPO 4B step550 | 3000 | 0.869 |
 | predictions_grpo4b_step1200.json | GRPO 4B step1200 (collapsed) | 3000 | 0.003 |
 | predictions_dapo4b_step420.json | DAPO 4B step420 | 3000 | 0.876 |
-| predictions_grpo8b_step150.json | GRPO 8B step150 | 3000 | — |
-| predictions_grpo8b_step300.json | GRPO 8B step300 | 3000 | — |
+| predictions_grpo8b_step200.json | GRPO 8B step200 | 3000 | 0.819 |
+| predictions_grpo8b_step300.json | GRPO 8B step300 | 3000 | 0.820 |
+| predictions_grpo8b_step400.json | GRPO 8B step400 | 3000 | 0.820 |
 
 ### `ours_sft/` — Our Method: SFT baselines
 | File | Method | N | NDCG@1 |
 |------|--------|---|--------|
 | predictions_sft_4b.json | SFT 4B | 3000 | 0.787 |
 | predictions_sft_1.7b.json | SFT 1.7B | 3000 | — |
-| predictions_sft8b.json | SFT 8B | 3000 | — |
+| predictions_sft8b_2.0ep.json | SFT 8B (2.0ep) | 3000 | 0.820 |
 | predictions_base4b.json | Base 4B (zero-shot) | 3000 | — |
 | predictions_base8b.json | Base 8B (zero-shot) | 3000 | — |
 
