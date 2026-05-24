@@ -1,84 +1,78 @@
 {
   "ecommerce": {
     "B1_BM25": {
-      "n": 3000,
       "hit1": 0.5707,
       "hit3": 0.7053,
       "mrr": 0.6506,
       "ndcg3": 0.5309
     },
     "B1_ColQwen": {
-      "n": 3000,
       "hit1": 0.5177,
       "hit3": 0.6257,
       "mrr": 0.5892,
       "ndcg3": 0.482
     },
     "B1_RRF": {
-      "n": 3000,
       "hit1": 0.5763,
       "hit3": 0.7077,
       "mrr": 0.6528,
       "ndcg3": 0.5391
     },
     "B1_BGE-M3": {
-      "n": 3000,
       "hit1": 0.5707,
       "hit3": 0.6987,
       "mrr": 0.648,
       "ndcg3": 0.5318
     },
     "B1_Reranker": {
-      "n": 3000,
       "hit1": 0.6183,
       "hit3": 0.7383,
       "mrr": 0.6859,
       "ndcg3": 0.576
     },
     "B1_DenseImage": {
-      "n": 3000,
       "hit1": 0.0577,
       "hit3": 0.117,
       "mrr": 0.103,
       "ndcg3": 0.0592
     },
     "B2_HyDE": {
-      "n": 3000,
       "hit1": 0.5493,
       "hit3": 0.651,
       "mrr": 0.6122,
       "ndcg3": 0.5097
     },
     "B2_IRCoT": {
-      "n": 3000,
       "hit1": 0.5653,
       "hit3": 0.682,
       "mrr": 0.6357,
       "ndcg3": 0.5271
     },
     "B2_RankGPT": {
-      "n": 3000,
       "hit1": 0.768,
       "hit3": 0.8087,
       "mrr": 0.7918,
       "ndcg3": 0.6981
     },
     "B3_SQR": {
-      "n": 3000,
       "hit1": 0.6057,
       "hit3": 0.695,
       "mrr": 0.6593,
       "ndcg3": 0.5726
     },
     "B3_SQL-R1": {
-      "n": 3000,
       "hit1": 0.6203,
       "hit3": 0.6413,
       "mrr": 0.6329,
       "ndcg3": 0.6002
     },
+    "B3_DeepRetrieval": {
+      "hit1": 0.6253,
+      "hit3": 0.7537,
+      "mrr": 0.701,
+      "ndcg3": 0.5884
+    },
     "B3_Search-R1_step400": {
-      "n": 3000,
       "hit1": 0.435,
       "hit3": 0.6017,
       "mrr": 0.5129,
@@ -86,21 +80,18 @@
       "note": "Best Search-R1 checkpoint; SFT=0.387, step200=0.391 (RL provides minimal gain)"
     },
     "B4_GraphRAG": {
-      "n": 3000,
       "hit1": 0.4997,
       "hit3": 0.5913,
       "mrr": 0.5594,
       "ndcg3": 0.4662
     },
     "B4_LightRAG": {
-      "n": 3000,
       "hit1": 0.5883,
       "hit3": 0.6907,
       "mrr": 0.6495,
       "ndcg3": 0.5231
     },
     "B5_GPT55_fewshot": {
-      "n": 3000,
       "hit1": 0.5337,
       "hit3": 0.5397,
       "mrr": 0.5372,
@@ -108,7 +99,6 @@
       "ndcg3": 0.538
     },
     "B5_Opus47_fewshot": {
-      "n": 3000,
       "hit1": 0.42,
       "hit3": 0.4253,
       "mrr": 0.424,
@@ -116,15 +106,20 @@
       "ndcg3": 0.4312
     },
     "GPT-5.4": {
-      "n": 2998,
       "hit1": 0.5814,
       "hit3": 0.5911,
       "mrr": 0.5865,
       "exec_rate": 1.0,
       "ndcg3": 0.5887
     },
+    "GPT-5.5": {
+      "hit1": 0.6668,
+      "hit3": 0.7041,
+      "mrr": 0.6886,
+      "exec_rate": 1.0,
+      "ndcg3": 0.7291
+    },
     "Opus_4.7": {
-      "n": 2998,
       "hit1": 0.6351,
       "hit3": 0.6648,
       "mrr": 0.6551,
@@ -132,7 +127,6 @@
       "ndcg3": 0.7098
     },
     "Opus_4.6": {
-      "n": 3000,
       "hit1": 0.5857,
       "hit3": 0.5957,
       "mrr": 0.5919,
@@ -140,23 +134,13 @@
       "ndcg3": 0.5999
     },
     "Gemini_3.1Pro": {
-      "n": 2994,
       "hit1": 0.5872,
       "hit3": 0.5969,
       "mrr": 0.593,
       "exec_rate": 1.0,
       "ndcg3": 0.5991
     },
-    "SFT_4B": {
-      "n": 3000,
-      "hit1": 0.6797,
-      "hit3": 0.7213,
-      "mrr": 0.7052,
-      "exec_rate": 0.9973333333333333,
-      "ndcg3": 0.7727
-    },
     "Base_4B": {
-      "n": 3000,
       "hit1": 0.1167,
       "hit3": 0.1177,
       "mrr": 0.1177,
@@ -164,15 +148,28 @@
       "ndcg3": 0.1203
     },
     "Base_8B": {
-      "n": 3000,
       "hit1": 0.1323,
       "hit3": 0.1333,
       "mrr": 0.1333,
       "exec_rate": 0.17033333333333334,
       "ndcg3": 0.1362
     },
+    "SFT_4B": {
+      "hit1": 0.6797,
+      "hit3": 0.7213,
+      "mrr": 0.7052,
+      "exec_rate": 0.9973333333333333,
+      "ndcg3": 0.7727
+    },
+    "SFT_8B": {
+      "hit1": 0.8197,
+      "hit3": 0.868,
+      "mrr": 0.8457,
+      "exec_rate": 0.997,
+      "note": "Best 8B model overall; surpasses 4B GRPO best (0.809), making RL unnecessary at 8B scale",
+      "ndcg3": 0.8914
+    },
     "GRPO_4B_step300": {
-      "n": 3000,
       "hit1": 0.809,
       "hit3": 0.8537,
       "mrr": 0.8348,
@@ -181,7 +178,6 @@
       "note": "Best GRPO checkpoint; step200=0.806, step550=0.798 (overfitting), step1200=0.003 (collapse)"
     },
     "DAPO_4B_step420": {
-      "n": 3000,
       "hit1": 0.8077,
       "hit3": 0.8523,
       "mrr": 0.8334,
@@ -189,83 +185,96 @@
       "ndcg3": 0.8828,
       "note": "Best DAPO checkpoint; stable training without collapse observed in GRPO"
     },
-    "SFT_8B": {
-      "hit1": 0.8197,
-      "hit3": 0.868,
-      "mrr": 0.8457,
-      "N": 3000,
-      "exec_rate": "99.7%",
-      "note": "Best 8B model overall; surpasses 4B GRPO best (0.809), making RL unnecessary at 8B scale"
-    },
     "GRPO_8B_step300": {
       "hit1": 0.82,
       "hit3": 0.867,
       "mrr": 0.845,
-      "N": 3000,
-      "exec_rate": "99.7%",
-      "note": "No improvement over SFT at 8B; trained 400 steps with lr=1e-6, Hit@1 flat at 0.820 throughout"
+      "exec_rate": 0.997,
+      "note": "No improvement over SFT at 8B; trained 400 steps with lr=1e-6, Hit@1 flat at 0.820 throughout",
+      "ndcg3": 0.8911
     },
     "DAPO_8B_step300": {
       "hit1": 0.8103,
       "hit3": 0.854,
       "mrr": 0.8358,
-      "N": 3000,
-      "exec_rate": "99.7%",
-      "note": "Below SFT (0.810 vs 0.820); lr=1e-5 no-KL causes drift, confirming RL ineffective at 8B"
+      "exec_rate": 0.997,
+      "note": "Below SFT (0.810 vs 0.820); lr=1e-5 no-KL causes drift, confirming RL ineffective at 8B",
+      "ndcg3": 0.8862
     }
   },
   "email": {
     "B1_BM25": {
-      "n": 3000,
       "hit1": 0.731,
       "hit3": 0.8587,
       "mrr": 0.7993,
       "ndcg3": 0.631
     },
     "B1_ColQwen": {
-      "n": 3000,
       "hit1": 0.4717,
       "hit3": 0.5633,
       "mrr": 0.5327,
       "ndcg3": 0.4177
     },
     "B1_RRF": {
-      "n": 3000,
       "hit1": 0.687,
       "hit3": 0.8473,
       "mrr": 0.776,
       "ndcg3": 0.6064
     },
     "B1_BGE-M3": {
-      "n": 3000,
       "hit1": 0.599,
       "hit3": 0.6937,
       "mrr": 0.6598,
       "ndcg3": 0.5015
     },
     "B1_Reranker": {
-      "n": 3000,
       "hit1": 0.8357,
       "hit3": 0.9187,
       "mrr": 0.8805,
       "ndcg3": 0.733
     },
+    "B2_HyDE": {
+      "hit1": 0.4827,
+      "hit3": 0.5787,
+      "mrr": 0.5412,
+      "ndcg3": 0.4155
+    },
     "B2_IRCoT": {
-      "n": 3000,
       "hit1": 0.511,
       "hit3": 0.609,
       "mrr": 0.5702,
       "ndcg3": 0.4423
     },
     "B2_RankGPT": {
-      "n": 3000,
       "hit1": 0.8883,
       "hit3": 0.9337,
       "mrr": 0.9135,
       "ndcg3": 0.7889
     },
+    "B3_SQR": {
+      "hit1": 0.63,
+      "hit3": 0.7073,
+      "mrr": 0.6775,
+      "ndcg3": 0.5859
+    },
+    "B3_SQL-R1": {
+      "hit1": 0.5456,
+      "hit3": 0.5836,
+      "mrr": 0.5651
+    },
+    "B3_Search-R1": {
+      "hit1": 0.377,
+      "hit3": 0.4467,
+      "mrr": 0.4087,
+      "ndcg3": 0.2834
+    },
+    "B4_LightRAG": {
+      "hit1": 0.3887,
+      "hit3": 0.5307,
+      "mrr": 0.4724,
+      "ndcg3": 0.3129
+    },
     "GPT-5.4": {
-      "n": 2999,
       "hit1": 0.8536,
       "hit3": 0.8636,
       "mrr": 0.8591,
@@ -273,7 +282,6 @@
       "ndcg3": 0.8394
     },
     "GPT-5.5": {
-      "n": 3000,
       "hit1": 0.8547,
       "hit3": 0.8643,
       "mrr": 0.8605,
@@ -281,7 +289,6 @@
       "ndcg3": 0.8406
     },
     "Opus_4.7": {
-      "n": 3000,
       "hit1": 0.8297,
       "hit3": 0.8373,
       "mrr": 0.8339,
@@ -289,7 +296,6 @@
       "ndcg3": 0.8121
     },
     "Base_4B": {
-      "n": 3000,
       "hit1": 0.2433,
       "hit3": 0.2437,
       "mrr": 0.2436,
@@ -297,7 +303,6 @@
       "ndcg3": 0.2441
     },
     "SFT_4B": {
-      "n": 3000,
       "hit1": 0.8913,
       "hit3": 0.893,
       "mrr": 0.8922,
@@ -305,7 +310,6 @@
       "ndcg3": 0.8655
     },
     "GRPO_4B_step843": {
-      "n": 3000,
       "hit1": 0.906,
       "hit3": 0.908,
       "mrr": 0.9071,
@@ -314,20 +318,12 @@
       "note": "Best GRPO checkpoint for email"
     },
     "DAPO_4B_step843": {
-      "n": 3000,
       "hit1": 0.9087,
       "hit3": 0.9103,
       "mrr": 0.9097,
       "exec_rate": 0.9933333333333333,
       "ndcg3": 0.8958,
       "note": "Best DAPO checkpoint for email; slightly outperforms GRPO (0.909 vs 0.906)"
-    },
-    "B4_LightRAG": {
-      "n": 3000,
-      "hit1": 0.3887,
-      "hit3": 0.5307,
-      "mrr": 0.4724,
-      "ndcg3": 0.3129
     }
   }
 }
