@@ -184,22 +184,6 @@
       "exec_rate": 0.9963333333333333,
       "ndcg3": 0.8828,
       "note": "Best DAPO checkpoint; stable training without collapse observed in GRPO"
-    },
-    "GRPO_8B_step300": {
-      "hit1": 0.82,
-      "hit3": 0.867,
-      "mrr": 0.845,
-      "exec_rate": 0.997,
-      "note": "No improvement over SFT at 8B; trained 400 steps with lr=1e-6, Hit@1 flat at 0.820 throughout",
-      "ndcg3": 0.8911
-    },
-    "DAPO_8B_step300": {
-      "hit1": 0.8103,
-      "hit3": 0.854,
-      "mrr": 0.8358,
-      "exec_rate": 0.997,
-      "note": "Below SFT (0.810 vs 0.820); lr=1e-5 no-KL causes drift, confirming RL ineffective at 8B",
-      "ndcg3": 0.8862
     }
   },
   "email": {
