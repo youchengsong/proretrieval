@@ -18,6 +18,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import json
 
 # ── Global style ──────────────────────────────────────────────────────────────
 plt.rcParams.update({
@@ -727,12 +728,460 @@ def fig_e8_model_scaling():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# Latest-data overrides and new script-generated analysis figures
+# ═══════════════════════════════════════════════════════════════════════════════
+
+ROOT_DIR = os.path.abspath(os.path.join(OUT_DIR, '..', '..'))
+
+
+def _load_json(rel_path):
+    with open(os.path.join(ROOT_DIR, rel_path), 'r') as f:
+        return json.load(f)
+
+
+def _maybe_load_json(rel_path):
+    path = os.path.join(ROOT_DIR, rel_path)
+    if not os.path.exists(path):
+        return None
+    return _load_json(rel_path)
+
+
+def _m(d, scenario, key, metric='hit1', default=None):
+    try:
+        return d[scenario][key][metric]
+    except KeyError:
+        return default
+
+
+def _overall_metric(rel_path, metric='hit_at_1', default=None):
+    d = _maybe_load_json(rel_path)
+    if not d:
+        return default
+    if 'overall' in d:
+        return d['overall'].get(metric, default)
+    return d.get(metric, default)
+
+
+def _ecommerce_gpt55(metric='hit_at_1'):
+    metric_map = {'hit1': 'hit_at_1', 'mrr': 'mrr', 'hit3': 'hit_at_3', 'exec_rate': 'exec_success_rate'}
+    return _overall_metric('results/ecommerce/eval_predictions_gpt55_full.json',
+                           metric_map.get(metric, metric), None)
+
+
+def _bar_label(ax, bars, vals, dy=0.008, fontsize=5.5, bold_first=0):
+    for i, (bar, val) in enumerate(zip(bars, vals)):
+        ax.text(bar.get_x() + bar.get_width()/2, val + dy, f'{val:.3f}',
+                ha='center', va='bottom', fontsize=fontsize,
+                fontweight='bold' if i < bold_first else 'normal')
+
+
+# Override Fig 1 with latest results/analysis/e1_main_results.json.
+def fig_main_ecommerce():
+    e1 = _load_json('results/analysis/e1_main_results.json')
+    sql_r1_rl = _overall_metric('results/ecommerce/eval_b3_sql_r1_rl.json', 'hit1',
+                                _m(e1, 'ecommerce', 'B3_SQL-R1'))
+
+    groups = [
+        ('Ours', [
+            ('GRPO (4B)', _m(e1, 'ecommerce', 'GRPO_4B_step300'), OURS_COLOR),
+            ('DAPO (4B)', _m(e1, 'ecommerce', 'DAPO_4B_step420'), OURS_COLOR2),
+        ]),
+        ('SFT', [
+            ('SFT (4B)', _m(e1, 'ecommerce', 'SFT_4B'), SFT_COLOR),
+        ]),
+        ('Commercial LLMs', [
+            ('GPT-5.5', _ecommerce_gpt55('hit1'), LLM_COLOR),
+            ('Opus 4.7', _m(e1, 'ecommerce', 'Opus_4.7'), '#6A9FCA'),
+            ('Gemini 3.1', _m(e1, 'ecommerce', 'Gemini_3.1Pro'), '#93BAD9'),
+            ('GPT-5.4', _m(e1, 'ecommerce', 'GPT-5.4'), '#BBCFE8'),
+        ]),
+        ('LLM-Enhanced', [
+            ('RankGPT', _m(e1, 'ecommerce', 'B2_RankGPT'), B2_COLOR),
+            ('SQR', _m(e1, 'ecommerce', 'B3_SQR'), '#82C47B'),
+            ('IRCoT', _m(e1, 'ecommerce', 'B2_IRCoT'), '#ABD9A5'),
+            ('HyDE', _m(e1, 'ecommerce', 'B2_HyDE'), '#C8E6C2'),
+        ]),
+        ('RL / Program Retrieval', [
+            ('SQL-R1', sql_r1_rl, B3_COLOR),
+            ('Search-R1', _m(e1, 'ecommerce', 'B3_Search-R1'), '#CCBDD1'),
+        ]),
+        ('Traditional / Graph', [
+            ('Reranker', _m(e1, 'ecommerce', 'B1_Reranker'), B1_COLOR),
+            ('LightRAG', _m(e1, 'ecommerce', 'B4_LightRAG'), '#8BB7B4'),
+            ('BM25', _m(e1, 'ecommerce', 'B1_BM25'), '#A0D0CC'),
+            ('GraphRAG', _m(e1, 'ecommerce', 'B4_GraphRAG'), B4_COLOR),
+        ]),
+    ]
+
+    labels, vals, colors, spans = [], [], [], []
+    pos = 0
+    for group, items in groups:
+        start = pos
+        for label, val, color in items:
+            if val is None:
+                continue
+            labels.append(label)
+            vals.append(val)
+            colors.append(color)
+            pos += 1
+        spans.append((group, start, pos))
+
+    x = np.arange(len(labels))
+    fig, ax = plt.subplots(figsize=(7.2, 2.7))
+    bg_fills = ['#FFF2F2', '#FFF8F0', '#F0F4FA', '#F0FAF0', '#F5F0F7', '#F0FAFA']
+    for i, (group, s, e) in enumerate(spans):
+        if e <= s:
+            continue
+        ax.axvspan(s - 0.5, e - 0.5, color=bg_fills[i % len(bg_fills)], zorder=0)
+        ax.text((s + e - 1) / 2, 0.885, group, ha='center', va='top', fontsize=5.8,
+                color='#666666', fontstyle='italic', zorder=1)
+
+    bars = ax.bar(x, vals, 0.68, color=colors, edgecolor='white', linewidth=0.35, zorder=2)
+    _bar_label(ax, bars, vals, bold_first=2)
+    ax.set_ylabel('Hit@1')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=38, ha='right', fontsize=6.3)
+    ax.set_ylim(0.37, 0.90)
+    ax.set_title('E-commerce Retrieval Performance (Hit@1)', fontsize=10, fontweight='bold', pad=6)
+    fig.tight_layout()
+    save(fig, 'fig_main_ecommerce.pdf')
+
+
+# Override Fig 2 with latest results/analysis/e1_main_results.json.
+def fig_main_email():
+    e1 = _load_json('results/analysis/e1_main_results.json')
+    groups = [
+        ('Ours', [
+            ('DAPO (4B)', _m(e1, 'email', 'DAPO_4B_step843'), OURS_COLOR),
+            ('GRPO (4B)', _m(e1, 'email', 'GRPO_4B_step843'), OURS_COLOR2),
+        ]),
+        ('SFT', [
+            ('SFT (4B)', _m(e1, 'email', 'SFT_4B'), SFT_COLOR),
+        ]),
+        ('Commercial LLMs', [
+            ('GPT-5.5', _m(e1, 'email', 'GPT-5.5'), LLM_COLOR),
+            ('GPT-5.4', _m(e1, 'email', 'GPT-5.4'), '#6A9FCA'),
+            ('Opus 4.7', _m(e1, 'email', 'Opus_4.7'), '#93BAD9'),
+        ]),
+        ('LLM-Enhanced', [
+            ('RankGPT', _m(e1, 'email', 'B2_RankGPT'), B2_COLOR),
+            ('IRCoT', _m(e1, 'email', 'B2_IRCoT'), '#ABD9A5'),
+        ]),
+        ('Traditional', [
+            ('Reranker', _m(e1, 'email', 'B1_Reranker'), B1_COLOR),
+            ('BM25', _m(e1, 'email', 'B1_BM25'), '#A0D0CC'),
+            ('RRF', _m(e1, 'email', 'B1_RRF'), '#B7DCD9'),
+        ]),
+    ]
+
+    labels, vals, colors, spans = [], [], [], []
+    pos = 0
+    for group, items in groups:
+        start = pos
+        for label, val, color in items:
+            if val is None:
+                continue
+            labels.append(label)
+            vals.append(val)
+            colors.append(color)
+            pos += 1
+        spans.append((group, start, pos))
+
+    x = np.arange(len(labels))
+    fig, ax = plt.subplots(figsize=(6.2, 2.65))
+    bg_fills = ['#FFF2F2', '#FFF8F0', '#F0F4FA', '#F0FAF0', '#F0FAFA']
+    for i, (group, s, e) in enumerate(spans):
+        if e <= s:
+            continue
+        ax.axvspan(s - 0.5, e - 0.5, color=bg_fills[i % len(bg_fills)], zorder=0)
+        ax.text((s + e - 1) / 2, 0.955, group, ha='center', va='top', fontsize=5.8,
+                color='#666666', fontstyle='italic', zorder=1)
+
+    bars = ax.bar(x, vals, 0.68, color=colors, edgecolor='white', linewidth=0.35, zorder=2)
+    _bar_label(ax, bars, vals, dy=0.004, bold_first=2)
+    ax.set_ylabel('Hit@1')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, rotation=38, ha='right', fontsize=6.5)
+    ax.set_ylim(0.48, 0.97)
+    ax.set_title('Email Retrieval Performance (Hit@1)', fontsize=10, fontweight='bold', pad=6)
+    fig.tight_layout()
+    save(fig, 'fig_main_email.pdf')
+
+
+# Override few-shot figure with full latest N=3000 analysis values.
+def fig_fewshot_failure():
+    e1 = _load_json('results/analysis/e1_main_results.json')
+    methods = ['GPT-5.5\nfew-shot', 'Opus 4.7\nfew-shot', 'GPT-5.5\nzero-shot', 'SFT\n(4B)', 'GRPO\n(4B)']
+    hit1 = [
+        _m(e1, 'ecommerce', 'B5_GPT55_fewshot'),
+        _m(e1, 'ecommerce', 'B5_Opus47_fewshot'),
+        _ecommerce_gpt55('hit1'),
+        _m(e1, 'ecommerce', 'SFT_4B'),
+        _m(e1, 'ecommerce', 'GRPO_4B_step300'),
+    ]
+    exec_rate = [
+        _m(e1, 'ecommerce', 'B5_GPT55_fewshot', 'exec_rate'),
+        _m(e1, 'ecommerce', 'B5_Opus47_fewshot', 'exec_rate'),
+        _ecommerce_gpt55('exec_rate'),
+        _m(e1, 'ecommerce', 'SFT_4B', 'exec_rate'),
+        _m(e1, 'ecommerce', 'GRPO_4B_step300', 'exec_rate'),
+    ]
+
+    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', '#E74C3C', '#B71C1C']
+    fig, ax1 = plt.subplots(figsize=(4.7, 2.6))
+    x = np.arange(len(methods))
+    bars = ax1.bar(x, hit1, 0.58, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
+    _bar_label(ax1, bars, hit1, dy=0.01, fontsize=6, bold_first=0)
+
+    ax2 = ax1.twinx()
+    ax2.plot(x, exec_rate, 'D-', color='#333333', markersize=5, linewidth=1.2, label='Exec Rate')
+    ax2.spines['right'].set_visible(True)
+
+    ax1.set_ylabel('Hit@1')
+    ax2.set_ylabel('Execution Rate', color='#333333')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(methods, fontsize=7)
+    ax1.set_ylim(0.35, 0.86)
+    ax2.set_ylim(0.65, 1.03)
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=False, fontsize=7)
+    ax1.set_title('Few-shot DSL vs SFT vs RL (Full Test Set)', fontsize=10, fontweight='bold', pad=6)
+    fig.tight_layout()
+    save(fig, 'fig_fewshot_failure.pdf')
+
+
+# Override Fig 9 with current orchestration analysis JSON.
+def fig_e6_orchestration():
+    e6 = _load_json('results/analysis/e6_orchestration_analysis.json')
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 3.0))
+    colors_act = ['#4E79A7', '#59A14F', '#E15759']
+
+    methods_ec = [
+        ('Base (4B)', 'base4b'),
+        ('SFT (4B)', 'sft_4b'),
+        ('GRPO (4B)', 'grpo4b_step300'),
+        ('DAPO (4B)', 'dapo4b_step420'),
+        ('GPT-5.5', 'gpt55_full'),
+        ('Opus 4.7', 'opus47'),
+    ]
+    x = np.arange(len(methods_ec))
+    w = 0.25
+    for offset, action, label, color in [
+        (-w, 'sql_filter', 'SQL Filter', colors_act[0]),
+        (0, 'text_search', 'Text Search', colors_act[1]),
+        (w, 'image_search', 'Image Search', colors_act[2]),
+    ]:
+        vals = [e6['ecommerce'][key]['action_freq'].get(action, 0.0) for _, key in methods_ec]
+        ax1.bar(x + offset, vals, w, label=label, color=color, edgecolor='white', linewidth=0.3)
+    ax1.set_ylabel('Action Frequency')
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([m for m, _ in methods_ec], rotation=30, ha='right', fontsize=6.5)
+    ax1.set_ylim(0, 1.15)
+    ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
+
+    methods_em = [
+        ('Base (4B)', 'base_email'),
+        ('SFT (4B)', 'sft_email'),
+        ('GRPO (4B)', 'grpo_step843'),
+        ('DAPO (4B)', 'dapo_step843'),
+        ('GPT-5.5', 'gpt55'),
+        ('Opus 4.7', 'opus47'),
+    ]
+    x2 = np.arange(len(methods_em))
+    for offset, action, label, color in [
+        (-w/2, 'sql_filter', 'SQL Filter', colors_act[0]),
+        (w/2, 'text_search', 'Text Search', colors_act[1]),
+    ]:
+        vals = [e6['email'][key]['action_freq'].get(action, 0.0) for _, key in methods_em]
+        ax2.bar(x2 + offset, vals, w, label=label, color=color, edgecolor='white', linewidth=0.3)
+    ax2.set_ylabel('Action Frequency')
+    ax2.set_xticks(x2)
+    ax2.set_xticklabels([m for m, _ in methods_em], rotation=30, ha='right', fontsize=6.5)
+    ax2.set_ylim(0, 1.15)
+    ax2.set_title('(b) Email', fontsize=9, fontweight='bold')
+
+    handles, labels = ax1.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.06),
+               ncol=3, frameon=False, fontsize=7.5)
+    fig.suptitle('Retrieval Action Orchestration by Method', fontsize=11, fontweight='bold', y=1.12)
+    fig.tight_layout()
+    save(fig, 'fig_e6_orchestration.pdf')
+
+
+def fig_e2_action_space():
+    variants = [
+        ('Text only', 'results/ecommerce/e2/eval_sft_text_only.json', '#93BAD9'),
+        ('SQL only', 'results/ecommerce/e2/eval_sft_sql_only.json', '#B07AA1'),
+        ('SQL + image', 'results/ecommerce/e2/eval_sft_sql_image.json', '#E7CB94'),
+        ('SQL + text', 'results/ecommerce/e2/eval_sft_sql_text.json', '#59A14F'),
+        ('Full DSL SFT', 'results/ecommerce/eval_sft_4b_gt_v2_nocase.json', SFT_COLOR),
+        ('Full DSL GRPO', 'results/ecommerce/eval_rl_step300_gt_v2.json', OURS_COLOR),
+    ]
+
+    labels, h1, mrr, colors = [], [], [], []
+    for label, rel, color in variants:
+        d = _maybe_load_json(rel)
+        if not d:
+            continue
+        overall = d.get('overall', d)
+        labels.append(label)
+        h1.append(overall.get('hit_at_1', overall.get('hit1')))
+        mrr.append(overall.get('mrr'))
+        colors.append(color)
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 2.9))
+    y = np.arange(len(labels))
+    ax1.barh(y, h1, color=colors, edgecolor='white', linewidth=0.3)
+    ax2.barh(y, mrr, color=colors, edgecolor='white', linewidth=0.3)
+    for ax, vals, title in [(ax1, h1, 'Hit@1'), (ax2, mrr, 'MRR')]:
+        for i, v in enumerate(vals):
+            ax.text(v + 0.008, i, f'{v:.3f}', va='center', fontsize=6.5,
+                    fontweight='bold' if labels[i] == 'Full DSL GRPO' else 'normal')
+        ax.set_xlabel(title)
+        ax.set_xlim(0.35, 0.86)
+        ax.invert_yaxis()
+        ax.set_title(title, fontsize=9, fontweight='bold')
+    ax1.set_yticks(y)
+    ax1.set_yticklabels(labels, fontsize=7.5)
+    ax2.set_yticks(y)
+    ax2.set_yticklabels([])
+    fig.suptitle('Action Space Ablation (E-commerce)', fontsize=11, fontweight='bold', y=1.03)
+    fig.tight_layout()
+    save(fig, 'fig_e2_action_space.pdf')
+
+
+def fig_dataset_query_stats():
+    e3 = _load_json('results/analysis/e3_complexity_breakdown.json')
+    e5 = _load_json('results/analysis/e5_modality_ablation.json')
+
+    fig, axes = plt.subplots(2, 2, figsize=(7.0, 4.7))
+    scenarios = [
+        ('E-commerce', 'ecommerce', 'GRPO_4B_step300'),
+        ('Email', 'email', 'DAPO_4B_step843'),
+    ]
+    level_names = ['L1', 'L2', 'L3']
+    for row, (title, scenario, key) in enumerate(scenarios):
+        level_counts = [e3[scenario][key][str(i)]['n'] for i in [1, 2, 3]]
+        ax = axes[row, 0]
+        bars = ax.bar(level_names, level_counts, color=[LLM_COLOR, B2_COLOR, OURS_COLOR],
+                      edgecolor='white', linewidth=0.3)
+        total = sum(level_counts)
+        for bar, c in zip(bars, level_counts):
+            ax.text(bar.get_x() + bar.get_width()/2, c + total * 0.015,
+                    f'{c}\n({c/total:.0%})', ha='center', fontsize=6.5)
+        ax.set_ylabel('# Queries')
+        ax.set_title(f'{title}: Complexity', fontsize=9, fontweight='bold')
+        ax.set_ylim(0, max(level_counts) * 1.22)
+
+        modality = e5[scenario][key]
+        items = sorted(((k, v['n']) for k, v in modality.items()), key=lambda x: x[1], reverse=True)
+        labels = [k.replace('+', '+\n') for k, _ in items[:7]]
+        counts = [v for _, v in items[:7]]
+        ax = axes[row, 1]
+        y = np.arange(len(labels))
+        ax.barh(y, counts, color='#76B7B2', edgecolor='white', linewidth=0.3)
+        ax.set_yticks(y)
+        ax.set_yticklabels(labels, fontsize=6.2)
+        ax.invert_yaxis()
+        ax.set_xlabel('# Queries')
+        ax.set_title(f'{title}: Modality Coverage', fontsize=9, fontweight='bold')
+        for i, c in enumerate(counts):
+            ax.text(c + max(counts) * 0.015, i, str(c), va='center', fontsize=6.2)
+        ax.set_xlim(0, max(counts) * 1.2)
+
+    fig.suptitle('Benchmark Query Distribution', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_dataset_query_stats.pdf')
+
+
+def fig_training_dynamics_paper():
+    e1 = _load_json('results/analysis/e1_main_results.json')
+    email_summary = _load_json('figures/training_curves/grpo_email_summary.json')
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 2.8))
+
+    steps = [200, 300, 550, 1200]
+    vals = [
+        _m(e1, 'ecommerce', 'GRPO_4B_step200'),
+        _m(e1, 'ecommerce', 'GRPO_4B_step300'),
+        _m(e1, 'ecommerce', 'GRPO_4B_step550'),
+        _overall_metric('results/ecommerce/eval_rl_step1200_gt_v2.json', 'hit_at_1', 0.003),
+    ]
+    ax1.plot(steps, vals, 'o-', color=OURS_COLOR, linewidth=1.8, markersize=5, label='GRPO')
+    dapo = _m(e1, 'ecommerce', 'DAPO_4B_step420')
+    ax1.scatter([420], [dapo], marker='D', s=45, color=OURS_COLOR2, label='DAPO step420', zorder=4)
+    ax1.annotate('best', (300, vals[1]), textcoords='offset points', xytext=(0, 10),
+                 ha='center', fontsize=7, fontweight='bold', color=OURS_COLOR)
+    ax1.annotate('collapse', (1200, vals[-1]), textcoords='offset points', xytext=(-8, 10),
+                 ha='right', fontsize=7, color='#333333')
+    ax1.set_xlabel('Training Step')
+    ax1.set_ylabel('Test Hit@1')
+    ax1.set_ylim(0, 0.88)
+    ax1.set_title('(a) E-commerce RL Checkpoints', fontsize=9, fontweight='bold')
+    ax1.legend(frameon=False, fontsize=7, loc='center right')
+
+    val_traj = email_summary['val_acc_trajectory']
+    x = [p['global_step'] for p in val_traj]
+    y = [p['val_acc'] for p in val_traj]
+    ax2.plot(x, y, 'o-', color=LLM_COLOR, linewidth=1.6, markersize=4, label='GRPO val reward')
+    ax2.axhline(email_summary['gold_dsl_reward_ceiling_approx'], color='#777777',
+                linestyle='--', linewidth=1.0, label='Gold DSL ceiling')
+    ax2.set_xlabel('Training Step')
+    ax2.set_ylabel('Validation Reward')
+    ax2.set_ylim(0.66, 0.705)
+    ax2.set_title('(b) Email GRPO Validation', fontsize=9, fontweight='bold')
+    ax2.legend(frameon=False, fontsize=7, loc='lower right')
+
+    fig.suptitle('RL Training Dynamics', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_training_dynamics_paper.pdf')
+
+
+def fig_e7_modality_selection():
+    e7 = _load_json('results/analysis/e7_modality_selection.json')
+    panels = [
+        ('E-commerce GRPO-4B', e7['ecommerce']['grpo4b_step300']['confusion']),
+        ('Email DAPO-4B', e7['email']['dapo_step843']['confusion']),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.45))
+
+    for ax, (title, conf) in zip(axes, panels):
+        labels = sorted(set(conf.keys()) | {p for row in conf.values() for p in row.keys() if p})
+        idx = {lab: i for i, lab in enumerate(labels)}
+        mat = np.zeros((len(labels), len(labels)))
+        for gold, row in conf.items():
+            for pred, count in row.items():
+                if pred:
+                    mat[idx[gold], idx[pred]] = count
+        row_sums = mat.sum(axis=1, keepdims=True)
+        mat_pct = np.divide(mat, row_sums, out=np.zeros_like(mat), where=row_sums != 0)
+        im = ax.imshow(mat_pct, cmap='Blues', vmin=0, vmax=1)
+        ax.set_xticks(np.arange(len(labels)))
+        ax.set_yticks(np.arange(len(labels)))
+        ax.set_xticklabels([l.replace('+', '+\n') for l in labels], rotation=45, ha='right', fontsize=5.5)
+        ax.set_yticklabels([l.replace('+', '+\n') for l in labels], fontsize=5.5)
+        ax.set_xlabel('Predicted program type')
+        ax.set_ylabel('Gold query type')
+        ax.set_title(title, fontsize=9, fontweight='bold')
+        for i in range(len(labels)):
+            for j in range(len(labels)):
+                if mat_pct[i, j] >= 0.18:
+                    ax.text(j, i, f'{mat_pct[i,j]:.0%}', ha='center', va='center',
+                            fontsize=5.2, color='white' if mat_pct[i, j] > 0.5 else '#333333')
+
+    fig.suptitle('Modality Selection Confusion Matrix', fontsize=11, fontweight='bold', y=1.02)
+    fig.tight_layout()
+    save(fig, 'fig_e7_modality_selection.pdf')
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # Run all
 # ═══════════════════════════════════════════════════════════════════════════════
 if __name__ == '__main__':
-    print('Generating paper figures (v2 — revised)...\n')
+    print('Generating paper figures (v3 — latest JSON + new scripted analyses)...\n')
     fig_main_ecommerce()            # 1
     fig_main_email()                 # 2
+    fig_e2_action_space()            # 3  (NEW: P0 action-space ablation)
     fig_e3_e5_combined_ecommerce()   # 3
     fig_e3_e5_combined_email()       # 4
     fig_paradigm_comparison()        # 5
@@ -740,6 +1189,9 @@ if __name__ == '__main__':
     fig_fewshot_failure()            # 7
     fig_cross_scenario()             # 8
     fig_e6_orchestration()           # 9  (NEW: orchestration behavior)
+    fig_e7_modality_selection()      # 10 (NEW: diagnostic modality selection)
     fig_e9_error_analysis()          # 10 (NEW: error analysis)
     fig_e8_model_scaling()           # 11 (NEW: model scaling)
-    print(f'\n  All 11 figures saved to {OUT_DIR}/')
+    fig_dataset_query_stats()        # 12 (NEW: benchmark query statistics)
+    fig_training_dynamics_paper()    # 13 (NEW: paper-quality training dynamics)
+    print(f'\n  All 14 figures saved to {OUT_DIR}/')
