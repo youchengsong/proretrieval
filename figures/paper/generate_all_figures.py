@@ -898,7 +898,7 @@ def fig_main_email():
 # Override Figure 2 with the latest training paradigm comparison values.
 def fig_fewshot_failure():
     methods = ['GPT-5.5', 'SFT', 'GRPO', 'DAPO']
-    hit1 = [0.667, 0.680, 0.809, 0.808]
+    hit1 = [0.693, 0.680, 0.809, 0.808]
     exec_rate = [1.000, 0.997, 0.997, 0.996]
 
     colors = [LLM_COLOR, SFT_COLOR, OURS_COLOR, OURS_COLOR2]
