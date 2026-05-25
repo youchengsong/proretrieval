@@ -137,7 +137,7 @@ def encode_queries(predictions, pred_file=None):
 
     from sentence_transformers import SentenceTransformer
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    qwen = SentenceTransformer(QWEN_PATH, device=device)
+    qwen = SentenceTransformer(QWEN_PATH, device=device, model_kwargs={"torch_dtype": torch.float16})
     qwen.max_seq_length = 128
     vecs = qwen.encode(queries, batch_size=32,
                        normalize_embeddings=True, show_progress_bar=True)
