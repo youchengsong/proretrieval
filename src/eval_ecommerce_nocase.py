@@ -7,7 +7,7 @@
     CUDA_VISIBLE_DEVICES=3 python eval_ecommerce.py [--pred predictions_sft_4b.json] [--gt queries_product_test_step9_gt_v2.jsonl]
 """
 
-import argparse, json, os, re, sqlite3, sys
+import argparse, json, math, os, re, sqlite3, sys
 import numpy as np
 import pandas as pd
 import torch
@@ -281,6 +281,14 @@ def execute_dsl(dsl, conn, t_ids, t_mat, i_ids, i_mat,
     return result_ids, None
 
 
+# ── NDCG ─────────────────────────────────────────────────────
+def ndcg_at_k(result_ids, gt_ids, k):
+    dcg = sum(1.0 / math.log2(i + 2) for i, pid in enumerate(result_ids[:k]) if pid in gt_ids)
+    n_rel = min(len(gt_ids), k)
+    idcg = sum(1.0 / math.log2(i + 2) for i in range(n_rel)) if n_rel else 0
+    return dcg / idcg if idcg > 0 else 0.0
+
+
 # ── 7. 计算指标 ──────────────────────────────────────────────
 def compute_metrics(predictions, id2gt, id2meta, conn,
                     t_ids, t_mat, i_ids, i_mat,
@@ -315,6 +323,10 @@ def compute_metrics(predictions, id2gt, id2meta, conn,
         recall = len(result_set & gt_ids) / len(gt_ids) if gt_ids else 0.0
         precision = len(result_set & gt_ids) / len(result_set) if result_set else 0.0
 
+        # NDCG
+        n3 = ndcg_at_k(result_ids, gt_ids, 3)
+        n10 = ndcg_at_k(result_ids, gt_ids, 10)
+
         per_query.append({
             "query_id": qid,
             "level": meta.get("level"),
@@ -326,6 +338,8 @@ def compute_metrics(predictions, id2gt, id2meta, conn,
             "hit_at_1": hit1,
             "hit_at_3": hit3,
             "mrr": mrr,
+            "ndcg_at_3": n3,
+            "ndcg_at_10": n10,
             "recall": recall,
             "precision": precision,
         })
@@ -346,6 +360,8 @@ def aggregate(items):
         "hit_at_1": sum(r["hit_at_1"] for r in items) / n,
         "hit_at_3": sum(r["hit_at_3"] for r in items) / n,
         "mrr": sum(r["mrr"] for r in items) / n,
+        "ndcg_at_3": sum(r["ndcg_at_3"] for r in items) / n,
+        "ndcg_at_10": sum(r["ndcg_at_10"] for r in items) / n,
         "recall": sum(r["recall"] for r in items) / n,
         "precision": sum(r["precision"] for r in items) / n,
         "avg_result_size": sum(r["result_size"] for r in items) / n,
