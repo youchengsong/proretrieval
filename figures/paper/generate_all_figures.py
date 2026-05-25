@@ -507,43 +507,6 @@ def fig_rl_progression():
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# Fig 7: Few-shot DSL failure (red gradient for trained methods, neutral title)
-# ═══════════════════════════════════════════════════════════════════════════════
-def fig_fewshot_failure():
-    methods = ['GPT-5.5\n(few-shot)', 'Opus 4.7\n(few-shot)', 'GPT-5.5\n(zero-shot)', 'SFT\n(4B)', 'GRPO\n(4B)']
-    hit1      = [0.534, 0.420, 0.667, 0.680, 0.809]
-    exec_rate = [0.914, 0.733, 1.000, 0.997, 0.997]
-
-    # Few-shot: tan; trained methods: red gradient (light → dark)
-    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', '#E74C3C', '#B71C1C']
-
-    fig, ax1 = plt.subplots(figsize=(4.5, 2.5))
-    x = np.arange(len(methods))
-
-    bars = ax1.bar(x, hit1, 0.55, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1', zorder=2)
-
-    ax2 = ax1.twinx()
-    ax2.plot(x, exec_rate, 'D-', color='#333333', markersize=5, linewidth=1.2, label='Exec Rate', zorder=3)
-    ax2.spines['right'].set_visible(True)
-
-    ax1.set_ylabel('Hit@1')
-    ax2.set_ylabel('Execution Rate', color='#333333')
-    ax1.set_xticks(x)
-    ax1.set_xticklabels(methods, fontsize=7)
-    ax1.set_ylim(0, 0.90)
-    ax2.set_ylim(0.6, 1.05)
-
-    lines1, labels1 = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=False, fontsize=7)
-
-    ax1.set_title('Few-shot DSL vs SFT vs RL', fontsize=10, fontweight='bold', pad=6)
-
-    fig.tight_layout()
-    save(fig, 'fig_fewshot_failure.pdf')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
 # Fig 8: Cross-scenario comparison (pp not %)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_cross_scenario():
@@ -638,10 +601,10 @@ def fig_e9_error_analysis():
     c_format_fail = '#BAB0AC'
 
     # E-commerce
-    methods_ec = ['Base\n(4B)', 'Few-shot\nGPT-5.5', 'Few-shot\nOpus 4.7', 'SFT\n(4B)', 'GRPO\n(4B)', 'DAPO\n(4B)', 'GPT-5.5', 'Opus 4.7']
-    total_ec      = [3000, 3000, 3000, 3000, 3000, 3000, 2998, 2998]
-    format_ok_ec  = [949,  2885, 2352, 3000, 2999, 2998, 2998, 2998]
-    exec_ok_ec    = [506,  2741, 2200, 2992, 2992, 2989, 2998, 2996]
+    methods_ec = ['Base\n(4B)', 'SFT\n(4B)', 'GRPO\n(4B)', 'DAPO\n(4B)', 'GPT-5.5', 'Opus 4.7']
+    total_ec      = [3000, 3000, 3000, 3000, 2998, 2998]
+    format_ok_ec  = [949,  3000, 2999, 2998, 2998, 2998]
+    exec_ok_ec    = [506,  2992, 2992, 2989, 2998, 2996]
 
     success_ec     = [e/t for e, t in zip(exec_ok_ec, total_ec)]
     exec_fail_ec   = [(f-e)/t for f, e, t in zip(format_ok_ec, exec_ok_ec, total_ec)]
@@ -658,7 +621,7 @@ def fig_e9_error_analysis():
 
     ax1.set_ylabel('Proportion')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(methods_ec, fontsize=5.5, rotation=25, ha='right')
+    ax1.set_xticklabels(methods_ec, fontsize=6)
     ax1.set_ylim(0, 1.05)
     ax1.set_title('(a) E-commerce', fontsize=9, fontweight='bold')
 
@@ -932,15 +895,14 @@ def fig_main_email():
     save(fig, 'fig_main_email.pdf')
 
 
-# Override few-shot figure with full latest N=3000 analysis values.
+# Override Figure 2 with the latest training paradigm comparison values.
 def fig_fewshot_failure():
-    methods = ['GPT-5.5\nfew-shot', 'Opus 4.7\nfew-shot', 'GPT-5.5\nzero-shot',
-               '4B\nSFT', '4B\nGRPO', '4B\nDAPO']
-    hit1 = [0.534, 0.420, 0.667, 0.680, 0.809, 0.808]
-    exec_rate = [0.914, 0.733, 1.000, 0.997, 0.997, 0.996]
+    methods = ['GPT-5.5', 'SFT', 'GRPO', 'DAPO']
+    hit1 = [0.667, 0.680, 0.809, 0.808]
+    exec_rate = [1.000, 0.997, 0.997, 0.996]
 
-    colors = [FEWSHOT_COLOR, FEWSHOT_COLOR, '#F5B7B1', SFT_COLOR, OURS_COLOR, OURS_COLOR2]
-    fig, ax1 = plt.subplots(figsize=(5.1, 2.6))
+    colors = [LLM_COLOR, SFT_COLOR, OURS_COLOR, OURS_COLOR2]
+    fig, ax1 = plt.subplots(figsize=(4.2, 2.55))
     x = np.arange(len(methods))
     bars = ax1.bar(x, hit1, 0.58, color=colors, edgecolor='white', linewidth=0.3, label='Hit@1')
     _bar_label(ax1, bars, hit1, dy=0.01, fontsize=6, bold_first=0)
@@ -954,7 +916,7 @@ def fig_fewshot_failure():
     ax1.set_xticks(x)
     ax1.set_xticklabels(methods, fontsize=7)
     ax1.set_ylim(0.35, 0.86)
-    ax2.set_ylim(0.65, 1.03)
+    ax2.set_ylim(0.65, 1.08)
     lines1, labels1 = ax1.get_legend_handles_labels()
     lines2, labels2 = ax2.get_legend_handles_labels()
     ax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=False, fontsize=7)
