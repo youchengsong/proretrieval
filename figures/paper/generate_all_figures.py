@@ -667,7 +667,7 @@ def fig_e8_model_scaling():
 
     stages = ['Base', 'SFT', 'GRPO\nbest', 'DAPO\nbest']
     h1_4b = [0.117, 0.680, 0.809, 0.808]
-    h1_8b = [0.132, 0.820, 0.820, 0.810]
+    h1_8b = [0.132, 0.820]
 
     x = np.arange(len(stages))
     w = 0.34
@@ -676,7 +676,7 @@ def fig_e8_model_scaling():
 
     bars4 = ax1.bar(x - w/2, h1_4b, w, color=c_4b, edgecolor='white',
                     linewidth=0.3, label='4B')
-    bars8 = ax1.bar(x + w/2, h1_8b, w, color=c_8b, edgecolor='white',
+    bars8 = ax1.bar(x[:2] + w/2, h1_8b, w, color=c_8b, edgecolor='white',
                     linewidth=0.3, label='8B')
     for bars, vals, color in [(bars4, h1_4b, c_4b), (bars8, h1_8b, c_8b)]:
         for bar, v in zip(bars, vals):
