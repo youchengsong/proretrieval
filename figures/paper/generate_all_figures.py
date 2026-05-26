@@ -714,13 +714,14 @@ def fig_e9_error_analysis():
     format_fail_ec = [(t-f)/t for t, f in zip(total_ec, format_ok_ec)]
 
     x = np.arange(len(methods_ec))
-    ax1.bar(x, success_ec, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
-    ax1.bar(x, exec_fail_ec, 0.65, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    bw = 0.82
+    ax1.bar(x, success_ec, bw, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, exec_fail_ec, bw, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
     bottom2 = [s+e for s, e in zip(success_ec, exec_fail_ec)]
-    ax1.bar(x, format_fail_ec, 0.65, bottom=bottom2, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, format_fail_ec, bw, bottom=bottom2, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
 
     for i, s in enumerate(success_ec):
-        ax1.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5, fontweight='bold', color='white')
+        ax1.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5, fontweight='bold', color='black')
 
     ax1.set_ylabel('Proportion')
     ax1.set_xticks(x)
@@ -739,13 +740,13 @@ def fig_e9_error_analysis():
     format_fail_em = [(t-f)/t for t, f in zip(total_em, format_ok_em)]
 
     x2 = np.arange(len(methods_em))
-    ax2.bar(x2, success_em, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
-    ax2.bar(x2, exec_fail_em, 0.65, bottom=success_em, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, success_em, bw, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, exec_fail_em, bw, bottom=success_em, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
     bottom2e = [s+e for s, e in zip(success_em, exec_fail_em)]
-    ax2.bar(x2, format_fail_em, 0.65, bottom=bottom2e, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, format_fail_em, bw, bottom=bottom2e, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
 
     for i, s in enumerate(success_em):
-        ax2.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5.5, fontweight='bold', color='white')
+        ax2.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5.5, fontweight='bold', color='black')
 
     ax2.set_ylabel('Proportion')
     ax2.set_xticks(x2)
