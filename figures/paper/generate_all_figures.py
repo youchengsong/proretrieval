@@ -714,7 +714,7 @@ def fig_e9_error_analysis():
     format_fail_ec = [(t-f)/t for t, f in zip(total_ec, format_ok_ec)]
 
     x = np.arange(len(methods_ec))
-    bw = 0.82
+    bw = 0.88
     ax1.bar(x, success_ec, bw, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
     ax1.bar(x, exec_fail_ec, bw, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
     bottom2 = [s+e for s, e in zip(success_ec, exec_fail_ec)]
