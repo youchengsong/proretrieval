@@ -697,7 +697,7 @@ def fig_e8_model_scaling():
 # Fig 12: E9 — Error Analysis (from 实验结果分析报告)
 # ═══════════════════════════════════════════════════════════════════════════════
 def fig_e9_error_analysis():
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.5, 3.0))
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(7.0, 2.8))
 
     c_success = '#59A14F'
     c_exec_fail = '#E15759'
@@ -714,17 +714,17 @@ def fig_e9_error_analysis():
     format_fail_ec = [(t-f)/t for t, f in zip(total_ec, format_ok_ec)]
 
     x = np.arange(len(methods_ec))
-    ax1.bar(x, success_ec, 0.58, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
-    ax1.bar(x, exec_fail_ec, 0.58, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, success_ec, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, exec_fail_ec, 0.65, bottom=success_ec, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
     bottom2 = [s+e for s, e in zip(success_ec, exec_fail_ec)]
-    ax1.bar(x, format_fail_ec, 0.58, bottom=bottom2, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+    ax1.bar(x, format_fail_ec, 0.65, bottom=bottom2, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
 
     for i, s in enumerate(success_ec):
         ax1.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5, fontweight='bold', color='white')
 
     ax1.set_ylabel('Proportion')
     ax1.set_xticks(x)
-    ax1.set_xticklabels(methods_ec, fontsize=5.5, rotation=30, ha='right')
+    ax1.set_xticklabels(methods_ec, fontsize=6, rotation=30, ha='right')
     ax1.set_ylim(0, 1.05)
     ax1.set_title('(a) E-commerce', fontsize=10, fontweight='bold')
 
@@ -739,23 +739,23 @@ def fig_e9_error_analysis():
     format_fail_em = [(t-f)/t for t, f in zip(total_em, format_ok_em)]
 
     x2 = np.arange(len(methods_em))
-    ax2.bar(x2, success_em, 0.58, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
-    ax2.bar(x2, exec_fail_em, 0.58, bottom=success_em, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, success_em, 0.65, label='Success', color=c_success, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, exec_fail_em, 0.65, bottom=success_em, label='Exec Fail', color=c_exec_fail, edgecolor='white', linewidth=0.3)
     bottom2e = [s+e for s, e in zip(success_em, exec_fail_em)]
-    ax2.bar(x2, format_fail_em, 0.58, bottom=bottom2e, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
+    ax2.bar(x2, format_fail_em, 0.65, bottom=bottom2e, label='Format Fail', color=c_format_fail, edgecolor='white', linewidth=0.3)
 
     for i, s in enumerate(success_em):
         ax2.text(i, s/2, f'{s:.1%}', ha='center', va='center', fontsize=5.5, fontweight='bold', color='white')
 
     ax2.set_ylabel('Proportion')
     ax2.set_xticks(x2)
-    ax2.set_xticklabels(methods_em, fontsize=6, rotation=25, ha='right')
+    ax2.set_xticklabels(methods_em, fontsize=6.5, rotation=25, ha='right')
     ax2.set_ylim(0, 1.05)
     ax2.set_title('(b) Email', fontsize=10, fontweight='bold')
 
     handles, labels = ax1.get_legend_handles_labels()
     fig.legend(handles, labels, loc='upper center', bbox_to_anchor=(0.5, 1.06),
-               ncol=3, frameon=False, fontsize=7.5)
+               ncol=3, frameon=False, fontsize=8.5)
 
     fig.suptitle('DSL Generation Error Analysis', fontsize=12, fontweight='bold', y=1.12)
     fig.tight_layout()
